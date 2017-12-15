@@ -32,6 +32,9 @@ typedef struct {
 } wires_handle_t;
 
 
+//TODO: ДОБАВИТЬ GLOBAL, ERRORS
+
+
 typedef struct {
 	//	raw data from sensors
 	struct {
@@ -89,6 +92,19 @@ typedef struct {
 	} system;
 
 } state_t;
+
+struct global_t {
+
+	float target[3] = {100, 100, 0};
+	float zero_pressure = 100000;
+
+} global;
+
+typedef enum {
+	no_error		= 0,
+	driver_overheat	= -1
+
+} error;
 
 
 

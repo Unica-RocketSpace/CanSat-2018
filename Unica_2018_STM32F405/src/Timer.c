@@ -25,8 +25,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "Timer.h"
 #include "cortexm/ExceptionHandlers.h"
+#include "Timer.h"
 
 // ----------------------------------------------------------------------------
 

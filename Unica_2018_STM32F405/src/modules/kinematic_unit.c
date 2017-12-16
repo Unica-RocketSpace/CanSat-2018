@@ -56,6 +56,9 @@ void kinematicInit(state_t* state)
 
 	state->system.servo_pos = 0;
 	state->system.step_engine_pos = 0;
+
+	//	TODO:	ADD FUNCTION FOR SETTING ZERO PRESSURE
+	state->system.zero_pressure = 0;
 	state->system.state = 0;
 	state->system.time = 0;
 }

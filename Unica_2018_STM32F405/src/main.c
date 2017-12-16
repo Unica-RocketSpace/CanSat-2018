@@ -1,16 +1,25 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <stm32f4xx_hal.h>
+#include <stm32f4xx_hal_cortex.h>
+#include <stm32f4xx_hal_i2c.h>
+#include <stm32f4xx_hal_usart.h>
+#include <stm32f4xx_hal_dma.h>
+#include <stm32f4xx_hal_gpio.h>
+
+#include <FreeRTOSConfig.h>
+#include <FreeRTOS.h>
+#include "task.h"
+
 #include "diag/Trace.h"
 
 #include "Timer.h"
 #include "BlinkLed.h"
 
-//#include "state.h"
 #include "initialize_hardware.h"
-//#include "stm32f4xx_hal.h"
-
-
+#include "state.h"
 
 // ----- Timing definitions -------------------------------------------------
 
@@ -28,36 +37,29 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
 
-state_t* state;
-state_t* state_prev;
+state_t* state = {};
+state_t* state_prev = {};
 
-I2C_HandleTypeDef* i2c;
-USART_HandleTypeDef* usart;
+I2C_HandleTypeDef* i2c = {};
+USART_HandleTypeDef* usart = {};
+DMA_HandleTypeDef* dma = {};
 
-void USART2_IRQHandler(void) {
+uint8_t dma_usartBuffer[100];
 
-	if (USART2->SR & USART_SR_RXNE & USART_SR_ORE) {
-
-
-
-	}
-
-
-}
 
 
 int main(int argc, char* argv[])
 {
 	I2C_Init(i2c);
 	USART_Init(usart);
+	DMA_Init(dma);
 
 
-	// разрешение прерывания RXNE (read data register is not empty)
-	USART2->CR1 |= (1 << USART_CR1_RXNEIE);
+	xTaskCreate(GPS_task(state, dma, dma_usartBuffer), "GPS", 1000, NULL, 1, NULL);
 
-	HAL_NVIC_EnableIRQ(USART2_IRQn);
+	vTaskStartScheduler();
 
-
+	return 0;
 }
 
 #pragma GCC diagnostic pop

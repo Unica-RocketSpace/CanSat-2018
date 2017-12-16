@@ -10,9 +10,10 @@
 
 #include "state.h"
 
+
 void step_engine_init ();
-void calculate_angles (state_t * state);
-error rotate_step_engine (state_t * stare);
+void calculate_angles (state_t * state, float* servo_ang, float* step_motor_ang);
+error rotate_step_engine (state_t * state, state_t * state_prev);
 void rotate_step_engine_by_angles( float *angles);
 
 

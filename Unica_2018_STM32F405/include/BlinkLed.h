@@ -28,7 +28,6 @@
 #ifndef BLINKLED_H_
 #define BLINKLED_H_
 
-#include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 
 // ----- LED definitions ------------------------------------------------------

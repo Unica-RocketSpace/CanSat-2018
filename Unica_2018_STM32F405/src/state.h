@@ -23,15 +23,6 @@
 // if error set value and go to end
 #define PROCESS_ERROR(x) if (0 != (error = (x))) { goto end; }
 
-typedef struct {
-
-	I2C_HandleTypeDef* i2c;
-	USART_HandleTypeDef* usart;
-	DMA_HandleTypeDef* dma;
-
-} wires_handle_t;
-
-
 //TODO: ДОБАВИТЬ GLOBAL, ERRORS
 
 
@@ -87,18 +78,15 @@ typedef struct {
 		float servo_pos;
 		float step_engine_pos;
 
+		//	pressure on the earth; this field should be filled when device started it`s work
+		float zero_pressure;
+
 		uint16_t state;
 		float time;
 	} system;
 
 } state_t;
 
-struct global_t {
-
-	float target[3] = {100, 100, 0};
-	float zero_pressure = 100000;
-
-} global;
 
 typedef enum {
 	no_error		= 0,

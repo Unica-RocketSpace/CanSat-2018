@@ -5,8 +5,11 @@
  *      Author: developer
  */
 
-//#include "state.h"
-//
-//void swapState(state_t * state, state_t * state_previous) {
-//	state_previous = state;
-//}
+#include "state.h"
+
+state_t* globalState = NULL;
+state_t* globalState_prev = NULL;
+
+void swapState(state_t * state, state_t * state_previous) {
+	state_previous = state;
+}

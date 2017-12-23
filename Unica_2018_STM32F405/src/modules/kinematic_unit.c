@@ -20,7 +20,7 @@
 #include "quaternion.h"
 
 
-void kinematicInit(state_t* state)
+void stateInit(state_t* state)
 {
 	for (int i = 0; i < 3; i++) {
 
@@ -57,7 +57,7 @@ void kinematicInit(state_t* state)
 	state->system.servo_pos = 0;
 	state->system.step_engine_pos = 0;
 
-	//	TODO:	ADD FUNCTION FOR SETTING ZERO PRESSURE
+	//	TODO:	ДОБАВИТЬ ФУНКЦИЮ ДЛЯ УСТАНОВКИ НУЛЕВОГО ДАВЛЕНИЯ
 	state->system.zero_pressure = 0;
 	state->system.state = 0;
 	state->system.time = 0;

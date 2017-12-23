@@ -88,6 +88,43 @@ void HAL_MspDeInit(void)
 
 }
 
+
+void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
+	if(hi2c->Instance == I2C1) {
+		__I2C1_CLK_ENABLE();
+		__GPIOB_CLK_ENABLE();
+
+		GPIO_InitTypeDef gpiob;
+		gpiob.Alternate = GPIO_AF4_I2C1;
+		gpiob.Mode = GPIO_MODE_AF_PP;
+		gpiob.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+		gpiob.Pull = GPIO_NOPULL;
+		gpiob.Speed = GPIO_SPEED_FREQ_HIGH;
+
+		HAL_GPIO_Init(GPIOB, &gpiob);
+	}
+	else abort();
+}
+
+
+void HAL_USART_MspInit(USART_HandleTypeDef *husart) {
+
+	if(husart->Instance == USART2) {
+		__USART2_CLK_ENABLE();
+		__GPIOB_CLK_ENABLE();
+
+		GPIO_InitTypeDef gpiob;
+		gpiob.Alternate = GPIO_AF7_USART2;
+		gpiob.Mode = GPIO_MODE_AF_PP;
+		gpiob.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+		gpiob.Pull = GPIO_NOPULL;
+		gpiob.Speed = GPIO_SPEED_FREQ_HIGH;
+
+		HAL_GPIO_Init(GPIOB, &gpiob);
+	}
+	else abort();
+}
+
 /**
   * @brief  Initializes the PPP MSP.
   * @note   This functiona is called from HAL_PPP_Init() function to perform 

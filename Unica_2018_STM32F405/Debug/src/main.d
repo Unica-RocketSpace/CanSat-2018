@@ -71,12 +71,24 @@ src/main.o: ../src/main.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_spdifrx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
  /home/developer/git/Unica_2018_STM32F405/include/Timer.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/cmsis_device.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h \
  /home/developer/git/Unica_2018_STM32F405/include/BlinkLed.h \
- ../src/initialize_hardware.h ../src/state.h
+ ../src/state.h \
+ /home/developer/git/Unica_2018_STM32F405/src/modules/kinematic_unit.h \
+ /home/developer/git/Unica_2018_STM32F405/src/state.h \
+ /home/developer/git/Unica_2018_STM32F405/src/drivers/gps_nmea.h
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
@@ -222,6 +234,24 @@ src/main.o: ../src/main.c \
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h:
 
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h:
+
 /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h:
 
 /home/developer/git/Unica_2018_STM32F405/include/Timer.h:
@@ -232,6 +262,10 @@ src/main.o: ../src/main.c \
 
 /home/developer/git/Unica_2018_STM32F405/include/BlinkLed.h:
 
-../src/initialize_hardware.h:
-
 ../src/state.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/modules/kinematic_unit.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/state.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/drivers/gps_nmea.h:

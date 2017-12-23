@@ -10,7 +10,8 @@
 
 #include <stm32f4xx_hal.h>
 
-#define GPS_DMA_BUFFER_SIZE		(100)
+#include "state.h"
+
 
 #define GPS_USART 				(USART2)
 #define GPS_DMA_BUFFER_SIZE 	(500)
@@ -18,7 +19,12 @@
 #define GPS_DMA_USART_STREAM 	(DMA1_Stream5)
 
 
-void GPS_task(state_t* state, DMA_HandleTypeDef* dma, uint8_t* termBuffer);
+extern USART_HandleTypeDef* usart;
+extern DMA_HandleTypeDef* dma;
+
+extern uint8_t dma_usartBuffer[100];
+
+void GPS_task();
 
 
 #endif /* GPS_NMEA_H_ */

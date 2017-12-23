@@ -77,33 +77,33 @@ extern "C" {
  * within FreeRTOSConfig.h.
  */
 
-#ifndef configMINIMAL_STACK_SIZE
-	#error Missing definition:  configMINIMAL_STACK_SIZE must be defined in FreeRTOSConfig.h.  configMINIMAL_STACK_SIZE defines the size (in words) of the stack allocated to the idle task.  Refer to the demo project provided for your port for a suitable value.
-#endif
-
-#ifndef configMAX_PRIORITIES
-	#error Missing definition:  configMAX_PRIORITIES must be defined in FreeRTOSConfig.h.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#if configMAX_PRIORITIES < 1
-	#error configMAX_PRIORITIES must be defined to be greater than or equal to 1.
-#endif
-
-#ifndef configUSE_PREEMPTION
-	#error Missing definition:  configUSE_PREEMPTION must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef configUSE_IDLE_HOOK
-	#error Missing definition:  configUSE_IDLE_HOOK must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef configUSE_TICK_HOOK
-	#error Missing definition:  configUSE_TICK_HOOK must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef configUSE_16_BIT_TICKS
-	#error Missing definition:  configUSE_16_BIT_TICKS must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
+//#ifndef configMINIMAL_STACK_SIZE
+//	#error Missing definition:  configMINIMAL_STACK_SIZE must be defined in FreeRTOSConfig.h.  configMINIMAL_STACK_SIZE defines the size (in words) of the stack allocated to the idle task.  Refer to the demo project provided for your port for a suitable value.
+//#endif
+//
+//#ifndef configMAX_PRIORITIES
+//	#error Missing definition:  configMAX_PRIORITIES must be defined in FreeRTOSConfig.h.  See the Configuration section of the FreeRTOS API documentation for details.
+//#endif
+//
+//#if configMAX_PRIORITIES < 1
+//	#error configMAX_PRIORITIES must be defined to be greater than or equal to 1.
+//#endif
+//
+//#ifndef configUSE_PREEMPTION
+//	#error Missing definition:  configUSE_PREEMPTION must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
+//#endif
+//
+//#ifndef configUSE_IDLE_HOOK
+//	#error Missing definition:  configUSE_IDLE_HOOK must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
+//#endif
+//
+//#ifndef configUSE_TICK_HOOK
+//	#error Missing definition:  configUSE_TICK_HOOK must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
+//#endif
+//
+//#ifndef configUSE_16_BIT_TICKS
+//	#error Missing definition:  configUSE_16_BIT_TICKS must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
+//#endif
 
 #ifndef configUSE_CO_ROUTINES
 	#define configUSE_CO_ROUTINES 0

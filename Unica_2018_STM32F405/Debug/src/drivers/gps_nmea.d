@@ -1,4 +1,15 @@
-src/state.o: ../src/state.c ../src/state.h \
+src/drivers/gps_nmea.o: ../src/drivers/gps_nmea.c \
+ /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h \
+ ../src/drivers/minmea.h ../src/drivers/gps_nmea.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
  /home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
@@ -70,9 +81,32 @@ src/state.o: ../src/state.c ../src/state.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_fmpi2c.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_spdifrx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h
+ /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
+ /home/developer/git/Unica_2018_STM32F405/src/state.h
 
-../src/state.h:
+/home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h:
+
+../src/drivers/minmea.h:
+
+../src/drivers/gps_nmea.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
@@ -217,3 +251,5 @@ src/state.o: ../src/state.c ../src/state.h \
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/state.h:

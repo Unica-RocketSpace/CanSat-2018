@@ -9,7 +9,6 @@
 #include <stm32f4xx_hal_dma.h>
 #include <stm32f4xx_hal_gpio.h>
 
-#include <FreeRTOSConfig.h>
 #include <FreeRTOS.h>
 #include "task.h"
 
@@ -18,8 +17,9 @@
 #include "Timer.h"
 #include "BlinkLed.h"
 
-#include "initialize_hardware.h"
 #include "state.h"
+#include "kinematic_unit.h"
+#include "gps_nmea.h"
 
 // ----- Timing definitions -------------------------------------------------
 
@@ -37,25 +37,32 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
 
-state_t* state = {};
-state_t* state_prev = {};
-
-I2C_HandleTypeDef* i2c = {};
-USART_HandleTypeDef* usart = {};
-DMA_HandleTypeDef* dma = {};
-
-uint8_t dma_usartBuffer[100];
-
+#define GPS_TASK_STACK_SIZE 1024
+static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
+static StaticTask_t _gpsTaskObj;
 
 
 int main(int argc, char* argv[])
 {
-	I2C_Init(i2c);
-	USART_Init(usart);
-	DMA_Init(dma);
+	// Инициализация системы
+	HAL_Init();
 
+	// Инициализация структур глобального состояния (в нашем случае просто заполняем их нулями)
+	stateInit(globalState);
+	stateInit(globalState_prev);
 
-	xTaskCreate(GPS_task(state, dma, dma_usartBuffer), "GPS", 1000, NULL, 1, NULL);
+	// TODO:	РЕШИТЬ ПРОБЛЕМУ С FREERTOS
+	// TODO:	ПОСМОТРЕТЬ USART+DMA
+
+	xTaskCreateStatic(
+			GPS_task, // функция
+			"GPS", // имя
+			GPS_TASK_STACK_SIZE, // глубина стенка
+			NULL, // аргумент
+			1, // приоритет
+			_gpsTaskStack, // стек
+			&_gpsTaskObj // объект задания
+	);
 
 	vTaskStartScheduler();
 

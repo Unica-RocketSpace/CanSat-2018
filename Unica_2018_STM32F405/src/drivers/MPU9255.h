@@ -39,6 +39,10 @@
 #define GYRO_RANGE			0			//250degps - 00, 500degps - 01, 1000degps - 10, 2000degps - 11
 
 
+/*#################################################*/
+/*################## СТРУКТУРЫ ###################*/
+/*#################################################*/
+
 typedef enum {
 
 	RESET_ = (1 << 7)
@@ -73,8 +77,6 @@ typedef enum {
 } compass_params_t;
 
 
-
-
 // errors
 typedef enum {
 	MPU9255_ERROR_NONE = 0,
@@ -91,18 +93,83 @@ typedef enum {
 } mpu9255_address_t;
 
 
-int mpu9255_readRegister(wires_handle_t* handles, mpu9255_address_t address, uint8_t reg_address, uint8_t *dataRead, uint8_t count);
-int mpu9255_writeRegister(wires_handle_t* handles, mpu9255_address_t address, uint8_t reg_address, uint8_t dataWrite);
+/*##################################################*/
+/*################### ПЕРЕМЕННЫЕ ###################*/
+/*##################################################*/
 
-int mpu9255_readIMU(wires_handle_t* handles, int16_t* raw_accel_XYZ, int16_t* raw_gyro_XYZ);	//чтение данных с акселерометра и гироскопа
-int mpu9255_readCompass(state_t* state, wires_handle_t* handles, int16_t * raw_compass_XYZ);				//чтение данных с магнитометра
+extern I2C_HandleTypeDef* i2c_mpu9255;
 
 
-void mpu9255_recalcAccel(const int16_t* raw_accel_XYZ, float* accel_XYZ);	//перевод показаний акселерометра в единицы g
-void mpu9255_recalcGyro(const int16_t* raw_gyro_XYZ, float* gyro_XYZ);		//перевод показаний гироскопа в единицы dps
-void mpu9255_recalcCompass(const int16_t* raw_compass_XYZ, float* compass_XYZ);
+/*###############################################*/
+/*################### ФУНКЦИИ ###################*/
+/*###############################################*/
 
-int mpu9255_init(wires_handle_t* handles);		//initialisation of the I2C wire
+/*
+ *  Чтение регистра
+ *	Параметры:
+ *		address		- адрес устройства на шине (в нашем случае - магнитометр, гироскоп и акселерометр или барометр)
+ *		reg_address	- адрес первого читаемого регистра
+ *		dataRead	- массив, в который записываем читаемые значения
+ *		count		- количество читаемых регистров
+ */
+int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t *dataRead, uint8_t count);
+
+/*
+ *  Запись регистра
+ *	Параметры:
+ *		address		- адрес устройства на шине (в нашем случае - магнитометр, гироскоп и акселерометр или барометр)
+ *		reg_address	- адрес первого записываемого регистра
+ *		dataWrite	- массив, из которого берем значения
+ */
+int mpu9255_writeRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t dataWrite);
+
+/*
+ * 	Чтение показаний акселерометра и гироскопа
+ * 	Параметры:
+ *		raw_accelData	- сырые данные акселерометра
+ *		raw_gyroData	- сырые данные гироскопа
+ */
+int mpu9255_readIMU(int16_t* raw_accelData, int16_t* raw_gyroData);
+
+/*
+ * 	Чтение показаний магнитометра
+ * 	Параметры:
+ * 		raw_compassData	- сырые показания магнитометра
+ */
+int mpu9255_readCompass(int16_t * raw_compassData);
+
+/*
+ * 	Пересчет сырых показаний акселерометра
+ * 	Параметры:
+ * 		raw_accelData	- сырые показания акселерометра
+ * 		accelData		- преобразованные показания акселерометра (в g)
+ */
+void mpu9255_recalcAccel(const int16_t* raw_accelData, float* accelData);
+
+/*
+ * 	Пересчет сырых показаний гироскопа
+ * 	Параметры:
+ * 		raw_gyroData	- сырые показания гироскопа
+ * 		gyroData		- преобразованные показания гироскопа (в 1/c)
+ */
+void mpu9255_recalcGyro(const int16_t* raw_gyroData, float* gyroData);
+
+/*
+ * 	Пересчет сырых показаний магнитометра
+ * 	Параметры:
+ * 		raw_compassData	- сырые показания магнитометра
+ * 		compassData		- преобразованные показания магнитометра (в мТл)
+ */
+void mpu9255_recalcCompass(const int16_t* raw_compassData, float* compassData);
+
+/*
+ * 	Инициализация mpu9255
+ * 	Производится инициализация шины I2C и самой платы (установка настроек)
+ * 	Параметры:
+ *		i2c	- хэндл инициализируемой шины
+ */
+int mpu9255_init(I2C_HandleTypeDef* i2c);		//инициализация mpu9255
+
 
 
 #endif /* MPU9255_H_ */

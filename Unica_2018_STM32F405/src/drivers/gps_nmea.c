@@ -26,6 +26,10 @@ static char _dma_buffer[GPS_DMA_BUFFER_SIZE];
 static size_t _msg_carret;
 static char _msg_buffer[GPS_MSG_BUFFER_SIZE];
 
+USART_HandleTypeDef* usart = NULL;
+DMA_HandleTypeDef* dma = NULL;
+
+uint8_t dma_usartBuffer[100];
 
 inline static char _read_dma_buffer(void)
 {
@@ -42,14 +46,49 @@ inline static char _read_dma_buffer(void)
 }
 
 
-void GPS_task(state_t* state, DMA_HandleTypeDef* dma, uint8_t* termBuffer)	{
+void GPS_task()	{
+
+//	(void)args;
 
 	_dma_carret = 0;
 	_msg_carret = 0;
 
-	//	TODO: SET LENGTH OF DMA REQUEST
+
+	//	Инициализация USART2 для работы с GPS
+	usart->Init.BaudRate = 9600;
+	usart->Init.WordLength = UART_WORDLENGTH_8B;
+	usart->Init.StopBits = UART_STOPBITS_2;
+	usart->Init.Parity = UART_PARITY_NONE;
+	usart->Init.Mode = UART_MODE_TX_RX;
+
+	usart->Instance = USART2;
+
+	HAL_USART_Init(usart);
+
+
+	//	Инициализация DMA1_Stream5 для работы c GPS через USART
+	dma->Init.Channel = DMA_CHANNEL_4;						// 4 канал - на USART2_RX
+	dma->Init.Direction = DMA_PERIPH_TO_MEMORY;				// направление - из периферии в память
+	dma->Init.PeriphInc = DMA_PINC_DISABLE;					// инкрементация периферии выключена
+	dma->Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
+	dma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;	// длина слова в периферии - байт
+	dma->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
+	dma->Init.Mode = DMA_CIRCULAR;							// режим - обычный
+	dma->Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
+	dma->Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	dma->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+	dma->Init.MemBurst = DMA_MBURST_SINGLE;
+	dma->Init.PeriphBurst = DMA_PBURST_SINGLE;
+
+	dma->Instance = DMA1_Stream5;
+
+	HAL_DMA_Init(dma);
+	__HAL_RCC_DMA1_CLK_ENABLE();
+
+
+	//	TODO: УСТАНОВИТЬ ДЛИНУ СЛОВА ДЛЯ DMA
 	// DMA start
-	HAL_DMA_Start(dma, USART2->DR, termBuffer, 1);		//	from USART2->DR (data register) to our circular buffer
+	HAL_DMA_Start(dma, USART2->DR, *dma_usartBuffer, 1);		//	from USART2->DR (data register) to our circular buffer
 
 	//	TODO: SET DEVICE CONFIG (UBLOX CENTER)
 
@@ -93,13 +132,12 @@ void GPS_task(state_t* state, DMA_HandleTypeDef* dma, uint8_t* termBuffer)	{
 		float _lon = minmea_tofloat(&frame.longitude);
 		float _lat = minmea_tofloat(&frame.latitude);
 		float _height = minmea_tofloat(&frame.altitude);
-		bool _hasFix = frame.fix_quality != 0;
 
 		taskENTER_CRITICAL();
 
-		state->isc.coord_GPS[0] = _lon;
-		state->isc.coord_GPS[1] = _lat;
-		state->isc.coord_GPS[2] = _height;
+		globalState->isc.coord_GPS[0] = _lon;
+		globalState->isc.coord_GPS[1] = _lat;
+		globalState->isc.coord_GPS[2] = _height;
 
 		taskEXIT_CRITICAL();
 

@@ -20,12 +20,17 @@
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_dma.h"
 
+
 // if error set value and go to end
 #define PROCESS_ERROR(x) if (0 != (error = (x))) { goto end; }
 
-//TODO: ДОБАВИТЬ GLOBAL, ERRORS
+/*#################################################*/
+/*################## СТРУКТУРЫ ###################*/
+/*#################################################*/
 
-
+/*
+ * 	Структура глобального состояния аппарата
+ */
 typedef struct {
 	//	raw data from sensors
 	struct {
@@ -94,6 +99,13 @@ typedef enum {
 
 } error;
 
+
+/*##################################################*/
+/*################### ПЕРЕМЕННЫЕ ###################*/
+/*##################################################*/
+
+extern state_t* globalState;
+extern state_t* globalState_prev;
 
 
 #endif /* STATE_H_ */

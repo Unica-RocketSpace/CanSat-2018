@@ -43,7 +43,7 @@ float invSqrt(float x);
 //---------------------------------------------------------------------------------------------------
 // AHRS algorithm update
 
-void MadgwickAHRSupdate(state_t * state, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
+void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
@@ -138,10 +138,10 @@ void MadgwickAHRSupdate(state_t * state, float gx, float gy, float gz, float ax,
 	q2 *= recipNorm;
 	q3 *= recipNorm;
 
-	state->isc.quaternion[0] = q0;
-	state->isc.quaternion[1] = q1;
-	state->isc.quaternion[2] = q2;
-	state->isc.quaternion[3] = q3;
+	localStateIMU_isc->quaternion[0] = q0;
+	localStateIMU_isc->quaternion[1] = q1;
+	localStateIMU_isc->quaternion[2] = q2;
+	localStateIMU_isc->quaternion[3] = q3;
 }
 
 //---------------------------------------------------------------------------------------------------

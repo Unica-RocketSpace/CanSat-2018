@@ -1,7 +1,9 @@
-src/Timer.o: ../src/Timer.c \
- /home/developer/git/Unica_2018_STM32F405/system/include/cortexm/ExceptionHandlers.h \
- /home/developer/git/Unica_2018_STM32F405/include/Timer.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/cmsis_device.h \
+system/src/stm32f4-hal/stm32f4xx_hal_tim.o: \
+ ../system/src/stm32f4-hal/stm32f4xx_hal_tim.c \
+ /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
+ /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
+ /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
+ /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f405xx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/core_cm4.h \
@@ -10,11 +12,6 @@ src/Timer.o: ../src/Timer.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/core_cmFunc.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/core_cmSimd.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
- /home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/Legacy/stm32_hal_legacy.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc_ex.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_gpio.h \
@@ -76,11 +73,13 @@ src/Timer.o: ../src/Timer.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h
 
-/home/developer/git/Unica_2018_STM32F405/system/include/cortexm/ExceptionHandlers.h:
+/home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
-/home/developer/git/Unica_2018_STM32F405/include/Timer.h:
+/home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h:
 
-/home/developer/git/Unica_2018_STM32F405/system/include/cmsis/cmsis_device.h:
+/home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h:
+
+/home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h:
 
@@ -97,16 +96,6 @@ src/Timer.o: ../src/Timer.c \
 /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/core_cmSimd.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h:
-
-/home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
-
-/home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h:
-
-/home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h:
-
-/home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h:
-
-/home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/Legacy/stm32_hal_legacy.h:
 

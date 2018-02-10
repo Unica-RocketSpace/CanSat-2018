@@ -18,10 +18,6 @@
 #define GPS_MSG_BUFFER_SIZE 	(200)
 #define GPS_DMA_USART_STREAM 	(DMA1_Stream5)
 
-
-extern USART_HandleTypeDef* usart;
-extern DMA_HandleTypeDef* dma;
-
 extern uint8_t dma_usartBuffer[100];
 
 void GPS_task();

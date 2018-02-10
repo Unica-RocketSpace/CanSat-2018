@@ -26,9 +26,6 @@ static char _dma_buffer[GPS_DMA_BUFFER_SIZE];
 static size_t _msg_carret;
 static char _msg_buffer[GPS_MSG_BUFFER_SIZE];
 
-USART_HandleTypeDef* usart = NULL;
-DMA_HandleTypeDef* dma = NULL;
-
 uint8_t dma_usartBuffer[100];
 
 inline static char _read_dma_buffer(void)
@@ -46,49 +43,46 @@ inline static char _read_dma_buffer(void)
 }
 
 
-void GPS_task()	{
+void GPS_task(USART_HandleTypeDef* husart, DMA_HandleTypeDef* hdma)	{
 
 //	(void)args;
-
-	_dma_carret = 0;
-	_msg_carret = 0;
-
-
 	//	Инициализация USART2 для работы с GPS
-	usart->Init.BaudRate = 9600;
-	usart->Init.WordLength = UART_WORDLENGTH_8B;
-	usart->Init.StopBits = UART_STOPBITS_2;
-	usart->Init.Parity = UART_PARITY_NONE;
-	usart->Init.Mode = UART_MODE_TX_RX;
+	husart->Init.BaudRate = 9600;
+	husart->Init.WordLength = UART_WORDLENGTH_8B;
+	husart->Init.StopBits = UART_STOPBITS_2;
+	husart->Init.Parity = UART_PARITY_NONE;
+	husart->Init.Mode = UART_MODE_TX_RX;
 
-	usart->Instance = USART2;
+	husart->Instance = USART2;
 
-	HAL_USART_Init(usart);
-
+	HAL_USART_Init(husart);
 
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
-	dma->Init.Channel = DMA_CHANNEL_4;						// 4 канал - на USART2_RX
-	dma->Init.Direction = DMA_PERIPH_TO_MEMORY;				// направление - из периферии в память
-	dma->Init.PeriphInc = DMA_PINC_DISABLE;					// инкрементация периферии выключена
-	dma->Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
-	dma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;	// длина слова в периферии - байт
-	dma->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
-	dma->Init.Mode = DMA_CIRCULAR;							// режим - обычный
-	dma->Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
-	dma->Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-	dma->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-	dma->Init.MemBurst = DMA_MBURST_SINGLE;
-	dma->Init.PeriphBurst = DMA_PBURST_SINGLE;
+	hdma->Init.Channel = DMA_CHANNEL_4;						// 4 канал - на USART2_RX
+	hdma->Init.Direction = DMA_PERIPH_TO_MEMORY;				// направление - из периферии в память
+	hdma->Init.PeriphInc = DMA_PINC_DISABLE;					// инкрементация периферии выключена
+	hdma->Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
+	hdma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;	// длина слова в периферии - байт
+	hdma->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
+	hdma->Init.Mode = DMA_CIRCULAR;							// режим - обычный
+	hdma->Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
+	hdma->Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	hdma->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+	hdma->Init.MemBurst = DMA_MBURST_SINGLE;
+	hdma->Init.PeriphBurst = DMA_PBURST_SINGLE;
 
-	dma->Instance = DMA1_Stream5;
+	hdma->Instance = DMA1_Stream5;
 
-	HAL_DMA_Init(dma);
+	HAL_DMA_Init(hdma);
 	__HAL_RCC_DMA1_CLK_ENABLE();
 
 
 	//	TODO: УСТАНОВИТЬ ДЛИНУ СЛОВА ДЛЯ DMA
 	// DMA start
-	HAL_DMA_Start(dma, USART2->DR, *dma_usartBuffer, 1);		//	from USART2->DR (data register) to our circular buffer
+	HAL_DMA_Start(hdma, USART2->DR, *dma_usartBuffer, 1);		//	from USART2->DR (data register) to our circular buffer
+
+	_dma_carret = 0;
+	_msg_carret = 0;
 
 	//	TODO: SET DEVICE CONFIG (UBLOX CENTER)
 
@@ -135,9 +129,9 @@ void GPS_task()	{
 
 		taskENTER_CRITICAL();
 
-		globalState->isc.coord_GPS[0] = _lon;
-		globalState->isc.coord_GPS[1] = _lat;
-		globalState->isc.coord_GPS[2] = _height;
+		stateGPS.coord_GPS[0] = _lon;
+		stateGPS.coord_GPS[1] = _lat;
+		stateGPS.coord_GPS[2] = _height;
 
 		taskEXIT_CRITICAL();
 

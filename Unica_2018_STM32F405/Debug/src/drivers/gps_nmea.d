@@ -2,6 +2,7 @@ src/drivers/gps_nmea.o: ../src/drivers/gps_nmea.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h \
+ /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h \
@@ -11,7 +12,7 @@ src/drivers/gps_nmea.o: ../src/drivers/gps_nmea.c \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h \
  ../src/drivers/minmea.h ../src/drivers/gps_nmea.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
- /home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h \
+ /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h \
@@ -90,6 +91,8 @@ src/drivers/gps_nmea.o: ../src/drivers/gps_nmea.c \
 
 /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h:
 
+/home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h:
+
 /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h:
 
 /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h:
@@ -110,7 +113,7 @@ src/drivers/gps_nmea.o: ../src/drivers/gps_nmea.c \
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
-/home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h:
+/home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h:
 

@@ -97,8 +97,6 @@ typedef enum {
 /*################### ПЕРЕМЕННЫЕ ###################*/
 /*##################################################*/
 
-extern I2C_HandleTypeDef* i2c_mpu9255;
-
 
 /*###############################################*/
 /*################### ФУНКЦИИ ###################*/
@@ -136,7 +134,7 @@ int mpu9255_readIMU(int16_t* raw_accelData, int16_t* raw_gyroData);
  * 	Параметры:
  * 		raw_compassData	- сырые показания магнитометра
  */
-int mpu9255_readCompass(int16_t * raw_compassData);
+int mpu9255_readCompass(state_system_t* localState_system, int16_t * raw_compassData);
 
 /*
  * 	Пересчет сырых показаний акселерометра

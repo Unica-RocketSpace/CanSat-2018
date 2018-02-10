@@ -4,11 +4,12 @@
  *  Created on: 21 янв. 2017 г.
  *      Author: developer
  */
-#include <stm32f4xx_hal.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include <stm32f4xx_hal.h>
 
 #include <sofa.h>
 
@@ -16,12 +17,12 @@
 #include "MPU9255.h"
 
 
-I2C_HandleTypeDef* i2c_mpu9255 = NULL;
+//I2C_HandleTypeDef* i2c_mpu9255 = NULL;
 
 
 int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
 {
-	return HAL_I2C_Mem_Read(i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 2000);
+	return HAL_I2C_Mem_Read(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 2000);
 }
 
 
@@ -31,34 +32,32 @@ int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_
 	uint8_t regData = 0x00;
 	PROCESS_ERROR(mpu9255_readRegister(address, reg_address, &regData, 1));
 	uint8_t regData_new = (regData | dataWrite);
-	return HAL_I2C_Mem_Write(i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, &regData_new, 1, 2000);
+	return HAL_I2C_Mem_Write(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, &regData_new, 1, 2000);
 
 end:
 	return error;
 }
 
 
-int mpu9255_init(I2C_HandleTypeDef* i2c)
+int mpu9255_init(I2C_HandleTypeDef* hi2c)
 {
 	int error = 0;
 
-
-	i2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-	i2c->Init.ClockSpeed = 100000;
-	i2c->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-	i2c->Init.DutyCycle = I2C_DUTYCYCLE_2;
-	i2c->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-	i2c->Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c->Init.ClockSpeed = 100000;
+	hi2c->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c->Init.DutyCycle = I2C_DUTYCYCLE_2;
+	hi2c->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c->Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
 	//	TODO: УСТАНОВИТЬ РЕАЛЬНЫЙ АДРЕС
-	i2c->Init.OwnAddress1 = 0xFF;
-	i2c->Init.OwnAddress2 = 0xF8;
+	hi2c->Init.OwnAddress1 = 0xFF;
+	hi2c->Init.OwnAddress2 = 0xF8;
 
-	i2c->Instance = I2C1;
-	i2c->Mode = HAL_I2C_MODE_MASTER;
+	hi2c->Instance = I2C1;
+	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
-	HAL_I2C_Init(i2c);
-
+	HAL_I2C_Init(hi2c);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
 
@@ -150,7 +149,7 @@ end:
 }
 
 
-int mpu9255_readCompass(int16_t * raw_compassData)
+int mpu9255_readCompass(state_system_t* localState_system, int16_t * raw_compassData)
 {
 	int error = 0;
 
@@ -165,12 +164,12 @@ int mpu9255_readCompass(int16_t * raw_compassData)
 
 	if ((magn_state && 0x01) != 1)
 	{
-		globalState->system.state &= ~(1 << 1);		//магнитометр не готов
+		localState_system->state &= ~(1 << 1);		//магнитометр не готов
 		PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
 		goto end;
 	}
 
-	globalState->system.state |= (1 << 1);	////магнитометр готов
+	localState_system->state |= (1 << 1);	////магнитометр готов
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x03, (uint8_t*)raw_compassData, 6));
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x09, &magn_state, 1));
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off

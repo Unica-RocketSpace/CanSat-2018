@@ -15,20 +15,16 @@
 /*###############################################*/
 
 /*
- *  Инициализация структур состояния аппарата
- *  Параметры:
- *  	state - инициализируемая структура состояния аппарата
- */
-void stateInit(state_t* state);
-
-
-/*
  *  Построение траектории
  *  Параметры:
- *  	state		- структура текущего состояния аппарата
- *  	state_prev	- структура предыдущего состояния аппарата
+ *
  */
-void constructTrajectory(state_t * state, state_t * state_prev);
+void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
+							stateIMU_isc_t* localStateIMU_isc_prev,
+							state_system_t* localState_system,
+							state_system_t* localState_system_prev,
+							stateIMU_rsc_t* localStateIMU_rsc
+						);
 
 
 #endif /* KINEMATIC_UNIT_H_ */

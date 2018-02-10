@@ -1,7 +1,7 @@
 system/src/stm32f4-hal/stm32f4xx_hal_i2c_ex.o: \
  ../system/src/stm32f4-hal/stm32f4xx_hal_i2c_ex.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
- /home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h \
+ /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/stm32f4xx.h \
@@ -75,7 +75,7 @@ system/src/stm32f4-hal/stm32f4xx_hal_i2c_ex.o: \
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
-/home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h:
+/home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h:
 

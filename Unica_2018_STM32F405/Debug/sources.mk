@@ -27,6 +27,9 @@ CPP_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+FreeRTOS \
+FreeRTOS/portable/GCC/ARM_CM4F \
+FreeRTOS-usr \
 sofa \
 src \
 src/drivers \
@@ -37,4 +40,5 @@ system/src/cortexm \
 system/src/diag \
 system/src/newlib \
 system/src/stm32f4-hal \
+system-usr/src \
 

@@ -38,7 +38,10 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdlib.h>
+
 #include "stm32f4xx_hal.h"
+
 
 // [ILG]
 #if defined ( __GNUC__ )
@@ -90,6 +93,7 @@ void HAL_MspDeInit(void)
 
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
+
 	if(hi2c->Instance == I2C1) {
 		__I2C1_CLK_ENABLE();
 		__GPIOB_CLK_ENABLE();
@@ -107,7 +111,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 }
 
 
-void HAL_USART_MspInit(USART_HandleTypeDef *husart) {
+void HAL_USART_MspInit(USART_HandleTypeDef* husart) {
 
 	if(husart->Instance == USART2) {
 		__USART2_CLK_ENABLE();
@@ -124,6 +128,7 @@ void HAL_USART_MspInit(USART_HandleTypeDef *husart) {
 	}
 	else abort();
 }
+
 
 /**
   * @brief  Initializes the PPP MSP.

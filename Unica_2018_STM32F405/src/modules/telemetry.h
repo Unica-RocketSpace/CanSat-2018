@@ -46,7 +46,7 @@ void getPackageChecksum(package_t * PACK);
 /*
  * 	This function fills package with data got from STATE global data structure
  */
-void fillPackage(package_t * PACK, state_t * STATE);
+//void fillPackage(package_t * PACK, state_t * STATE);
 
 
 

@@ -8,7 +8,7 @@ src/_initialize_hardware.o: ../src/_initialize_hardware.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/core_cmSimd.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
- /home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h \
+ /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_def.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/Legacy/stm32_hal_legacy.h \
@@ -90,7 +90,7 @@ src/_initialize_hardware.o: ../src/_initialize_hardware.c \
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
-/home/developer/git/Unica_2018_STM32F405/include/stm32f4xx_hal_conf.h:
+/home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h:
 

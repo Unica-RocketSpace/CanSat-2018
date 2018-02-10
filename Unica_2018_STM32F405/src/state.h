@@ -24,73 +24,91 @@
 // if error set value and go to end
 #define PROCESS_ERROR(x) if (0 != (error = (x))) { goto end; }
 
+
 /*#################################################*/
 /*################## СТРУКТУРЫ ###################*/
 /*#################################################*/
 
 /*
- * 	Структура глобального состояния аппарата
+ * 	Структуры состояний аппарата
  */
+
+//	raw IMU data
 typedef struct {
-	//	raw data from sensors
-	struct {
-		//	IMU data
-		int16_t accel[3];
-		int16_t gyro[3];
-		int16_t compass[3];
+	int16_t accel[3];
+	int16_t gyro[3];
+	int16_t compass[3];
+} stateIMU_raw_t;
 
-		//GPS data
-		char * GPS;
 
-		//	temperature and pressure
-		int16_t temp;
-		int16_t pressure;
-	} raw;
+typedef struct {
+	//	temperature and pressure
+	int16_t temp;
+	int16_t pressure;
+} stateSensors_raw_t;
 
-	//	IMU data in RSC (related system of coordinates)
-	struct {
-		float accel[3];
-		float gyro[3];
-		float compass[3];
-	} rsc;
 
-	//	orientation and position of device in ISC (inertial system of coordinates)
-	struct {
-		//	IMU data
-		float accel[3];
-		float gyro[3];
-		float compass[3];
+typedef struct {
+	//GPS data
+	char * GPS;
+	float coord_GPS[3];
+} stateGPS_t;
 
-		//	position
-		float velocities[3];
-		float coord_IMU[3];
-		float coord_GPS[3];
 
-		//	orientation
-		float quaternion[4];
+//	IMU data in RSC (related system of coordinates)
+typedef struct {
+	float accel[3];
+	float gyro[3];
+	float compass[3];
+} stateIMU_rsc_t;
 
-	} isc;
 
-	//	transformed temperature and pressure
-	struct {
-		float temp;
-		float pressure;
-	} sensors;
+//	orientation and position of device in ISC (inertial system of coordinates)
+typedef struct {
+	//	IMU data
+	float accel[3];
+	float gyro[3];
+	float compass[3];
 
-	//	system parameters
-	struct {
-		//	"position" of servo and step engine
-		float servo_pos;
-		float step_engine_pos;
+	//	position
+	float velocities[3];
+	float coord_IMU[3];
 
-		//	pressure on the earth; this field should be filled when device started it`s work
-		float zero_pressure;
+	//	orientation
+	float quaternion[4];
 
-		uint16_t state;
-		float time;
-	} system;
+} stateIMU_isc_t;
 
-} state_t;
+
+//	transformed temperature and pressure
+typedef struct {
+	float temp;
+	float pressure;
+	float height;
+} stateSensors_t;
+
+
+//	system parameters
+typedef struct {
+	//	"position" of servo and step engine
+	float servo_pos;
+	float step_engine_pos;
+
+	//	zero params; this fields should be filled when device started it`s work
+	float zero_pressure;
+	float zero_quaternion[4];
+	float zero_GPS[3];
+
+	uint16_t state;
+	float time;
+} state_system_t;
+
+
+typedef struct {
+
+
+} ground_state_t;
+
 
 
 typedef enum {
@@ -104,8 +122,21 @@ typedef enum {
 /*################### ПЕРЕМЕННЫЕ ###################*/
 /*##################################################*/
 
-extern state_t* globalState;
-extern state_t* globalState_prev;
+extern I2C_HandleTypeDef 	i2c_mpu9255;
+extern USART_HandleTypeDef 	usart_GPS;
+extern DMA_HandleTypeDef 	dma_GPS;
+
+// глобальные структуры
+extern stateIMU_raw_t 		stateIMU_raw;
+extern stateSensors_raw_t 	stateSensors_raw;
+extern stateGPS_t 			stateGPS;
+extern stateIMU_rsc_t 		stateIMU_rsc;
+extern stateIMU_isc_t 		stateIMU_isc;
+extern stateSensors_t 		stateSensors;
+extern state_system_t 		state_system;
+
+extern stateIMU_isc_t		stateIMU_isc_prev;
+extern state_system_t		state_system_prev;
 
 
 #endif /* STATE_H_ */

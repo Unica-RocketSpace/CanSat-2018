@@ -169,7 +169,7 @@ int mpu9255_readCompass(state_system_t* localState_system, int16_t * raw_compass
 		goto end;
 	}
 
-	localState_system->state |= (1 << 1);	////магнитометр готов
+	localState_system->state |= (1 << 1);	//магнитометр готов
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x03, (uint8_t*)raw_compassData, 6));
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x09, &magn_state, 1));
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off

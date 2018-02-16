@@ -92,7 +92,7 @@ void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
 	for (int i = 0; i < 3; i++) {
 
 		localStateIMU_isc->velocities[i] += (localStateIMU_isc->accel[i] + localStateIMU_isc_prev->accel[i]) * dt / 2;
-		localStateIMU_isc->coord_IMU[i] += (localStateIMU_isc->velocities[i] + localStateIMU_isc_prev->velocities[i]) * dt / 2;
+		localStateIMU_isc->coordinates[i] += (localStateIMU_isc->velocities[i] + localStateIMU_isc_prev->velocities[i]) * dt / 2;
 	}
 
 }

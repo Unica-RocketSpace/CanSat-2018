@@ -51,7 +51,7 @@ typedef struct {
 typedef struct {
 	//GPS data
 	char * GPS;
-	float coord_GPS[3];
+	float coordinates[3];
 } stateGPS_t;
 
 
@@ -72,7 +72,7 @@ typedef struct {
 
 	//	position
 	float velocities[3];
-	float coord_IMU[3];
+	float coordinates[3];
 
 	//	orientation
 	float quaternion[4];
@@ -88,27 +88,43 @@ typedef struct {
 } stateSensors_t;
 
 
-//	system parameters
 typedef struct {
 	//	"position" of servo and step engine
 	float servo_pos;
 	float step_engine_pos;
+} stateCamera_orient_t;
 
-	//	zero params; this fields should be filled when device started it`s work
+//	system parameters
+typedef struct {
+		//	zero params; this fields should be filled when device started it`s work
 	float zero_pressure;
 	float zero_quaternion[4];
 	float zero_GPS[3];
 
-	uint16_t state;
-	float time;
+	uint8_t accel_state;	//	state of accelerometer
+	uint8_t gyro_state;		//	state of gyroscope
+	uint8_t compass_state;	//	state of magnetometer
+	uint8_t baro_state;		//	state of barometer
+
+	uint8_t GPS_state;		//	state of GPS-module
+
+	uint8_t RPI_state;		//	state of RaspRi
+
+	uint8_t globalStage;	//	number of current global stage
+
+	uint16_t state;			//	special field (1st bit for saving compass' prepareness)
+	float time;				//	current time
 } state_system_t;
 
 
+//	struct for keeping flags for switching FreeRTOS tasks
 typedef struct {
+	uint8_t IO_RF_flag;
+	uint8_t IMU_flag;
+	uint8_t GPS_flag;
+	uint8_t RPI_IO_flag;
 
-
-} ground_state_t;
-
+} stateTasks_flags_t;
 
 
 typedef enum {
@@ -133,10 +149,12 @@ extern stateGPS_t 			stateGPS;
 extern stateIMU_rsc_t 		stateIMU_rsc;
 extern stateIMU_isc_t 		stateIMU_isc;
 extern stateSensors_t 		stateSensors;
+extern stateCamera_orient_t	stateCamera_orient;
 extern state_system_t 		state_system;
 
 extern stateIMU_isc_t		stateIMU_isc_prev;
 extern state_system_t		state_system_prev;
 
+extern stateTasks_flags_t		stateTasks_flags;
 
 #endif /* STATE_H_ */

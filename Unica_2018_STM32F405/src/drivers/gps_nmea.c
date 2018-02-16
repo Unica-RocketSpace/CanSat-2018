@@ -129,9 +129,9 @@ void GPS_task(USART_HandleTypeDef* husart, DMA_HandleTypeDef* hdma)	{
 
 		taskENTER_CRITICAL();
 
-		stateGPS.coord_GPS[0] = _lon;
-		stateGPS.coord_GPS[1] = _lat;
-		stateGPS.coord_GPS[2] = _height;
+		stateGPS.coordinates[0] = _lon;
+		stateGPS.coordinates[1] = _lat;
+		stateGPS.coordinates[2] = _height;
 
 		taskEXIT_CRITICAL();
 

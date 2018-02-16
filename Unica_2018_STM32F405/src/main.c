@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,11 +45,13 @@ stateGPS_t 			stateGPS;
 stateIMU_rsc_t 		stateIMU_rsc;
 stateIMU_isc_t 		stateIMU_isc;
 stateSensors_t 		stateSensors;
+stateCamera_orient_t stateCamera_orient;
 state_system_t 		state_system;
 
 stateIMU_isc_t		stateIMU_isc_prev;
 state_system_t		state_system_prev;
 
+stateTasks_flags_t		stateTasks_flags;
 
 // параметры GPS_task
 #define GPS_TASK_STACK_SIZE 1024
@@ -70,13 +71,16 @@ int main(int argc, char* argv[])
 	memset(&stateIMU_rsc, 		0x00, sizeof(stateIMU_rsc));
 	memset(&stateIMU_isc, 		0x00, sizeof(stateIMU_isc));
 	memset(&stateSensors, 		0x00, sizeof(stateSensors));
+	memset(&stateCamera_orient, 0x00, sizeof(stateCamera_orient));
 	memset(&state_system, 		0x00, sizeof(state_system));
 
 	memset(&stateIMU_isc_prev, 	0x00, sizeof(stateIMU_isc_prev));
 	memset(&state_system_prev, 	0x00, sizeof(state_system_prev));
 
+	memset(&stateTasks_flags,		0x00, sizeof(stateTasks_flags));
 
-	// TODO:	ПОСМОТРЕТЬ USART+DMA
+	//	TODO:	ДОБАВИТЬ ВРЕМЯ
+	//	TODO:	ПОСМОТРЕТЬ USART+DMA
 
 	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
 			GPS_task, 			// функция

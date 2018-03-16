@@ -40,7 +40,7 @@ end:
 	return error;
 }
 
-static int mpu9255_init(I2C_HandleTypeDef* hi2c)
+int mpu9255_init(I2C_HandleTypeDef* hi2c)
 {
 	int error = 0;
 
@@ -211,9 +211,9 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 
 static void IMU_updateDataAll() {
 	//	массивы для хранения опросов
-	int16_t accelData = {0, 0, 0};
-	int16_t gyroData = {0, 0, 0};
-	int16_t compassData = {0, 0, 0};
+	int16_t accelData[3] = {0, 0, 0};
+	int16_t gyroData[3] = {0, 0, 0};
+	int16_t compassData[3] = {0, 0, 0};
 	float accel[3] = {0, 0, 0}; float gyro[3] = {0, 0, 0}; float compass[3] = {0, 0, 0};
 
 	//	собираем данные
@@ -238,8 +238,8 @@ static void IMU_updateDataAll() {
 	//	обновляем ориентацию (предварительно запросив время)
 	state_system.time = HAL_GetTick()/1000;
 	constructTrajectory(
-			stateIMU_isc, stateIMU_isc_prev,
-			state_system, state_system_prev, stateIMU_rsc);
+			&stateIMU_isc, &stateIMU_isc_prev,
+			&state_system, &state_system_prev, &stateIMU_rsc);
 	taskEXIT_CRITICAL();
 }
 
@@ -248,7 +248,7 @@ void IMU_task() {
 	for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
-			mpu9255_init(i2c_mpu9255);
+			mpu9255_init(&i2c_mpu9255);
 			//TODO: ГДЕ ОБНОВЛЯТЬ СОСТОЯНИЕ ДАТЧИКОВ
 		}
 //		// Этап 1. Погрузка в ракету
@@ -259,12 +259,12 @@ void IMU_task() {
 
 			uint8_t zero_orientCnt = 10;
 			//	массив для хранения статического смещения
-			float gyro_staticShift = {0, 0, 0};
+			float gyro_staticShift[3] = {0, 0, 0};
 
 			//	находим статическое смещение гироскопа
 			for (int i = 0; i < zero_orientCnt; i++) {
-				int16_t accelData = {0, 0, 0};
-				int16_t gyroData = {0, 0, 0};
+				int16_t accelData[3] = {0, 0, 0};
+				int16_t gyroData[3] = {0, 0, 0};
 
 				float accel[3]; float gyro[3];
 

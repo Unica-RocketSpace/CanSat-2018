@@ -110,7 +110,7 @@ typedef enum {
  *		dataRead	- массив, в который записываем читаемые значения
  *		count		- количество читаемых регистров
  */
-int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t *dataRead, uint8_t count);
+static int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t *dataRead, uint8_t count);
 
 /*
  *  Запись регистра
@@ -119,7 +119,7 @@ int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t 
  *		reg_address	- адрес первого записываемого регистра
  *		dataWrite	- массив, из которого берем значения
  */
-int mpu9255_writeRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t dataWrite);
+static int mpu9255_writeRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t dataWrite);
 
 /*
  * 	Чтение показаний акселерометра и гироскопа
@@ -134,7 +134,7 @@ int mpu9255_readIMU(int16_t* raw_accelData, int16_t* raw_gyroData);
  * 	Параметры:
  * 		raw_compassData	- сырые показания магнитометра
  */
-int mpu9255_readCompass(state_system_t* localState_system, int16_t * raw_compassData);
+int mpu9255_readCompass(int16_t * raw_compassData);
 
 /*
  * 	Пересчет сырых показаний акселерометра
@@ -166,7 +166,7 @@ void mpu9255_recalcCompass(const int16_t* raw_compassData, float* compassData);
  * 	Параметры:
  *		i2c	- хэндл инициализируемой шины
  */
-int mpu9255_init(I2C_HandleTypeDef* i2c);		//инициализация mpu9255
+int mpu9255_init(I2C_HandleTypeDef* hi2c);		//инициализация mpu9255
 
 /*
  * 	FreeRTOS задача для работы с IMU

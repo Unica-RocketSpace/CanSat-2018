@@ -73,6 +73,16 @@ src/drivers/MPU9255.o: ../src/drivers/MPU9255.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
  /home/developer/git/Unica_2018_STM32F405/sofa/sofa.h \
  /home/developer/git/Unica_2018_STM32F405/sofa/sofam.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h \
+ /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h \
+ /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h \
  /home/developer/git/Unica_2018_STM32F405/src/modules/kinematic_unit.h \
  /home/developer/git/Unica_2018_STM32F405/src/state.h \
  ../src/drivers/MPU9255.h
@@ -224,6 +234,26 @@ src/drivers/MPU9255.o: ../src/drivers/MPU9255.c \
 /home/developer/git/Unica_2018_STM32F405/sofa/sofa.h:
 
 /home/developer/git/Unica_2018_STM32F405/sofa/sofam.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h:
+
+/home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h:
+
+/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h:
 
 /home/developer/git/Unica_2018_STM32F405/src/modules/kinematic_unit.h:
 

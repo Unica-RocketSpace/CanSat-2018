@@ -34,7 +34,7 @@ uint8_t mavlink_msg_state_send() {
 		state_system.accel_state, state_system.gyro_state, state_system.compass_state,
 		state_system.baro_state, state_system.GPS_state, state_system.RPI_state, 0, HAL_GetTick()/1000);
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 }
 
 uint8_t mavlink_msg_imu_rsc_send() {
@@ -46,7 +46,7 @@ uint8_t mavlink_msg_imu_rsc_send() {
 		stateIMU_rsc.accel, stateIMU_rsc.gyro, stateIMU_rsc.compass,
 		HAL_GetTick()/1000);
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 }
 
 uint8_t mavlink_msg_imu_isc_send() {
@@ -58,7 +58,7 @@ uint8_t mavlink_msg_imu_isc_send() {
 		stateIMU_isc.accel, stateIMU_isc.gyro, stateIMU_isc.compass,
 		stateIMU_isc.velocities, stateIMU_isc.coordinates, stateIMU_isc.quaternion, HAL_GetTick()/1000);
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 }
 
 uint8_t mavlink_msg_sensors_send() {
@@ -69,7 +69,7 @@ uint8_t mavlink_msg_sensors_send() {
 		&msgSensors,
 		stateSensors.temp, stateSensors.pressure, stateSensors.height, HAL_GetTick()/1000);
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 }
 
 uint8_t mavlink_msg_gps_send() {
@@ -79,7 +79,7 @@ uint8_t mavlink_msg_gps_send() {
 		UNISAT_ID, UNISAT_GPS,
 		&msgGPS, stateGPS.coordinates, HAL_GetTick());
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 }
 
 uint8_t mavlink_msg_state_zero_send() {
@@ -91,7 +91,7 @@ uint8_t mavlink_msg_state_zero_send() {
 		state_zero.zero_pressure, state_zero.zero_quaternion,
 		state_zero.zero_GPS, state_zero.gyro_staticShift, HAL_GetTick()/1000);
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 
 }
 
@@ -103,7 +103,7 @@ uint8_t mavlink_msg_camera_orientation_send() {
 		&msgCameraOrient,
 		stateCamera_orient.servo_pos, stateCamera_orient.step_engine_pos, HAL_GetTick()/1000);
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
-	return error;
+	//return error;
 }
 
 
@@ -168,5 +168,6 @@ void IO_RF_task() {
 			mavlink_msg_gps_send();
 			mavlink_msg_camera_orientation_send();
 		}
+	}
 }
 

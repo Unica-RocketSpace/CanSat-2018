@@ -28,7 +28,7 @@
 		<link>
 			<name>mavlink-messages</name>
 			<type>2</type>
-			<location>/home/developer/mavlink-messages</location>
+			<location>/home/developer/git/Unica_2018_STM32F405/mavlink-messages</location>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -27,7 +27,7 @@ void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
 						) {
 
 	// getting integration time
-	float dt = (float)(localState_system->time - localState_system_prev->time) / 1000;
+	float dt = (float)(localState_system->time - localState_system_prev->time);
 
 	// getting rotation quaternion
 	MadgwickAHRSupdate(localStateIMU_isc,

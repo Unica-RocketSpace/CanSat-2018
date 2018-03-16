@@ -51,6 +51,7 @@ state_zero_t		state_zero;
 
 stateIMU_isc_t		stateIMU_isc_prev;
 state_system_t		state_system_prev;
+stateCamera_orient_t stateCamera_orient_prev;
 
 stateTasks_flags_t		stateTasks_flags;
 
@@ -140,7 +141,8 @@ int main(int argc, char* argv[])
 	static StackType_t	_blinkTaskStack[BLINK_TASK_STACK_SIZE];
 	static StaticTask_t	_blinkTaskObj;
 
-	xTaskCreateStatic(BLINK_task(), "Blink", BLINK_TASK_STACK_SIZE, NULL, 1, _blinkTaskStack, _blinkTaskObj);
+	xTaskCreateStatic(BLINK_task, "Blink", BLINK_TASK_STACK_SIZE, NULL, 1,
+						_blinkTaskStack, &_blinkTaskObj);
 
 	vTaskStartScheduler();
 

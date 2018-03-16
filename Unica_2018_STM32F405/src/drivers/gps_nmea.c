@@ -43,43 +43,43 @@ inline static char _read_dma_buffer(void)
 }
 
 
-void GPS_task(USART_HandleTypeDef* husart, DMA_HandleTypeDef* hdma)	{
+void GPS_task()	{
 
 //	(void)args;
 	//	Инициализация USART2 для работы с GPS
-	husart->Init.BaudRate = 9600;
-	husart->Init.WordLength = UART_WORDLENGTH_8B;
-	husart->Init.StopBits = UART_STOPBITS_2;
-	husart->Init.Parity = UART_PARITY_NONE;
-	husart->Init.Mode = UART_MODE_TX_RX;
+	usart_GPS->Init.BaudRate = 9600;
+	usart_GPS->Init.WordLength = UART_WORDLENGTH_8B;
+	usart_GPS->Init.StopBits = UART_STOPBITS_2;
+	usart_GPS->Init.Parity = UART_PARITY_NONE;
+	usart_GPS->Init.Mode = UART_MODE_TX_RX;
 
-	husart->Instance = USART2;
+	usart_GPS->Instance = USART2;
 
-	HAL_USART_Init(husart);
+	HAL_USART_Init(usart_GPS);
 
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
-	hdma->Init.Channel = DMA_CHANNEL_4;						// 4 канал - на USART2_RX
-	hdma->Init.Direction = DMA_PERIPH_TO_MEMORY;				// направление - из периферии в память
-	hdma->Init.PeriphInc = DMA_PINC_DISABLE;					// инкрементация периферии выключена
-	hdma->Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
-	hdma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;	// длина слова в периферии - байт
-	hdma->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
-	hdma->Init.Mode = DMA_CIRCULAR;							// режим - обычный
-	hdma->Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
-	hdma->Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-	hdma->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-	hdma->Init.MemBurst = DMA_MBURST_SINGLE;
-	hdma->Init.PeriphBurst = DMA_PBURST_SINGLE;
+	dma_GPS->Init.Channel = DMA_CHANNEL_4;						// 4 канал - на USART2_RX
+	dma_GPS->Init.Direction = DMA_PERIPH_TO_MEMORY;				// направление - из периферии в память
+	dma_GPS->Init.PeriphInc = DMA_PINC_DISABLE;					// инкрементация периферии выключена
+	dma_GPS->Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
+	dma_GPS->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;	// длина слова в периферии - байт
+	dma_GPS->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
+	dma_GPS->Init.Mode = DMA_CIRCULAR;							// режим - обычный
+	dma_GPS->Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
+	dma_GPS->Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	dma_GPS->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+	dma_GPS->Init.MemBurst = DMA_MBURST_SINGLE;
+	dma_GPS->Init.PeriphBurst = DMA_PBURST_SINGLE;
 
-	hdma->Instance = DMA1_Stream5;
+	dma_GPS->Instance = DMA1_Stream5;
 
-	HAL_DMA_Init(hdma);
+	HAL_DMA_Init(dma_GPS);
 	__HAL_RCC_DMA1_CLK_ENABLE();
 
 
 	//	TODO: УСТАНОВИТЬ ДЛИНУ СЛОВА ДЛЯ DMA
 	// DMA start
-	HAL_DMA_Start(hdma, USART2->DR, *dma_usartBuffer, 1);		//	from USART2->DR (data register) to our circular buffer
+	HAL_DMA_Start(dma_GPS, USART2->DR, *dma_usartBuffer, 1);		//	from USART2->DR (data register) to our circular buffer
 
 	_dma_carret = 0;
 	_msg_carret = 0;

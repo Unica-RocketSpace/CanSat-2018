@@ -155,6 +155,7 @@ extern stateIMU_rsc_t 		stateIMU_rsc;
 extern stateIMU_isc_t 		stateIMU_isc;
 extern stateSensors_t 		stateSensors;
 extern stateCamera_orient_t	stateCamera_orient;
+extern stateCamera_orient_t	stateCamera_orient_prev;
 extern state_system_t 		state_system;
 extern state_zero_t			state_zero;
 

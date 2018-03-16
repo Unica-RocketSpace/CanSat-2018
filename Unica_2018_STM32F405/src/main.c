@@ -67,6 +67,26 @@ static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 
+void BLINK_task() {
+	__GPIOC_CLK_ENABLE();
+
+	GPIO_InitTypeDef gpioc;
+	gpioc.Mode = GPIO_MODE_INPUT;
+	gpioc.Pin = GPIO_PIN_12;
+	gpioc.Pull = GPIO_NOPULL;
+	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
+
+	HAL_GPIO_Init(GPIOC, &gpioc);
+
+	for(;;) {
+		gpioc.Pin |= (1 << 12);
+		vTaskDelay(250);
+		gpioc.Pin |= ~(0 << 12);
+	}
+
+}
+
+
 int main(int argc, char* argv[])
 {
 	// Инициализация системы
@@ -83,13 +103,14 @@ int main(int argc, char* argv[])
 	memset(&state_system, 		0x00, sizeof(state_system));
 	memset(&state_zero, 		0x00, sizeof(state_zero));
 
-	memset(&stateIMU_isc_prev, 	0x00, sizeof(stateIMU_isc_prev));
-	memset(&state_system_prev, 	0x00, sizeof(state_system_prev));
+	memset(&stateIMU_isc_prev, 			0x00, sizeof(stateIMU_isc_prev));
+	memset(&state_system_prev, 			0x00, sizeof(state_system_prev));
+	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
 	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
 
 
-	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+/*	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
 			IO_RF_task,
 			"IO_RF",
 			IO_RF_TASK_STACK_SIZE,
@@ -112,6 +133,14 @@ int main(int argc, char* argv[])
 			_gpsTaskStack,		// стек
 			&_gpsTaskObj		// объект задания
 	);
+*/
+
+	//	параметры IO_RF_task
+	#define BLINK_TASK_STACK_SIZE 512
+	static StackType_t	_blinkTaskStack[BLINK_TASK_STACK_SIZE];
+	static StaticTask_t	_blinkTaskObj;
+
+	xTaskCreateStatic(BLINK_task(), "Blink", BLINK_TASK_STACK_SIZE, NULL, 1, _blinkTaskStack, _blinkTaskObj);
 
 	vTaskStartScheduler();
 

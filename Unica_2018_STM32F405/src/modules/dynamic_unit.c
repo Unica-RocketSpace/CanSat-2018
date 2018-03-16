@@ -85,30 +85,30 @@ void step_engine_init () {
 
 
 
-void calculate_angles (stateIMU_isc_t* localStateIMU_isc, float* servo_ang, float* step_motor_ang) {
+void calculate_angles () {
 
 	float quat_ISC_RSC[4] = {0, 0, 0, 0};		//	кватернион для перехода из инерциальной системы в связанную
 	float target[3] = {0, 0, 0};				//	направляющий вектор цели
 	float target_RSC[3] = {0, 0, 0};			//	направляющий вектор цели в ССК
 
 	//TODO: CHOOSE WHAT DATA TO USE: IMU OR GPS
-	target[0] = TARGET_X - localStateIMU_isc->coord_IMU[0];
-	target[1] = TARGET_Y - localStateIMU_isc->coord_IMU[1];
-	target[2] = - localStateIMU_isc->coord_IMU[2];
+	target[0] = TARGET_X - stateIMU_isc.coordinates[0];
+	target[1] = TARGET_Y - stateIMU_isc.coordinates[1];
+	target[2] = - stateIMU_isc.coordinates[2];
 
-	quat_invert(localStateIMU_isc->quaternion, quat_ISC_RSC);		//	получаем кватернион ИСК->ССК
+	quat_invert(stateIMU_isc.quaternion, quat_ISC_RSC);		//	получаем кватернион ИСК->ССК
 	vect_rotate(target, quat_ISC_RSC, target_RSC);	//	получаем вектор цели в ССК
 
-	*step_motor_ang = atan(target_RSC[0] / target_RSC[1]);
-	*servo_ang = atan(target_RSC[2] / sqrt(pow(target_RSC[0], 2) + pow(target_RSC[1], 2)));
+	stateCamera_orient.step_engine_pos = atan(target_RSC[0] / target_RSC[1]);
+	stateCamera_orient.servo_pos = atan(target_RSC[2] / sqrt(pow(target_RSC[0], 2) + pow(target_RSC[1], 2)));
 }
 
 
-error rotate_step_engine (state_system_t* localState_system, state_system_t* localState_system_prev) {
+error rotate_step_engine () {
 
 	if (HAL_GPIO_ReadPin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN) == 0) return driver_overheat;
 
-	float STEP_DEGREES = localState_system->step_engine_pos - localState_system_prev->step_engine_pos;
+	float STEP_DEGREES = stateCamera_orient.step_engine_pos - stateCamera_orient_prev.step_engine_pos;
 
 	rotate_step_engine_by_angles(&STEP_DEGREES);
 

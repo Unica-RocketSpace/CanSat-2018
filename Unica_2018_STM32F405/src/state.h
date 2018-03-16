@@ -11,6 +11,7 @@
 #define STATE_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "stm32f4xx_hal.h"
 
@@ -96,11 +97,6 @@ typedef struct {
 
 //	system parameters
 typedef struct {
-		//	zero params; this fields should be filled when device started it`s work
-	float zero_pressure;
-	float zero_quaternion[4];
-	float zero_GPS[3];
-
 	uint8_t accel_state;	//	state of accelerometer
 	uint8_t gyro_state;		//	state of gyroscope
 	uint8_t compass_state;	//	state of magnetometer
@@ -117,10 +113,19 @@ typedef struct {
 } state_system_t;
 
 
+typedef struct {
+	//	zero params; this fields should be filled when device started it`s work
+	float zero_pressure;
+	float zero_quaternion[4];
+	float zero_GPS[3];
+	float gyro_staticShift[3];
+} state_zero_t;
+
+
 //	struct for keeping flags for switching FreeRTOS tasks
 typedef struct {
 	uint8_t IO_RF_flag;
-	uint8_t IMU_flag;
+	bool zeroOrient_isSet;		//	zero orient is set
 	uint8_t GPS_flag;
 	uint8_t RPI_IO_flag;
 
@@ -151,10 +156,11 @@ extern stateIMU_isc_t 		stateIMU_isc;
 extern stateSensors_t 		stateSensors;
 extern stateCamera_orient_t	stateCamera_orient;
 extern state_system_t 		state_system;
+extern state_zero_t			state_zero;
 
 extern stateIMU_isc_t		stateIMU_isc_prev;
 extern state_system_t		state_system_prev;
 
-extern stateTasks_flags_t		stateTasks_flags;
+extern stateTasks_flags_t	stateTasks_flags;
 
 #endif /* STATE_H_ */

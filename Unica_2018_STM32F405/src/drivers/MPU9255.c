@@ -13,6 +13,9 @@
 
 #include <sofa.h>
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "kinematic_unit.h"
 #include "MPU9255.h"
 
@@ -20,13 +23,12 @@
 //I2C_HandleTypeDef* i2c_mpu9255 = NULL;
 
 
-int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
+static int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
 {
 	return HAL_I2C_Mem_Read(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 2000);
 }
 
-
-int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t dataWrite)
+static int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t dataWrite)
 {
 	int error = 0;
 	uint8_t regData = 0x00;
@@ -38,8 +40,7 @@ end:
 	return error;
 }
 
-
-int mpu9255_init(I2C_HandleTypeDef* hi2c)
+static int mpu9255_init(I2C_HandleTypeDef* hi2c)
 {
 	int error = 0;
 
@@ -118,7 +119,6 @@ end:
 	return error;
 }
 
-
 static int16_t _swapBytesI16(int16_t value)
 {
 	uint8_t * value_ptr = (uint8_t*)&value;
@@ -128,7 +128,6 @@ static int16_t _swapBytesI16(int16_t value)
 
 	return value;
 }
-
 
 int mpu9255_readIMU(int16_t * raw_accelData, int16_t * raw_gyroData)
 {
@@ -148,8 +147,7 @@ end:
 	return error;
 }
 
-
-int mpu9255_readCompass(state_system_t* localState_system, int16_t * raw_compassData)
+int mpu9255_readCompass(int16_t * raw_compassData)
 {
 	int error = 0;
 
@@ -164,12 +162,12 @@ int mpu9255_readCompass(state_system_t* localState_system, int16_t * raw_compass
 
 	if ((magn_state && 0x01) != 1)
 	{
-		localState_system->state &= ~(1 << 1);		//магнитометр не готов
+		state_system.state &= ~(1 << 1);		//магнитометр не готов
 		PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
 		goto end;
 	}
 
-	localState_system->state |= (1 << 1);	//магнитометр готов
+	state_system.state |= (1 << 1);	//магнитометр готов
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x03, (uint8_t*)raw_compassData, 6));
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x09, &magn_state, 1));
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
@@ -180,7 +178,6 @@ end:
 	return error;
 }
 
-
 void mpu9255_recalcAccel(const int16_t * raw_accelData, float * accelData)
 {
 	accelData[0] = (float)(raw_accelData[0]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE) * X_ACCEL_KOEFF;
@@ -188,13 +185,11 @@ void mpu9255_recalcAccel(const int16_t * raw_accelData, float * accelData)
 	accelData[2] = (float)(raw_accelData[2]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE) * Z_ACCEL_KOEFF;
 }
 
-
 void mpu9255_recalcGyro(const int16_t * raw_gyroData, float * gyroData)
 {
 	for (int i = 0; i < 3; i++)
 		gyroData[i] = (float)(raw_gyroData[i]) * MPU9255_GYRO_SCALE_FACTOR * pow(2, GYRO_RANGE) * Z_GYRO_KOEFF;
 }
-
 
 void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 {
@@ -213,6 +208,109 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 	//printf("transform_compass_XYZ = %f, %f, %f\n\n", compass_XYZ[0], compass_XYZ[1], compass_XYZ[2]);
 }
 
+
+static void IMU_updateDataAll() {
+	//	массивы для хранения опросов
+	int16_t accelData = {0, 0, 0};
+	int16_t gyroData = {0, 0, 0};
+	int16_t compassData = {0, 0, 0};
+	float accel[3] = {0, 0, 0}; float gyro[3] = {0, 0, 0}; float compass[3] = {0, 0, 0};
+
+	//	собираем данные
+	mpu9255_readIMU(accelData, gyroData);
+	mpu9255_readCompass(compassData);
+	mpu9255_recalcAccel(accelData, accel);
+	mpu9255_recalcGyro(gyroData, gyro);
+	mpu9255_recalcCompass(compassData, compass);
+
+	taskENTER_CRITICAL();
+	//	пересчитываем их и записываем в структуры
+	for (int k = 0; k < 3; k++) {
+		stateIMU_rsc.accel[k] = accelData[k];
+		stateIMU_rsc.gyro[k] = gyroData[k];
+		stateIMU_rsc.compass[k] = compassData[k];
+
+		stateIMU_isc.accel[k] = accel[k];
+		stateIMU_isc.gyro[k] = gyro[k];
+		stateIMU_isc.compass[k] = compass[k];
+	}
+
+	//	обновляем ориентацию (предварительно запросив время)
+	state_system.time = HAL_GetTick()/1000;
+	constructTrajectory(
+			stateIMU_isc, stateIMU_isc_prev,
+			state_system, state_system_prev, stateIMU_rsc);
+	taskEXIT_CRITICAL();
+}
+
+void IMU_task() {
+
+	for (;;) {
+		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
+		if (state_system.globalStage == 0) {
+			mpu9255_init(i2c_mpu9255);
+			//TODO: ГДЕ ОБНОВЛЯТЬ СОСТОЯНИЕ ДАТЧИКОВ
+		}
+//		// Этап 1. Погрузка в ракету
+//		if (state_system.globalStage == 1) {		//НИЧЕГО НЕ ДЕЛАЕМ
+//		}
+		// Этап 2. Определение начального состояния
+		if (state_system.globalStage == 2) {
+
+			uint8_t zero_orientCnt = 10;
+			//	массив для хранения статического смещения
+			float gyro_staticShift = {0, 0, 0};
+
+			//	находим статическое смещение гироскопа
+			for (int i = 0; i < zero_orientCnt; i++) {
+				int16_t accelData = {0, 0, 0};
+				int16_t gyroData = {0, 0, 0};
+
+				float accel[3]; float gyro[3];
+
+				//	собираем данные
+				mpu9255_readIMU(accelData, gyroData);
+				mpu9255_recalcGyro(gyroData, gyro);
+
+				for (int m = 0; m < 3; m++) {
+					gyro_staticShift[i] += gyroData[i];
+				}
+			}
+
+			taskENTER_CRITICAL();
+			//	записываем смещение в state
+			for (int m = 0; m < 3; m++) {
+				state_zero.gyro_staticShift[m] = gyro_staticShift[m]/zero_orientCnt;
+			}
+			taskEXIT_CRITICAL();
+
+			for (int i = 0; i < zero_orientCnt; i++) {
+				IMU_updateDataAll();
+			}
+		}
+		// Этап 3. Полет в ракете
+		if (state_system.globalStage == 3) {
+
+		}
+		// Этап 4. Свободное падение
+		if (state_system.globalStage == 4) {
+
+		}
+		// Этап 5. Спуск
+		if (state_system.globalStage == 5) {
+
+		}
+		// Этап 6. Окончание полета
+		if (state_system.globalStage == 6) {
+
+		}
+
+
+
+	}
+}
+
+
 //
 //int mpu9255_readBMP280(I2C_HandleTypeDef* uint16_t* raw_pressure, uint16_t* raw_temp) {
 //	int error = 0;
@@ -222,45 +320,4 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 //end:
 //	return error;
 //}
-//
-//
-//
-///*
-// *
-// * FUNCTIONS FOR USING BMP180 (doesn`t works now)
-// *
-// */
-//int mpu9255_checkBMP180(I2C_HandleTypeDef* uint16_t* raw_data) {
-//	int error = 0;
-//	uint8_t flag = 0;
-//	uint8_t MSB = 0, LSB = 0;
-//
-//	PROCESS_ERROR(mpu9255_writeRegister(	GYRO_AND_ACCEL, 55, 	0b00000010));	// bypass on
-//	PROCESS_ERROR(mpu9255_readRegister(	BMP180, 		0xF4, 	&flag, 1));
-//	if (~flag & (1 << 5)) {
-//		PROCESS_ERROR(mpu9255_readRegister(BMP180,			0xF6,	&MSB,	1));
-//		PROCESS_ERROR(mpu9255_readRegister(BMP180,			0xF7,	&LSB,	1));
-//	}
-//	PROCESS_ERROR(mpu9255_writeRegister(	GYRO_AND_ACCEL,	55,		0b00000000));	//bypass off
-//
-//end:
-//	return error;
-//}
-//
-//
-//int mpu9255_readBMP180Temp(I2C_HandleTypeDef* int16_t* raw_pressure, int16_t* raw_temp) {
-//
-//	int error = 0;
-//
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000010));	//bypass mode set on
-//	//PROCESS_ERROR(mpu9255_readRegister(BMP180, , (uint8_t*)raw_pressure, ));
-//
-//end:
-//	return error;
-//}
-
-
-
-
-
 

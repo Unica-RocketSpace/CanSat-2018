@@ -168,6 +168,11 @@ void mpu9255_recalcCompass(const int16_t* raw_compassData, float* compassData);
  */
 int mpu9255_init(I2C_HandleTypeDef* i2c);		//инициализация mpu9255
 
+/*
+ * 	FreeRTOS задача для работы с IMU
+ */
+void IMU_task();
+
 
 
 #endif /* MPU9255_H_ */

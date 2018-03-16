@@ -19,53 +19,6 @@
 #include "MadgwickAHRS.h"
 #include "quaternion.h"
 
-
-//void stateInit(state_t* state)
-//{
-//	for (int i = 0; i < 3; i++) {
-//
-//		state->raw.accel[i] = 0;
-//		state->raw.gyro[i] = 0;
-//		state->raw.compass[i] = 0;
-//
-//		state->rsc.accel[i] = 0;
-//		state->rsc.gyro[i] = 0;
-//		state->rsc.compass[i] = 0;
-//
-//		state->isc.accel[i] = 0;
-//		state->isc.gyro[i] = 0;
-//		state->isc.compass[i] = 0;
-//
-//		state->isc.velocities[i] = 0;
-//		state->isc.coord_IMU[i] = 0;
-//		state->isc.coord_GPS[i] = 0;
-//	}
-//
-//	state->raw.GPS = 0;
-//
-//	state->raw.temp = 0;
-//	state->raw.pressure = 0;
-//
-//	state->isc.quaternion[0] = 0;
-//	state->isc.quaternion[1] = 0;
-//	state->isc.quaternion[2] = 0;
-//	state->isc.quaternion[3] = 0;
-//
-//	state->sensors.temp = 0;
-//	state->sensors.pressure = 0;
-//
-//	state->system.servo_pos = 0;
-//	state->system.step_engine_pos = 0;
-//
-//	//	TODO:	ДОБАВИТЬ ФУНКЦИЮ ДЛЯ УСТАНОВКИ НУЛЕВОГО ДАВЛЕНИЯ
-//	state->system.zero_pressure = 0;
-//	state->system.state = 0;
-//	state->system.time = 0;
-//}
-
-
-
-
 void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
 							stateIMU_isc_t* localStateIMU_isc_prev,
 							state_system_t* localState_system,
@@ -78,7 +31,9 @@ void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
 
 	// getting rotation quaternion
 	MadgwickAHRSupdate(localStateIMU_isc,
-				localStateIMU_rsc->gyro[0], localStateIMU_rsc->gyro[1], localStateIMU_rsc->gyro[2],
+				localStateIMU_rsc->gyro[0]-state_zero.gyro_staticShift[0],
+				localStateIMU_rsc->gyro[1]-state_zero.gyro_staticShift[1],
+				localStateIMU_rsc->gyro[2]-state_zero.gyro_staticShift[2],
 				localStateIMU_rsc->accel[0], localStateIMU_rsc->accel[1], localStateIMU_rsc->accel[2],
 				localStateIMU_rsc->compass[0], localStateIMU_rsc->compass[1], localStateIMU_rsc->compass[2]
 	);

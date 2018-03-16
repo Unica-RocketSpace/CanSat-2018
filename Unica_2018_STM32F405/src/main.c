@@ -47,13 +47,21 @@ stateIMU_isc_t 		stateIMU_isc;
 stateSensors_t 		stateSensors;
 stateCamera_orient_t stateCamera_orient;
 state_system_t 		state_system;
+state_zero_t		state_zero;
 
 stateIMU_isc_t		stateIMU_isc_prev;
 state_system_t		state_system_prev;
 
 stateTasks_flags_t		stateTasks_flags;
 
-// параметры GPS_task
+
+//	параметры IO_RF_task
+#define IO_RF_TASK_STACK_SIZE 1024
+static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
+static StaticTask_t	_iorfTaskObj;
+
+
+//	параметры GPS_task
 #define GPS_TASK_STACK_SIZE 1024
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
@@ -73,11 +81,24 @@ int main(int argc, char* argv[])
 	memset(&stateSensors, 		0x00, sizeof(stateSensors));
 	memset(&stateCamera_orient, 0x00, sizeof(stateCamera_orient));
 	memset(&state_system, 		0x00, sizeof(state_system));
+	memset(&state_zero, 		0x00, sizeof(state_zero));
 
 	memset(&stateIMU_isc_prev, 	0x00, sizeof(stateIMU_isc_prev));
 	memset(&state_system_prev, 	0x00, sizeof(state_system_prev));
 
-	memset(&stateTasks_flags,		0x00, sizeof(stateTasks_flags));
+	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
+
+
+	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+			IO_RF_task,
+			"IO_RF",
+			IO_RF_TASK_STACK_SIZE,
+			NULL,
+			1,
+			_iorfTaskStack,
+			&_iorfTaskObj
+	);
+
 
 	//	TODO:	ДОБАВИТЬ ВРЕМЯ
 	//	TODO:	ПОСМОТРЕТЬ USART+DMA

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<mavlink>
+  <!-- MAVLink standard messages -->
+  <include>common.xml</include>
+  <dialect>0</dialect>
+  <!-- use common.xml enums -->
+  <enums>
+  </enums>
+  <!-- use common.xml messages -->
+  <messages>
+  		<message id="150" name="STATE">
+  			<deskription>This mesage contains global state of all sensors</deskription>
+  			<field type="uint8_t" name="accel_state">state of accelerometer</field>
+  			<field type="uint8_t" name="gyro_state">state of gyroscope</field>
+  			<field type="uint8_t" name="compass_state">state of magnetometer</field>
+  			<field type="uint8_t" name="baro_state">state of barometer</field>
+  			<field type="uint8_t" name="GPS_state">state of GPS-module</field>
+  			<field type="uint8_t" name="RPI_state">state of RaspRi</field>
+  			<field type="uint8_t" name="globalStage">current global stage number</field>
+  			<field type="float" name="time">current time</field>
+  		</message>
+  		<message id="151" name="IMU_rsc">
+  			<deskription>This message contains IMU data in related system of coordinates</deskription>
+  			<field type="float[3]" name="accel">accelerations</field>
+  			<field type="float[3]" name="gyro">angle velocities</field>
+  			<field type="float[3]" name="compass">compass (magnetometer) vector</field>
+  			<field type="float" name="time">current time</field>
+  		</message>
+  		<message id="152" name="IMU_isc">
+  			<deskription>This message contains IMU data in inertial system of coordinates, position and orientation of device</deskription>
+  			<field type="float[3]" name="accel">accelerations</field>
+  			<field type="float[3]" name="gyro">angle velocities</field>
+  			<field type="float[3]" name="compass">compass (magnetometer) vector</field>
+  			<field type="float[3]" name="velocities">velocities</field>
+  			<field type="float[3]" name="coordinates">coordinates from IMU</field>
+  			<field type="float[4]" name="quaternion">quaternion for translating RSC into ISC</field>
+  			<field type="float" name="time">current time</field>
+  		</message>
+      <message id="153" name="Sensors">
+        <deskription>This message contains sensors' data</deskription>
+        <field type="float" name="temp">temperature</field>
+        <field type="float" name="pressure">pressure</field>
+        <field type="float" name="height">height</field>
+        <field type="float" name="time">current time</field>
+      </message>
+  		<message id="154" name="GPS">
+  			<deskription>This message contains GPS coordinates</deskription>
+  			<field type="float[3]" name="coordinates">coordinates from GPS</field>
+  			<field type="float" name="time">current time</field>
+  		</message>
+  		<message id="155" name="Camera_Orientation">
+  			<deskription>This message contains "positions" of servo motor and step engine</deskription>
+  			<field type="float" name="servo_pos">position of servo motor</field>
+  			<field type="float" name="step_engine_pos">position of step angine</field>
+  			<field type="float" name="time">current time</field>
+  		</message>
+      <message id="156" name="STATE_ZERO">
+        <deskription>This message contains zero params UNISAT</deskription>
+        <field type="float" name="zero_pressure">pressure at zero level (on the earth)</field>
+        <field type="float[4]" name="zero_quaternion">quaternion at zero level (on the earth)</field>
+        <field type="float[3]" name="zero_GPS">GPS coordinates at zero level (on the earth)</field>
+        <field type="float[3]" name="gyro_staticShift">Static shift of gyro</field>
+        <field type="float" name="time">current time</field>
+      </message>
+  </messages>
+</mavlink>
+

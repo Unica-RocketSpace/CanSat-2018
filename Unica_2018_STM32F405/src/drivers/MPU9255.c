@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include <stm32f4xx_hal.h>
+#include "diag/Trace.h"
 
 #include <sofa.h>
 
@@ -23,18 +24,18 @@
 //I2C_HandleTypeDef* i2c_mpu9255 = NULL;
 
 
-static int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
+int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
 {
-	return HAL_I2C_Mem_Read(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 2000);
+	return HAL_I2C_Mem_Read(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 20000);
 }
 
-static int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t dataWrite)
+int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t dataWrite)
 {
 	int error = 0;
 	uint8_t regData = 0x00;
 	PROCESS_ERROR(mpu9255_readRegister(address, reg_address, &regData, 1));
 	uint8_t regData_new = (regData | dataWrite);
-	return HAL_I2C_Mem_Write(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, &regData_new, 1, 2000);
+	return HAL_I2C_Mem_Write(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, &regData_new, 1, 20000);
 
 end:
 	return error;
@@ -45,22 +46,23 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	int error = 0;
 
 	hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-	hi2c->Init.ClockSpeed = 100000;
+	hi2c->Init.ClockSpeed = 50000;
 	hi2c->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
 	hi2c->Init.DutyCycle = I2C_DUTYCYCLE_2;
 	hi2c->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	hi2c->Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
 	//	TODO: УСТАНОВИТЬ РЕАЛЬНЫЙ АДРЕС
-	hi2c->Init.OwnAddress1 = 0xFF;
-	hi2c->Init.OwnAddress2 = 0xF8;
+	hi2c->Init.OwnAddress1 = 0x00;
+//	hi2c->Init.OwnAddress2 = GYRO_AND_ACCEL;
 
 	hi2c->Instance = I2C1;
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
-	HAL_I2C_Init(hi2c);
+	PROCESS_ERROR(HAL_I2C_Init(hi2c));
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
+	vTaskDelay(100/portTICK_RATE_MS);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	25,		0b00000001));	//Sample Rate Divider
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	26,		0b00000101));	//config (DLPF = 101)
@@ -106,12 +108,7 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	//compass init
 	PROCESS_ERROR(mpu9255_writeRegister(COMPASS,		  	0x0A,	0b00010110));	//control 1
 
-	/*//bmp180 init
-	mpu9255_writeRegister(BMP180, 			0xF4, 	0b10000000);	//oversampling*/
-
 	//	bmp280 init
-
-
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000000));	//режим bypass off
 
@@ -245,7 +242,16 @@ static void IMU_updateDataAll() {
 
 void IMU_task() {
 
-	for (;;) {
+	__GPIOC_CLK_ENABLE();
+	GPIO_InitTypeDef gpioc;
+	gpioc.Mode = GPIO_MODE_OUTPUT_OD;
+	gpioc.Pin = GPIO_PIN_12;
+	gpioc.Pull = GPIO_NOPULL;
+	gpioc.Speed = GPIO_SPEED_FREQ_LOW;
+
+	HAL_GPIO_Init(GPIOC, &gpioc);
+
+	/*for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
 			mpu9255_init(&i2c_mpu9255);
@@ -306,6 +312,34 @@ void IMU_task() {
 		}
 
 
+
+	}*/
+	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
+	trace_printf("%d\n", mpu9255init_error);
+
+	for (;;) {
+		//IMU_updateDataAll();
+		int16_t accelData[3] = {0, 0, 0};
+		int16_t gyroData[3] = {0, 0, 0};
+		float accel[3] = {0, 0, 0};
+		mpu9255_readIMU(accelData, gyroData);
+		mpu9255_recalcAccel(accelData, accel);
+		taskENTER_CRITICAL();
+		for (int i = 0; i < 3; i++) {
+			stateIMU_rsc.accel[i] = accel[i];
+		}
+		taskEXIT_CRITICAL();
+
+		const TickType_t _delay = 100 / portTICK_RATE_MS;
+
+		taskENTER_CRITICAL();
+		trace_printf("%d, %d, %d\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
+		taskEXIT_CRITICAL();
+
+		vTaskDelay(_delay);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+		vTaskDelay(_delay);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
 
 	}
 }

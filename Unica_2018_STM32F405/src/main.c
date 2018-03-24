@@ -17,6 +17,7 @@
 #include "state.h"
 #include "kinematic_unit.h"
 #include "gps_nmea.h"
+#include "MPU9255.h"
 
 // ----- Timing definitions -------------------------------------------------
 
@@ -36,6 +37,7 @@
 
 I2C_HandleTypeDef i2c_mpu9255;
 USART_HandleTypeDef usart_GPS;
+USART_HandleTypeDef usart_dbg;
 DMA_HandleTypeDef dma_GPS;
 
 // глобальные структуры
@@ -56,33 +58,53 @@ stateCamera_orient_t stateCamera_orient_prev;
 stateTasks_flags_t		stateTasks_flags;
 
 
-//	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE 1024
-static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
-static StaticTask_t	_iorfTaskObj;
+////	параметры IO_RF_task
+//#define IO_RF_TASK_STACK_SIZE 1024
+//static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
+//static StaticTask_t	_iorfTaskObj;
+//
+//
+////	параметры GPS_task
+//#define GPS_TASK_STACK_SIZE 1024
+//static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
+//static StaticTask_t _gpsTaskObj;
+//
+//	параметры IMU_task
+#define IMU_TASK_STACK_SIZE 2048
+static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
+static StaticTask_t	_IMUTaskObj;
 
 
-//	параметры GPS_task
-#define GPS_TASK_STACK_SIZE 1024
-static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
-static StaticTask_t _gpsTaskObj;
-
-
-void BLINK_task() {
+void DUMMY_task() {
 	__GPIOC_CLK_ENABLE();
-
 	GPIO_InitTypeDef gpioc;
-	gpioc.Mode = GPIO_MODE_INPUT;
+	gpioc.Mode = GPIO_MODE_OUTPUT_OD;
 	gpioc.Pin = GPIO_PIN_12;
 	gpioc.Pull = GPIO_NOPULL;
-	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
+	gpioc.Speed = GPIO_SPEED_FREQ_LOW;
 
 	HAL_GPIO_Init(GPIOC, &gpioc);
 
+	usart_dbg.Init.BaudRate = 9600;
+	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
+	usart_dbg.Init.StopBits = UART_STOPBITS_1;
+	usart_dbg.Init.Parity = UART_PARITY_NONE;
+	usart_dbg.Init.Mode = UART_MODE_TX_RX;
+
+	usart_dbg.Instance = USART3;
+
+	HAL_USART_Init(&usart_dbg);
+
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+
+	const TickType_t _delay = 100 / portTICK_RATE_MS;
 	for(;;) {
-		gpioc.Pin |= (1 << 12);
-		vTaskDelay(250);
-		gpioc.Pin |= ~(0 << 12);
+//		vTaskDelay(_delay);
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+//		vTaskDelay(_delay);
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
+//		HAL_USART_Transmit(&usart_dbg, stateIMU_isc.accel, sizeof(stateIMU_isc.accel), 100);
+
 	}
 
 }
@@ -90,9 +112,6 @@ void BLINK_task() {
 
 int main(int argc, char* argv[])
 {
-	// Инициализация системы
-	HAL_Init();
-
 	// Инициализация структур глобального состояния (в нашем случае просто заполняем их нулями)
 	memset(&stateIMU_raw, 		0x00, sizeof(stateIMU_raw));
 	memset(&stateSensors_raw, 	0x00, sizeof(stateSensors_raw));
@@ -109,6 +128,9 @@ int main(int argc, char* argv[])
 	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
 	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
+
+	// INIT
+
 
 
 /*	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
@@ -134,15 +156,28 @@ int main(int argc, char* argv[])
 			_gpsTaskStack,		// стек
 			&_gpsTaskObj		// объект задания
 	);
+
+
 */
 
-	//	параметры IO_RF_task
-	#define BLINK_TASK_STACK_SIZE 512
-	static StackType_t	_blinkTaskStack[BLINK_TASK_STACK_SIZE];
-	static StaticTask_t	_blinkTaskObj;
+	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
+			IMU_task, 			// функция
+			"IMU",				// имя
+			IMU_TASK_STACK_SIZE,// глубина стека
+			NULL,				// аргумент
+			1,					// приоритет
+			_IMUTaskStack,		// стек
+			&_IMUTaskObj		// объект задания
+	);
 
-	xTaskCreateStatic(BLINK_task, "Blink", BLINK_TASK_STACK_SIZE, NULL, 1,
-						_blinkTaskStack, &_blinkTaskObj);
+//	//	параметры IO_RF_task
+//	#define DUMMY_TASK_STACK_SIZE 512
+//	static StackType_t	_dummyTaskStack[DUMMY_TASK_STACK_SIZE];
+//	static StaticTask_t	_dummyTaskObj;
+//
+//	xTaskCreateStatic(DUMMY_task, "dummy", DUMMY_TASK_STACK_SIZE, NULL, 1,
+//						_dummyTaskStack, &_dummyTaskObj);
+
 
 	vTaskStartScheduler();
 

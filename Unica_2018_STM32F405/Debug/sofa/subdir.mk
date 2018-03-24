@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../sofa/cp.c \
 ../sofa/pmp.c \
 ../sofa/rxp.c 
 
 OBJS += \
+./sofa/cp.o \
 ./sofa/pmp.o \
 ./sofa/rxp.o 
 
 C_DEPS += \
+./sofa/cp.d \
 ./sofa/pmp.d \
 ./sofa/rxp.d 
 

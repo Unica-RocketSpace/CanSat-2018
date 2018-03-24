@@ -25,7 +25,7 @@ uint8_t UNISAT_GPS = 0x04;
 uint8_t UNISAT_RPI = 0x05;
 uint8_t UNISAT_CAM = 0x06;
 
-uint8_t mavlink_msg_state_send() {
+/*uint8_t mavlink_msg_state_send() {
 
 	mavlink_message_t msgState;
 	uint16_t len_msgState = mavlink_msg_state_pack(
@@ -169,5 +169,5 @@ void IO_RF_task() {
 			mavlink_msg_camera_orientation_send();
 		}
 	}
-}
+}*/
 

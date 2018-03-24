@@ -71,6 +71,7 @@ src/drivers/MPU9255.o: ../src/drivers/MPU9255.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_spdifrx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
+ /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
  /home/developer/git/Unica_2018_STM32F405/sofa/sofa.h \
  /home/developer/git/Unica_2018_STM32F405/sofa/sofam.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
@@ -230,6 +231,8 @@ src/drivers/MPU9255.o: ../src/drivers/MPU9255.c \
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h:
+
+/home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h:
 
 /home/developer/git/Unica_2018_STM32F405/sofa/sofa.h:
 

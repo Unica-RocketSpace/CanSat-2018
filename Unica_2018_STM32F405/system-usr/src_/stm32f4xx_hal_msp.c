@@ -100,12 +100,12 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 
 		GPIO_InitTypeDef gpiob;
 		gpiob.Alternate = GPIO_AF4_I2C1;
-		gpiob.Mode = GPIO_MODE_AF_PP;
+		gpiob.Mode = GPIO_MODE_AF_OD;
 		gpiob.Pin = GPIO_PIN_8 | GPIO_PIN_9;
 		gpiob.Pull = GPIO_NOPULL;
 		gpiob.Speed = GPIO_SPEED_FREQ_HIGH;
-
 		HAL_GPIO_Init(GPIOB, &gpiob);
+
 	}
 	else abort();
 }
@@ -115,17 +115,44 @@ void HAL_USART_MspInit(USART_HandleTypeDef* husart) {
 
 	if(husart->Instance == USART2) {
 		__USART2_CLK_ENABLE();
-		__GPIOB_CLK_ENABLE();
+		__GPIOA_CLK_ENABLE();
 
-		GPIO_InitTypeDef gpiob;
-		gpiob.Alternate = GPIO_AF7_USART2;
-		gpiob.Mode = GPIO_MODE_AF_PP;
-		gpiob.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-		gpiob.Pull = GPIO_NOPULL;
-		gpiob.Speed = GPIO_SPEED_FREQ_HIGH;
+		GPIO_InitTypeDef gpioa;
+		gpioa.Alternate = GPIO_AF7_USART2;
+		gpioa.Mode = GPIO_MODE_AF_PP;
+		gpioa.Pin = GPIO_PIN_2;
+		gpioa.Pull = GPIO_NOPULL;
+		gpioa.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOA, &gpioa);
 
-		HAL_GPIO_Init(GPIOB, &gpiob);
+		gpioa.Alternate = GPIO_AF7_USART2;
+		gpioa.Mode = GPIO_MODE_INPUT;
+		gpioa.Pin = GPIO_PIN_3;
+		gpioa.Pull = GPIO_NOPULL;
+		gpioa.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOA, &gpioa);
 	}
+
+	if(husart->Instance == USART3) {
+		__USART3_CLK_ENABLE();
+		__GPIOC_CLK_ENABLE();
+
+		GPIO_InitTypeDef gpioc;
+		gpioc.Alternate = GPIO_AF7_USART3;
+		gpioc.Mode = GPIO_MODE_AF_PP;
+		gpioc.Pin = GPIO_PIN_10;
+		gpioc.Pull = GPIO_NOPULL;
+		gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOC, &gpioc);
+
+		gpioc.Alternate = GPIO_AF7_USART3;
+		gpioc.Mode = GPIO_MODE_INPUT;
+		gpioc.Pin = GPIO_PIN_11;
+		gpioc.Pull = GPIO_NOPULL;
+		gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOC, &gpioc);
+	}
+
 	else abort();
 }
 

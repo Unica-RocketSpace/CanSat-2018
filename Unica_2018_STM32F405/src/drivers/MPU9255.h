@@ -86,8 +86,8 @@ typedef enum {
 
 // addresses of mpu9255 (for getting acsess to accel and gyro)
 typedef enum {
-	GYRO_AND_ACCEL = 0b1101000,
-	COMPASS = 0b0001100,
+	GYRO_AND_ACCEL = 0b11010000,
+	COMPASS = 0b00011000,
 	BMP180 = 0b11100111
 
 } mpu9255_address_t;
@@ -110,7 +110,7 @@ typedef enum {
  *		dataRead	- массив, в который записываем читаемые значения
  *		count		- количество читаемых регистров
  */
-static int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t *dataRead, uint8_t count);
+int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t *dataRead, uint8_t count);
 
 /*
  *  Запись регистра
@@ -119,7 +119,7 @@ static int mpu9255_readRegister(mpu9255_address_t address, uint8_t regAddress, u
  *		reg_address	- адрес первого записываемого регистра
  *		dataWrite	- массив, из которого берем значения
  */
-static int mpu9255_writeRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t dataWrite);
+int mpu9255_writeRegister(mpu9255_address_t address, uint8_t regAddress, uint8_t dataWrite);
 
 /*
  * 	Чтение показаний акселерометра и гироскопа

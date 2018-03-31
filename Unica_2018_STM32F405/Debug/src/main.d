@@ -86,7 +86,9 @@ src/main.o: ../src/main.c \
  /home/developer/git/Unica_2018_STM32F405/src/modules/kinematic_unit.h \
  /home/developer/git/Unica_2018_STM32F405/src/state.h \
  /home/developer/git/Unica_2018_STM32F405/src/drivers/gps_nmea.h \
- /home/developer/git/Unica_2018_STM32F405/src/drivers/MPU9255.h
+ /home/developer/git/Unica_2018_STM32F405/src/drivers/MPU9255.h \
+ /home/developer/git/Unica_2018_STM32F405/src/drivers/nRF24L01.h \
+ /home/developer/git/Unica_2018_STM32F405/src/modules/telemetry.h
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
@@ -263,3 +265,7 @@ src/main.o: ../src/main.c \
 /home/developer/git/Unica_2018_STM32F405/src/drivers/gps_nmea.h:
 
 /home/developer/git/Unica_2018_STM32F405/src/drivers/MPU9255.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/drivers/nRF24L01.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/modules/telemetry.h:

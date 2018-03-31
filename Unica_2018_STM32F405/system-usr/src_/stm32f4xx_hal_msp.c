@@ -157,6 +157,29 @@ void HAL_USART_MspInit(USART_HandleTypeDef* husart) {
 }
 
 
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi){
+	if (hspi->Instance == SPI1) {
+		__SPI1_CLK_ENABLE();
+		__GPIOA_CLK_ENABLE();
+
+		GPIO_InitTypeDef gpioa;
+		gpioa.Alternate = GPIO_AF5_SPI1;
+		gpioa.Mode = GPIO_MODE_AF_PP;
+		gpioa.Pin = GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+		gpioa.Pull = GPIO_NOPULL;
+		gpioa.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOA, &gpioa);
+
+		gpioa.Mode = GPIO_MODE_OUTPUT_PP;
+		gpioa.Pin = GPIO_PIN_4 | GPIO_PIN_8;
+		gpioa.Pull = GPIO_NOPULL;
+		gpioa.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOA, &gpioa);
+	}
+
+}
+
+
 /**
   * @brief  Initializes the PPP MSP.
   * @note   This functiona is called from HAL_PPP_Init() function to perform 

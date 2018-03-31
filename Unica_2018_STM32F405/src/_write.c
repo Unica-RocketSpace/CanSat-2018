@@ -25,13 +25,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Do not include on semihosting and when freestanding
-#if !defined(OS_USE_SEMIHOSTING) && !(__STDC_HOSTED__ == 0)
-
 // ----------------------------------------------------------------------------
 
 #include <errno.h>
+#include <stm32f4xx_hal.h>
 #include "diag/Trace.h"
+#include "state.h"
 
 // ----------------------------------------------------------------------------
 
@@ -55,18 +54,14 @@ ssize_t
 _write (int fd __attribute__((unused)), const char* buf __attribute__((unused)),
 	size_t nbyte __attribute__((unused)))
 {
-#if defined(TRACE)
   // STDOUT and STDERR are routed to the trace device
   if (fd == 1 || fd == 2)
     {
-      return trace_write (buf, nbyte);
+//      return trace_write (buf, nbyte);
+	  // IF YOU USE USART
+	  return HAL_USART_Transmit(&usart_dbg, (uint8_t*)buf, nbyte, 0xFF);
     }
-#endif // TRACE
 
   errno = ENOSYS;
   return -1;
 }
-
-// ----------------------------------------------------------------------------
-
-#endif // !defined(OS_USE_SEMIHOSTING) && !(__STDC_HOSTED__ == 0)

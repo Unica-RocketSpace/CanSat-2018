@@ -1,4 +1,4 @@
-src/_write.o: ../src/_write.c \
+src/drivers/nRF24L01.o: ../src/drivers/nRF24L01.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
  /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
@@ -71,8 +71,7 @@ src/_write.o: ../src/_write.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_spdifrx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
- ../src/state.h
+ ../src/drivers/nRF24L01.h
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
@@ -218,6 +217,4 @@ src/_write.o: ../src/_write.c \
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h:
 
-/home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h:
-
-../src/state.h:
+../src/drivers/nRF24L01.h:

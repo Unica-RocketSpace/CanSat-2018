@@ -15,6 +15,7 @@
 #include "state.h"
 #include "c_source/UNISAT_messages/mavlink.h"
 #include "telemetry.h"
+#include "nRF24L01.h"
 
 
 uint8_t UNISAT_ID = 0x01;
@@ -105,69 +106,96 @@ uint8_t mavlink_msg_camera_orientation_send() {
 	//FIXME: error = HAL_SPI_Transmit(hspi, pData, Size, Timeout);
 	//return error;
 }
-
+*/
 
 void IO_RF_task() {
 
 	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
+//	taskENTER_CRITICAL();
+	nRF24L01_init(&spi_nRF24L01);
+//	taskEXIT_CRITICAL();
 
-	for (; ;) {
+	const TickType_t _delay = 500 / portTICK_RATE_MS;
+	for (;;) {
 
-		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
-		if (state_system.globalStage == 0) {
-			mavlink_msg_state_send();
-			mavlink_msg_imu_rsc_send();
-			mavlink_msg_sensors_send();
-			mavlink_msg_gps_send();
-		}
-		// Этап 1. Погрузка в ракету
-		if (state_system.globalStage == 1) {
-			mavlink_msg_state_send();
-			mavlink_msg_gps_send();
-		}
-		// Этап 2. Определение начального состояния
-		if (state_system.globalStage == 2 && stateTasks_flags.zeroOrient_isSet) {
-			mavlink_msg_state_send();
-			mavlink_msg_imu_rsc_send();
-			mavlink_msg_sensors_send();
-			mavlink_msg_gps_send();
+//		taskENTER_CRITICAL();
+//		printf("%f, %f, %f\n", stateIMU_isc.accel[0], stateIMU_isc.accel[1], stateIMU_isc.accel[2]);
+//		printf("%f, %f, %f\n", stateIMU_isc.gyro[0], stateIMU_isc.gyro[1], stateIMU_isc.gyro[2]);
+//		printf("%f, %f, %f\n", stateIMU_isc.compass[0], stateIMU_isc.compass[1], stateIMU_isc.compass[2]);
+//		printf("\n");
+		uint8_t nRF_status = nRF24L01_read_status(&spi_nRF24L01);
+//		printf("nRF_status = %d\n", nRF_status);
+		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
+						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
+						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
+						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
+						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
+						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
+//		if (nRF_status & (1 << TX_FULL))
+		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
 
-			mavlink_msg_state_zero_send();
+taskENTER_CRITICAL();
+		char* msg = "UNICA's broadcasting";
+		nRF24L01_write(&spi_nRF24L01, (uint8_t*)msg, strlen(msg), 0);
+taskEXIT_CRITICAL();
 
-			state_system.globalStage = 3;
-			continue;
-		}
-		// Этап 3. Полет в ракете
-		if (state_system.globalStage == 3) {
-			mavlink_msg_state_send();
-			mavlink_msg_imu_isc_send();
-			mavlink_msg_sensors_send();
-			mavlink_msg_gps_send();
-		}
-		// Этап 4. Свободное падение
-		if (state_system.globalStage == 4) {
-			mavlink_msg_state_send();
-			mavlink_msg_imu_isc_send();
-			mavlink_msg_sensors_send();
-			mavlink_msg_gps_send();
-			mavlink_msg_camera_orientation_send();
-		}
-		// Этап 5. Спуск
-		if (state_system.globalStage == 5) {
-			mavlink_msg_state_send();
-			mavlink_msg_imu_isc_send();
-			mavlink_msg_sensors_send();
-			mavlink_msg_gps_send();
-			mavlink_msg_camera_orientation_send();
-		}
-		// Этап 6. Окончание полета
-		if (state_system.globalStage == 6) {
-			mavlink_msg_state_send();
-			mavlink_msg_imu_isc_send();
-			mavlink_msg_sensors_send();
-			mavlink_msg_gps_send();
-			mavlink_msg_camera_orientation_send();
-		}
+		vTaskDelay(_delay);
+//		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
+//		if (state_system.globalStage == 0) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_imu_rsc_send();
+//			mavlink_msg_sensors_send();
+//			mavlink_msg_gps_send();
+//		}
+//		// Этап 1. Погрузка в ракету
+//		if (state_system.globalStage == 1) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_gps_send();
+//		}
+//		// Этап 2. Определение начального состояния
+//		if (state_system.globalStage == 2 && stateTasks_flags.zeroOrient_isSet) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_imu_rsc_send();
+//			mavlink_msg_sensors_send();
+//			mavlink_msg_gps_send();
+//
+//			mavlink_msg_state_zero_send();
+//
+//			state_system.globalStage = 3;
+//			continue;
+//		}
+//		// Этап 3. Полет в ракете
+//		if (state_system.globalStage == 3) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_imu_isc_send();
+//			mavlink_msg_sensors_send();
+//			mavlink_msg_gps_send();
+//		}
+//		// Этап 4. Свободное падение
+//		if (state_system.globalStage == 4) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_imu_isc_send();
+//			mavlink_msg_sensors_send();
+//			mavlink_msg_gps_send();
+//			mavlink_msg_camera_orientation_send();
+//		}
+//		// Этап 5. Спуск
+//		if (state_system.globalStage == 5) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_imu_isc_send();
+//			mavlink_msg_sensors_send();
+//			mavlink_msg_gps_send();
+//			mavlink_msg_camera_orientation_send();
+//		}
+//		// Этап 6. Окончание полета
+//		if (state_system.globalStage == 6) {
+//			mavlink_msg_state_send();
+//			mavlink_msg_imu_isc_send();
+//			mavlink_msg_sensors_send();
+//			mavlink_msg_gps_send();
+//			mavlink_msg_camera_orientation_send();
+//		}
 	}
-}*/
+}
 

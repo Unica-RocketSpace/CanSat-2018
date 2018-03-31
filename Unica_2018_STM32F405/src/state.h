@@ -147,6 +147,7 @@ extern I2C_HandleTypeDef 	i2c_mpu9255;
 extern USART_HandleTypeDef 	usart_GPS;
 extern USART_HandleTypeDef usart_dbg;
 extern DMA_HandleTypeDef 	dma_GPS;
+extern SPI_HandleTypeDef	spi_nRF24L01;
 
 // глобальные структуры
 extern stateIMU_raw_t 		stateIMU_raw;

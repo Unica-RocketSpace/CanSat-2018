@@ -1,4 +1,5 @@
-src/_write.o: ../src/_write.c \
+system/src/stm32f4-hal/stm32f4xx_hal_spi.o: \
+ ../system/src/stm32f4-hal/stm32f4xx_hal_spi.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
  /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
@@ -70,9 +71,7 @@ src/_write.o: ../src/_write.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_fmpi2c.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_spdifrx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
- ../src/state.h
+ /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
@@ -217,7 +216,3 @@ src/_write.o: ../src/_write.c \
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h:
-
-/home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h:
-
-../src/state.h:

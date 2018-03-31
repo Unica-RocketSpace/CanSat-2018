@@ -262,7 +262,8 @@ src/modules/telemetry.o: ../src/modules/telemetry.c \
  /home/developer/git/Unica_2018_STM32F405/mavlink-messages/c_source/UNISAT_messages/../common/./mavlink_msg_param_ext_ack.h \
  /home/developer/git/Unica_2018_STM32F405/mavlink-messages/c_source/UNISAT_messages/../common/./mavlink_msg_obstacle_distance.h \
  /home/developer/git/Unica_2018_STM32F405/mavlink-messages/c_source/UNISAT_messages/../mavlink_get_info.h \
- ../src/modules/telemetry.h
+ ../src/modules/telemetry.h \
+ /home/developer/git/Unica_2018_STM32F405/src/drivers/nRF24L01.h
 
 /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h:
 
@@ -791,3 +792,5 @@ src/modules/telemetry.o: ../src/modules/telemetry.c \
 /home/developer/git/Unica_2018_STM32F405/mavlink-messages/c_source/UNISAT_messages/../mavlink_get_info.h:
 
 ../src/modules/telemetry.h:
+
+/home/developer/git/Unica_2018_STM32F405/src/drivers/nRF24L01.h:

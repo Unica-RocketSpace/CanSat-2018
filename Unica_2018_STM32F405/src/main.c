@@ -18,6 +18,8 @@
 #include "kinematic_unit.h"
 #include "gps_nmea.h"
 #include "MPU9255.h"
+#include "nRF24L01.h"
+#include "telemetry.h"
 
 // ----- Timing definitions -------------------------------------------------
 
@@ -39,6 +41,7 @@ I2C_HandleTypeDef i2c_mpu9255;
 USART_HandleTypeDef usart_GPS;
 USART_HandleTypeDef usart_dbg;
 DMA_HandleTypeDef dma_GPS;
+SPI_HandleTypeDef	spi_nRF24L01;
 
 // глобальные структуры
 stateIMU_raw_t 		stateIMU_raw;
@@ -58,11 +61,11 @@ stateCamera_orient_t stateCamera_orient_prev;
 stateTasks_flags_t		stateTasks_flags;
 
 
-////	параметры IO_RF_task
-//#define IO_RF_TASK_STACK_SIZE 1024
-//static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
-//static StaticTask_t	_iorfTaskObj;
-//
+//	параметры IO_RF_task
+#define IO_RF_TASK_STACK_SIZE 1024
+static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
+static StaticTask_t	_iorfTaskObj;
+
 //
 ////	параметры GPS_task
 //#define GPS_TASK_STACK_SIZE 1024
@@ -75,39 +78,26 @@ static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
 
-void DUMMY_task() {
-	__GPIOC_CLK_ENABLE();
-	GPIO_InitTypeDef gpioc;
-	gpioc.Mode = GPIO_MODE_OUTPUT_OD;
-	gpioc.Pin = GPIO_PIN_12;
-	gpioc.Pull = GPIO_NOPULL;
-	gpioc.Speed = GPIO_SPEED_FREQ_LOW;
-
-	HAL_GPIO_Init(GPIOC, &gpioc);
-
-	usart_dbg.Init.BaudRate = 9600;
-	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
-	usart_dbg.Init.StopBits = UART_STOPBITS_1;
-	usart_dbg.Init.Parity = UART_PARITY_NONE;
-	usart_dbg.Init.Mode = UART_MODE_TX_RX;
-
-	usart_dbg.Instance = USART3;
-
-	HAL_USART_Init(&usart_dbg);
-
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
-
-	const TickType_t _delay = 100 / portTICK_RATE_MS;
-	for(;;) {
+//void DUMMY_task() {
+//
+//	const TickType_t _delay = 200 / portTICK_RATE_MS;
+//	for(;;) {
+////		vTaskDelay(_delay);
+////		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+////		vTaskDelay(_delay);
+////		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
+////		HAL_USART_Transmit(&usart_dbg, stateIMU_isc.accel, sizeof(stateIMU_isc.accel), 100);
+//		taskENTER_CRITICAL();
+////		printf("%f, %f, %f\n", stateIMU_isc.accel[0], stateIMU_isc.accel[1], stateIMU_isc.accel[2]);
+////		printf("%f, %f, %f\n", stateIMU_isc.gyro[0], stateIMU_isc.gyro[1], stateIMU_isc.gyro[2]);
+////		printf("%f, %f, %f\n", stateIMU_isc.compass[0], stateIMU_isc.compass[1], stateIMU_isc.compass[2]);
+////		printf("\n");
+//		printf("\n");
+//		taskEXIT_CRITICAL();
 //		vTaskDelay(_delay);
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
-//		vTaskDelay(_delay);
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
-//		HAL_USART_Transmit(&usart_dbg, stateIMU_isc.accel, sizeof(stateIMU_isc.accel), 100);
-
-	}
-
-}
+//	}
+//
+//}
 
 
 int main(int argc, char* argv[])
@@ -129,11 +119,8 @@ int main(int argc, char* argv[])
 
 	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
 
-	// INIT
 
-
-
-/*	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
 			IO_RF_task,
 			"IO_RF",
 			IO_RF_TASK_STACK_SIZE,
@@ -143,10 +130,7 @@ int main(int argc, char* argv[])
 			&_iorfTaskObj
 	);
 
-
-	//	TODO:	ДОБАВИТЬ ВРЕМЯ
-	//	TODO:	ПОСМОТРЕТЬ USART+DMA
-
+/*
 	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
 			GPS_task, 			// функция
 			"GPS",				// имя
@@ -170,14 +154,13 @@ int main(int argc, char* argv[])
 			&_IMUTaskObj		// объект задания
 	);
 
-//	//	параметры IO_RF_task
 //	#define DUMMY_TASK_STACK_SIZE 512
 //	static StackType_t	_dummyTaskStack[DUMMY_TASK_STACK_SIZE];
 //	static StaticTask_t	_dummyTaskObj;
 //
 //	xTaskCreateStatic(DUMMY_task, "dummy", DUMMY_TASK_STACK_SIZE, NULL, 1,
 //						_dummyTaskStack, &_dummyTaskObj);
-
+//
 
 	vTaskStartScheduler();
 

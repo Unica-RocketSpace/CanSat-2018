@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include <stm32f4xx_hal.h>
 #include "diag/Trace.h"
@@ -108,7 +109,7 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	//compass init
 	PROCESS_ERROR(mpu9255_writeRegister(COMPASS,		  	0x0A,	0b00010110));	//control 1
 
-	//	bmp280 init
+	//TODO:	bmp280 init
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000000));	//режим bypass off
 
@@ -131,8 +132,7 @@ int mpu9255_readIMU(int16_t * raw_accelData, int16_t * raw_gyroData)
 	int error = 0;
 
 	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 59, (uint8_t*)raw_accelData, 6));	//чтение данных с акселерометра
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 67, (uint8_t*)raw_gyroData, 6));	//чтение данных с гироскопа
-
+	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 67, (uint8_t*)raw_gyroData, 6));		//чтение данных с гироскопа
 
 	for (int i = 0; i < 3; i++)
 		raw_accelData[i] = _swapBytesI16(raw_accelData[i]);
@@ -206,30 +206,27 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 }
 
 
-static void IMU_updateDataAll() {
+static int IMU_updateDataAll() {
 	//	массивы для хранения опросов
+	int error = 0;
 	int16_t accelData[3] = {0, 0, 0};
 	int16_t gyroData[3] = {0, 0, 0};
 	int16_t compassData[3] = {0, 0, 0};
 	float accel[3] = {0, 0, 0}; float gyro[3] = {0, 0, 0}; float compass[3] = {0, 0, 0};
 
 	//	собираем данные
-	mpu9255_readIMU(accelData, gyroData);
-	mpu9255_readCompass(compassData);
+	PROCESS_ERROR(mpu9255_readIMU(accelData, gyroData));
+	PROCESS_ERROR(mpu9255_readCompass(compassData));
 	mpu9255_recalcAccel(accelData, accel);
 	mpu9255_recalcGyro(gyroData, gyro);
 	mpu9255_recalcCompass(compassData, compass);
 
-	taskENTER_CRITICAL();
+taskENTER_CRITICAL();
 	//	пересчитываем их и записываем в структуры
 	for (int k = 0; k < 3; k++) {
-		stateIMU_rsc.accel[k] = accelData[k];
-		stateIMU_rsc.gyro[k] = gyroData[k];
-		stateIMU_rsc.compass[k] = compassData[k];
-
-		stateIMU_isc.accel[k] = accel[k];
-		stateIMU_isc.gyro[k] = gyro[k];
-		stateIMU_isc.compass[k] = compass[k];
+		stateIMU_rsc.accel[k] = accel[k];
+		stateIMU_rsc.gyro[k] = gyro[k];
+		stateIMU_rsc.compass[k] = compass[k];
 	}
 
 	//	обновляем ориентацию (предварительно запросив время)
@@ -237,11 +234,15 @@ static void IMU_updateDataAll() {
 	constructTrajectory(
 			&stateIMU_isc, &stateIMU_isc_prev,
 			&state_system, &state_system_prev, &stateIMU_rsc);
-	taskEXIT_CRITICAL();
+taskEXIT_CRITICAL();
+
+end:
+	return error;
 }
 
 void IMU_task() {
 
+	//	usart_dbg init
 	__GPIOC_CLK_ENABLE();
 	GPIO_InitTypeDef gpioc;
 	gpioc.Mode = GPIO_MODE_OUTPUT_OD;
@@ -250,6 +251,16 @@ void IMU_task() {
 	gpioc.Speed = GPIO_SPEED_FREQ_LOW;
 
 	HAL_GPIO_Init(GPIOC, &gpioc);
+
+	usart_dbg.Init.BaudRate = 256000;
+	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
+	usart_dbg.Init.StopBits = UART_STOPBITS_1;
+	usart_dbg.Init.Parity = UART_PARITY_NONE;
+	usart_dbg.Init.Mode = UART_MODE_TX_RX;
+
+	usart_dbg.Instance = USART3;
+
+	HAL_USART_Init(&usart_dbg);
 
 	/*for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
@@ -314,32 +325,57 @@ void IMU_task() {
 
 
 	}*/
-	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
-	trace_printf("%d\n", mpu9255init_error);
+
+//	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
+//	printf("mpu_error = %d\n", mpu9255init_error);
 
 	for (;;) {
-		//IMU_updateDataAll();
-		int16_t accelData[3] = {0, 0, 0};
-		int16_t gyroData[3] = {0, 0, 0};
-		float accel[3] = {0, 0, 0};
-		mpu9255_readIMU(accelData, gyroData);
-		mpu9255_recalcAccel(accelData, accel);
-		taskENTER_CRITICAL();
-		for (int i = 0; i < 3; i++) {
-			stateIMU_rsc.accel[i] = accel[i];
-		}
-		taskEXIT_CRITICAL();
-
-		const TickType_t _delay = 100 / portTICK_RATE_MS;
-
-		taskENTER_CRITICAL();
-		trace_printf("%d, %d, %d\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
-		taskEXIT_CRITICAL();
-
-		vTaskDelay(_delay);
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
-		vTaskDelay(_delay);
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
+//		int error = IMU_updateDataAll();
+//		printf("IMU_error = %d\n", error);
+//		const TickType_t _delay = 10 / portTICK_RATE_MS;
+//		vTaskDelay(_delay);
+//		int16_t accelData[3] = {0, 0, 0};
+//		int16_t gyroData[3] = {0, 0, 0};
+//		float accel[3] = {0, 0, 0};
+//
+//		uint8_t error =	mpu9255_readIMU(accelData, gyroData);
+//		mpu9255_recalcAccel(accelData, accel);
+//		taskENTER_CRITICAL();
+//		for (int i = 0; i < 3; i++) {
+//			stateIMU_rsc.accel[i] = accel[i];
+//		}
+//		taskEXIT_CRITICAL();
+//
+//
+//		taskENTER_CRITICAL();
+//
+////		char *msg = "dfglkj";
+////		uint8_t VT = 0b00001011;
+////		HAL_USART_Transmit(&usart_dbg, (uint8_t*)msg, strlen(msg), 2000);
+////		HAL_USART_Transmit(&usart_dbg, &VT, 1, 2000);
+////		HAL_USART_Transmit(&usart_dbg, &VT_H, 1, 2000);
+////		HAL_USART_Transmit(&usart_dbg, &((uint8_t)dummy), sizeof(dummy), 2000);
+////		HAL_USART_Transmit(&usart_dbg, (uint8_t*)accelData, sizeof(accelData), 2000);
+//
+////		trace_printf("%d\n", error);
+////		trace_printf("%X, %X, %X\n", accelData[0], accelData[1], accelData[2]);
+//
+//		trace_printf("%f, %f, %f\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
+//
+//
+//		taskEXIT_CRITICAL();
+//		taskENTER_CRITICAL();
+//		printf("%d\n", error);
+//		printf("%f, %f, %f\n", stateIMU_isc.accel[0], stateIMU_isc.accel[1], stateIMU_isc.accel[2]);
+//		printf("%f, %f, %f\n", stateIMU_isc.gyro[0], stateIMU_isc.gyro[1], stateIMU_isc.gyro[2]);
+//		printf("%f, %f, %f\n", stateIMU_isc.compass[0], stateIMU_isc.compass[1], stateIMU_isc.compass[2]);
+//		printf("\n");
+//		taskEXIT_CRITICAL();
+//		const TickType_t _delay = 100 / portTICK_RATE_MS;
+//		vTaskDelay(_delay);
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+//		vTaskDelay(_delay);
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
 
 	}
 }

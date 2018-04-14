@@ -48,7 +48,7 @@ void nRF24L01_init (SPI_HandleTypeDef* hspi){
 	hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi->Init.NSS = SPI_NSS_SOFT;
-	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
 	hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi->Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -92,7 +92,7 @@ void nRF24L01_init (SPI_HandleTypeDef* hspi){
 	nRF24L01_write_register(hspi, nRF24L01_SETUP_AW_ADDR, value);
 
 	value = (0b0011 << ARD)|
-			(0b0000 << ARC);
+			(0b1111 << ARC);
 	nRF24L01_write_register(hspi, nRF24L01_ARC_CNT_ADDR, value);
 
 
@@ -102,7 +102,7 @@ void nRF24L01_init (SPI_HandleTypeDef* hspi){
 
 	value = (0 << RF_DR)|
 			(0b11 << RF_PWR)|
-			(1 << LNA_HCURR);
+			(0 << LNA_HCURR);
 	nRF24L01_write_register(hspi, nRF24L01_RF_SETUP_ADDR, value);
 
 	value = (1 << DPL_P5)|

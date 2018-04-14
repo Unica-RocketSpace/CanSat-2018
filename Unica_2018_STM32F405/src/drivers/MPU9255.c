@@ -242,6 +242,7 @@ end:
 
 void IMU_task() {
 
+//	taskENTER_CRITICAL();
 	//	usart_dbg init
 	__GPIOC_CLK_ENABLE();
 	GPIO_InitTypeDef gpioc;
@@ -261,6 +262,7 @@ void IMU_task() {
 	usart_dbg.Instance = USART3;
 
 	HAL_USART_Init(&usart_dbg);
+//	taskEXIT_CRITICAL();
 
 	/*for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
@@ -377,6 +379,7 @@ void IMU_task() {
 //		vTaskDelay(_delay);
 //		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
 
+		volatile x = 0;
 	}
 }
 

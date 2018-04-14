@@ -66,12 +66,12 @@ stateTasks_flags_t		stateTasks_flags;
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
-//
-////	параметры GPS_task
-//#define GPS_TASK_STACK_SIZE 1024
-//static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
-//static StaticTask_t _gpsTaskObj;
-//
+
+//	параметры GPS_task
+#define GPS_TASK_STACK_SIZE 1024
+static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
+static StaticTask_t _gpsTaskObj;
+
 //	параметры IMU_task
 #define IMU_TASK_STACK_SIZE 2048
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
@@ -120,17 +120,17 @@ int main(int argc, char* argv[])
 	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
 
 
-	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-			IO_RF_task,
-			"IO_RF",
-			IO_RF_TASK_STACK_SIZE,
-			NULL,
-			1,
-			_iorfTaskStack,
-			&_iorfTaskObj
-	);
+//	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+//			IO_RF_task,
+//			"IO_RF",
+//			IO_RF_TASK_STACK_SIZE,
+//			NULL,
+//			1,
+//			_iorfTaskStack,
+//			&_iorfTaskObj
+//	);
 
-/*
+
 	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
 			GPS_task, 			// функция
 			"GPS",				// имя
@@ -141,8 +141,6 @@ int main(int argc, char* argv[])
 			&_gpsTaskObj		// объект задания
 	);
 
-
-*/
 
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
 			IMU_task, 			// функция

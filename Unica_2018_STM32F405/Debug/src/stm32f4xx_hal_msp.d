@@ -1,4 +1,4 @@
-src/modules/dynamic_unit.o: ../src/modules/dynamic_unit.c \
+src/stm32f4xx_hal_msp.d: ../src/stm32f4xx_hal_msp.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h \
  /home/developer/git/Unica_2018_STM32F405/system-usr/stm32f4xx_hal_conf.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_rcc.h \
@@ -70,20 +70,7 @@ src/modules/dynamic_unit.o: ../src/modules/dynamic_unit.c \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_fmpi2c.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_spdifrx.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h \
- /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h \
- /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h \
- ../src/modules/dynamic_unit.h \
- /home/developer/git/Unica_2018_STM32F405/src/state.h \
- /home/developer/git/Unica_2018_STM32F405/src/library/quaternion.h
+ /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal.h:
 
@@ -228,29 +215,3 @@ src/modules/dynamic_unit.o: ../src/modules/dynamic_unit.c \
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_dfsdm.h:
 
 /home/developer/git/Unica_2018_STM32F405/system/include/stm32f4-hal/stm32f4xx_hal_lptim.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h:
-
-/home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/projdefs.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/portable.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/deprecated_definitions.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/mpu_wrappers.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/task.h:
-
-/home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/list.h:
-
-../src/modules/dynamic_unit.h:
-
-/home/developer/git/Unica_2018_STM32F405/src/state.h:
-
-/home/developer/git/Unica_2018_STM32F405/src/library/quaternion.h:

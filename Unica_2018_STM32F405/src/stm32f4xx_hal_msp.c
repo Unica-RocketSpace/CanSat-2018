@@ -110,10 +110,27 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 	else abort();
 }
 
-
 void HAL_USART_MspInit(USART_HandleTypeDef* husart) {
 
-	if(husart->Instance == USART2) {
+	if(husart->Instance == USART1) {
+		__USART1_CLK_ENABLE();
+		__GPIOB_CLK_ENABLE();
+
+		GPIO_InitTypeDef gpiob;
+		gpiob.Alternate = GPIO_AF7_USART1;
+		gpiob.Mode = GPIO_MODE_AF_PP;
+		gpiob.Pin = GPIO_PIN_6;
+		gpiob.Pull = GPIO_NOPULL;
+		gpiob.Speed = GPIO_SPEED_FREQ_LOW;
+		HAL_GPIO_Init(GPIOB, &gpiob);
+
+		gpiob.Alternate = GPIO_AF7_USART1;
+		gpiob.Mode = GPIO_MODE_INPUT;
+		gpiob.Pin = GPIO_PIN_7;
+		gpiob.Pull = GPIO_NOPULL;
+		gpiob.Speed = GPIO_SPEED_FREQ_LOW;
+		HAL_GPIO_Init(GPIOB, &gpiob);
+	}else if(husart->Instance == USART2) {
 		__USART2_CLK_ENABLE();
 		__GPIOA_CLK_ENABLE();
 

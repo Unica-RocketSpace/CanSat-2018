@@ -4,9 +4,12 @@
  *  Created on: 11 нояб. 2017 г.
  *      Author: developer
  */
+#include <math.h>
 
 #include <stm32f4xx_hal.h>
-#include <math.h>
+
+#include <FreeRTOS.h>
+#include "task.h"
 
 #include "dynamic_unit.h"
 #include "state.h"
@@ -131,4 +134,48 @@ void rotate_step_engine_by_angles (float * angles) {
 	}
 
 }
+
+uint8_t data = 0;
+
+void MOTOR_task() {
+
+	//Инициализация UART
+	usart_motor.Instance = USART1;
+	usart_motor.Init.BaudRate = 9600;
+	usart_motor.Init.WordLength = UART_WORDLENGTH_8B;
+	usart_motor.Init.StopBits = UART_STOPBITS_1;
+	usart_motor.Init.Parity = UART_PARITY_NONE;
+	usart_motor.Init.Mode = UART_MODE_TX_RX;
+
+	uint8_t error = HAL_USART_Init(&usart_motor);
+	printf("error = %d", (int)error);
+//	HAL_USART_Transmit(&usart_motor, &error, 1, 0xFF);
+
+//	HAL_USART_Receive_IT(&usart_motor, &data, sizeof(data));
+
+	for(;;) {
+		while(((usart_motor.Instance->SR) & (1 << 5)) == 0){}
+		printf("data: %lu", usart_motor.Instance->DR);
+		printf("123\n");
+	}
+
+}
+
+//void HAL_USART_RxCpltCallback(USART_HandleTypeDef * husart) {
+//
+//	if(husart->Instance == USART1) {
+//		printf("%d\n", data);
+//		HAL_USART_Receive_IT(&usart_motor, &data, sizeof(data));
+//	}
+//	else {}
+//}
+//
+//
+//void USART1_IRQHandler(){
+//
+//
+//}
+
+
+
 

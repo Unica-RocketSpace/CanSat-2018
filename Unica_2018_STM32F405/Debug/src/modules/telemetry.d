@@ -1,4 +1,5 @@
 src/modules/telemetry.o: ../src/modules/telemetry.c \
+ /home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h \
  /home/developer/git/Unica_2018_STM32F405/FreeRTOS-usr/FreeRTOSConfig.h \
  /home/developer/git/Unica_2018_STM32F405/system/include/cmsis/system_stm32f4xx.h \
@@ -264,6 +265,8 @@ src/modules/telemetry.o: ../src/modules/telemetry.c \
  /home/developer/git/Unica_2018_STM32F405/mavlink-messages/c_source/UNISAT_messages/../mavlink_get_info.h \
  ../src/modules/telemetry.h \
  /home/developer/git/Unica_2018_STM32F405/src/drivers/nRF24L01.h
+
+/home/developer/git/Unica_2018_STM32F405/system/include/diag/Trace.h:
 
 /home/developer/git/Unica_2018_STM32F405/FreeRTOS/include/FreeRTOS.h:
 

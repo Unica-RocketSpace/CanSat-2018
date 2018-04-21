@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include "diag/Trace.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -115,6 +117,7 @@ void IO_RF_task() {
 	nRF24L01_init(&spi_nRF24L01);
 //	taskEXIT_CRITICAL();
 
+	uint32_t i = 0;
 	const TickType_t _delay = 500 / portTICK_RATE_MS;
 	for (;;) {
 
@@ -136,8 +139,10 @@ void IO_RF_task() {
 		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
 
 taskENTER_CRITICAL();
-		char* msg = "UNICA's broadcasting";
-		nRF24L01_write(&spi_nRF24L01, (uint8_t*)msg, strlen(msg), 0);
+		char buffer[32];
+		sprintf(buffer, "UNICA's broadcasting %lu", i);
+		nRF24L01_write(&spi_nRF24L01, (uint8_t*)buffer, strlen(buffer), 1);
+		i++;
 taskEXIT_CRITICAL();
 
 		vTaskDelay(_delay);

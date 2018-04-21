@@ -4,18 +4,21 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/drivers/Bluetooth_HC-05.c \
 ../src/drivers/MPU9255.c \
 ../src/drivers/gps_nmea.c \
 ../src/drivers/minmea.c \
 ../src/drivers/nRF24L01.c 
 
 OBJS += \
+./src/drivers/Bluetooth_HC-05.o \
 ./src/drivers/MPU9255.o \
 ./src/drivers/gps_nmea.o \
 ./src/drivers/minmea.o \
 ./src/drivers/nRF24L01.o 
 
 C_DEPS += \
+./src/drivers/Bluetooth_HC-05.d \
 ./src/drivers/MPU9255.d \
 ./src/drivers/gps_nmea.d \
 ./src/drivers/minmea.d \

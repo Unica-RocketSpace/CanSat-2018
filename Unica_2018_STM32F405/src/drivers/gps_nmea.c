@@ -30,9 +30,10 @@ static char _msg_buffer[GPS_MSG_BUFFER_SIZE];
 inline static char _read_dma_buffer(void)
 {
 	// ждем, пока ДМА чего-нибудь скачает
-//	while(_dma_carret == (size_t)(GPS_DMA_BUFFER_SIZE - GPS_DMA_USART_STREAM->NDTR)) {}
-	while((DMA1->HISR & (1 << 11)) != 1) {}
-	printf("OK");
+	while(_dma_carret == (size_t)(GPS_DMA_BUFFER_SIZE - GPS_DMA_USART_STREAM->NDTR)) {
+	}
+//	while((DMA1->HISR & (1 << 11)) != 1) {}
+	printf("OK\n");
 
 	char retval = _dma_buffer[_dma_carret];
 
@@ -43,35 +44,26 @@ inline static char _read_dma_buffer(void)
 	return retval;
 }
 
+uint8_t gps_initAll() {
+	uint8_t error = 0;
 
-void GPS_task()	{
-
-//	(void)args;
 	//	Инициализация USART2 для работы с GPS
+	usart_GPS.Instance = USART2;
 	usart_GPS.Init.BaudRate = 9600;
 	usart_GPS.Init.WordLength = UART_WORDLENGTH_8B;
 	usart_GPS.Init.StopBits = UART_STOPBITS_1;
 	usart_GPS.Init.Parity = UART_PARITY_NONE;
 	usart_GPS.Init.Mode = UART_MODE_TX_RX;
 
-	usart_GPS.Instance = USART2;
+	HAL_UART_Init(&usart_GPS);
 
-	HAL_USART_Init(&usart_GPS);
-
-	// Конфигурация NEO-7m
-//	uint8_t portId = 1;				//	UART 1
-//	uint8_t inProto = (1 << 1);		// NMEA
-//	uint8_t outProto = (1 << 1);	// NMEA
-//	uint16_t baudrate = 9600;
-//	uint8_t autobauding = 0;
-	char* msg = "$PUBX,41,1,0001,0001,9600,0*14\r\n";
-	HAL_USART_Transmit(&usart_GPS, (uint8_t*)msg, strlen(msg), 2000);
-	const TickType_t _delay = 1000 / portTICK_RATE_MS;
-	vTaskDelay(_delay);
+	/* Peripheral interrupt init*/
+	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
-
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
+	dma_GPS.Instance = DMA1_Stream5;
 	dma_GPS.Init.Channel = DMA_CHANNEL_4;						// 4 канал - на USART2_RX
 	dma_GPS.Init.Direction = DMA_PERIPH_TO_MEMORY;				// направление - из периферии в память
 	dma_GPS.Init.PeriphInc = DMA_PINC_DISABLE;					// инкрементация периферии выключена
@@ -81,24 +73,41 @@ void GPS_task()	{
 	dma_GPS.Init.Mode = DMA_CIRCULAR;							// режим - обычный
 	dma_GPS.Init.Priority = DMA_PRIORITY_LOW;				// приоритет - средний
 	dma_GPS.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-//	dma_GPS.Init.FIFOThreshold = ;
+	dma_GPS.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
 	dma_GPS.Init.MemBurst = DMA_MBURST_SINGLE;
 	dma_GPS.Init.PeriphBurst = DMA_PBURST_SINGLE;
 
-	dma_GPS.Instance = DMA1_Stream5;
+	__HAL_LINKDMA(&usart_GPS, hdmarx, dma_GPS);
+	/* DMA interrupt init */
+	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
-	HAL_DMA_Init(&dma_GPS);
+end:
+	return error;
+}
 
-	// DMA start
+/* This function handles DMA1 stream6 global interrupt. */
+void DMA1_Stream5_IRQHandler(void)
+{
+	HAL_DMA_IRQHandler(&dma_GPS);
+}
+
+void USART2_IRQHandler(void)
+{
+	HAL_UART_IRQHandler(&usart_GPS);
+}
+
+void GPS_task()	{
+
+
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
-	uint8_t dmaStart_error = HAL_DMA_Start(&dma_GPS, /*(uint32_t)&*/(USART2->DR), (uint32_t)&_dma_buffer[0], 1);	//	from USART2->DR (data register) to our circular buffer
-	printf("start_error = %d\r\n", dmaStart_error);
 
 	_dma_carret = 0;
 	_msg_carret = 0;
 
 	for ( ; ; )
 	{
+		HAL_USART_Receive_DMA(&usart_GPS, (uint8_t*)_dma_buffer, 100);
 		// ждем доллара
 		do {
 			_msg_buffer[0] = _read_dma_buffer();

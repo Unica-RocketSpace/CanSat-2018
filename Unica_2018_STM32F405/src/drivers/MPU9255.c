@@ -262,6 +262,8 @@ void IMU_task() {
 	usart_dbg.Instance = USART3;
 
 	HAL_USART_Init(&usart_dbg);
+
+	const TickType_t _delay = 50 / portTICK_RATE_MS;
 //	taskEXIT_CRITICAL();
 
 	/*for (;;) {
@@ -376,7 +378,7 @@ void IMU_task() {
 //		const TickType_t _delay = 100 / portTICK_RATE_MS;
 //		vTaskDelay(_delay);
 //		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
-//		vTaskDelay(_delay);
+		vTaskDelay(_delay);
 //		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
 
 		volatile x = 0;

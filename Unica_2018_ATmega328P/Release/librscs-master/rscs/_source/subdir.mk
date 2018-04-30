@@ -35,7 +35,7 @@ C_DEPS += \
 librscs-master/rscs/_source/%.o: ../librscs-master/rscs/_source/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: AVR Compiler'
-	avr-gcc -I"/home/developer/workspace-avr/Unica_2018_ATmega328P/librscs-master/rscs" -I"/home/developer/workspace-avr/Unica_2018_ATmega328P/src" -I"/home/developer/workspace-avr/Unica_2018_ATmega328P" -Wall -Os -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega328p -DF_CPU=16000000UL -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -c -o "$@" "$<"
+	avr-gcc -I"/home/developer/git/Unica_2018_ATmega328P/librscs-master/rscs" -I"/home/developer/git/Unica_2018_ATmega328P/src" -I"/home/developer/git/Unica_2018_ATmega328P" -Wall -Os -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega328p -DF_CPU=16000000UL -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -c -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

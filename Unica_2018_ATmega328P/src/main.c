@@ -39,6 +39,9 @@ uint8_t RX_buffer[nRF24L01_RX_BUFFER_LEN] = {0};
 
 uint8_t nRF24L01_RX_BUFFER[nRF24L01_RX_BUFFER_LEN];
 
+uint8_t RM_input_data_len;
+uint8_t RM_input_data[nRF24L01_RX_BUFFER_LEN];
+
 typedef enum
 {
 	STAGE_INITIAL = 0,		// Состояние, в котором инициализируем все
@@ -58,7 +61,9 @@ int main()
 	state_t my_stage = STAGE_INITIAL;
 
 	//***ИНИЦИАЛИЗАЦИЯ UART***//
-	rscs_uart_bus_t * uart0 = rscs_uart_init(RSCS_UART_ID_UART0, (RSCS_UART_FLAG_ENABLE_TX + RSCS_UART_FLAG_ENABLE_RX + RSCS_UART_FLAG_BUFFER_RX));
+	rscs_uart_bus_t * uart0 = rscs_uart_init(RSCS_UART_ID_UART0, (RSCS_UART_FLAG_ENABLE_TX
+																+ RSCS_UART_FLAG_ENABLE_RX
+																+ RSCS_UART_FLAG_BUFFER_RX));
 	rscs_uart_set_character_size(uart0, 8);
 	rscs_uart_set_baudrate(uart0, 9600);
 	rscs_uart_set_stop_bits(uart0, 1);
@@ -74,7 +79,7 @@ int main()
 	rscs_i2c_set_scl_rate(400);
 
 	//***ИНИЦИАЛИЗАЦИЯ TIMESERVICE***//
-		rscs_time_init();
+	rscs_time_init();
 
 	//***ИНИЦИАЛИЗАЦИЯ BMP280***//
 	bmp280 = rscs_bmp280_initi2c(RSCS_BMP280_I2C_ADDR_LOW);						//создание дескриптора
@@ -95,8 +100,8 @@ int main()
 
 	//Включение внешних прервыений 0
 	EICRA = (1 << ISC01) | (1 << ISC00); 		//Прерывание срабатывает при возрастании сигнала
-	EIMSK = (1 << INT0);		//Включение прерывания INT0
-	sei();		//Глобальное включение прерываний
+	EIMSK = (1 << INT0);						//Включение прерывания INT0
+	sei();										//Глобальное включение прерываний
 
 	while(1)
 	{
@@ -113,29 +118,33 @@ int main()
 
 
 		// отправляем телеметрию
-		send_package();
+		//send_package();
+		nRF24L01_clear_TX_FIFO();
+		nRF24L01_clear_status(false, true, true);
+		nRF24L01_write(message, sizeof(message), true);
+		data_register = nRF24L01_read_status();
+		printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
+				(((data_register) & (1 << RX_DR)) >> RX_DR),
+				(((data_register) & (1 << TX_DS)) >> TX_DS),
+				(((data_register) & (1 << MAX_RT)) >> MAX_RT),
+				(((data_register) & (0b111 << RX_P_NO)) >> RX_P_NO),
+				(((data_register) & (1 << TX_FULL))) >> TX_FULL);
+
 
 		printf("time = %f s\n", TM_package.time);
 		printf("bmp280_press = %f\n bmp280_temp = %f\n", TM_package.pressure, TM_package.temperature);
 		printf("height = %f\n", TM_package.height);
 
 
-		//FIXME: TEST: Ведем себя как послушная приемная станция
-		/*memset(input_data, 0x00, sizeof(input_data));
-		input_data_len = get_package(input_data);
-		if (!input_data_len) printf("NO INCOMING TRANSMISSION\n");
+		//Если по радиоканалу пришли данные, то читаем их
+		memset(RM_input_data, 0x00, sizeof(RM_input_data));
+		RM_input_data_len = get_package(RM_input_data);
+		if (!RM_input_data_len) printf("NO INCOMING TRANSMISSION\n");
 		else
 		{
-			input_data[input_data_len] = 0x00;
-			printf("INCOMING TRANSMISSION: %s\n", input_data);
+			RM_input_data[RM_input_data_len] = 0x00;
+			printf("INCOMING TRANSMISSION: %s\n", RM_input_data);
 		}
-*/
-
-
-		//получаем ответ
-		RX_get = nRF24L01_read(RX_buffer, nRF24L01_RX_BUFFER_LEN);
-		nRF24L01_clear_RX_FIFO();
-		nRF24L01_clear_status(true, false, false);
 
 		printf("state_parachute = %d\n", (bool)(TM_package.state & (1 << state_parachute)));
 
@@ -176,7 +185,7 @@ int main()
 			// Определяем начальное давление
 			if (!initial_params.zero_pressure)initial_params.zero_pressure = set_zero_pressure();
 
-			//Проверяем команду с земли
+			//Проверяем команду с Земли
 			if (RX_get)
 			{
 				printf("COMMAND: %d\n", RX_buffer[0]);

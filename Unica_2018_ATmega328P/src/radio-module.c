@@ -9,10 +9,14 @@
 #include "state.h"
 
 void send_package() {
+	//Если TX буфер переполнен, то отчищаем его
 	uint8_t status = nRF24L01_read_status();
 	if (status & (1 << TX_FULL)) nRF24L01_clear_TX_FIFO();
+
+	//Перед отправкой сообщения отчищаем STATUS от старых флагов
 	nRF24L01_clear_status(false, true, true);
 
+	//Передаем сообщение
 	nRF24L01_write(&TM_package, sizeof(TM_package), true);
 	TM_package.package_number++;
 };

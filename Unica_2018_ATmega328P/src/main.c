@@ -29,7 +29,7 @@ const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 uint8_t data_register;
 
-char	message[] = "Hello";
+char	message[] = "Unica Broadcasting - ATmega328P";
 uint8_t device_address[5];
 long	step = 0;
 bool	RX_get = 0;
@@ -109,7 +109,7 @@ int main()
 		printf("\n-------------------------\nSTEP = %ld\n", step);
 		step++;
 
-		// Читаем датчики
+		//Читаем датчики
 
 		rscs_bmp280_read(bmp280, &raw_data.bmp280_rawpress, &raw_data.bmp280_rawtemp);
 		rscs_bmp280_calculate(bmp280_calibration_values, raw_data.bmp280_rawpress, raw_data.bmp280_rawtemp, &TM_package.pressure, &TM_package.temperature);
@@ -117,9 +117,11 @@ int main()
 		TM_package.height = calculate_height( TM_package.pressure,  initial_params.zero_pressure);
 
 
-		// отправляем телеметрию
-		//send_package();
-		nRF24L01_clear_TX_FIFO();
+		//Отправляем телеметрию
+		send_package();
+
+		//Отправляем тестовое сообщение
+/*		nRF24L01_clear_TX_FIFO();
 		nRF24L01_clear_status(false, true, true);
 		nRF24L01_write(message, sizeof(message), true);
 		data_register = nRF24L01_read_status();
@@ -129,7 +131,7 @@ int main()
 				(((data_register) & (1 << MAX_RT)) >> MAX_RT),
 				(((data_register) & (0b111 << RX_P_NO)) >> RX_P_NO),
 				(((data_register) & (1 << TX_FULL))) >> TX_FULL);
-
+*/
 
 		printf("time = %f s\n", TM_package.time);
 		printf("bmp280_press = %f\n bmp280_temp = %f\n", TM_package.pressure, TM_package.temperature);

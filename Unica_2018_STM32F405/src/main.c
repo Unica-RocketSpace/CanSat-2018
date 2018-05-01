@@ -56,24 +56,24 @@ stateIMU_isc_t		stateIMU_isc_prev;
 state_system_t		state_system_prev;
 stateCamera_orient_t stateCamera_orient_prev;
 
-stateTasks_flags_t		stateTasks_flags;
+state_initErrors_t		state_initErrors;
 
 rscs_bmp280_descriptor_t * bmp280;
 const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 //	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE (10*configMINIMAL_STACK_SIZE)
+#define IO_RF_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
 
 //	параметры GPS_task
-#define GPS_TASK_STACK_SIZE (10*configMINIMAL_STACK_SIZE)
+#define GPS_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 //	параметры IMU_task
-#define IMU_TASK_STACK_SIZE (10*configMINIMAL_STACK_SIZE)
+#define IMU_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
@@ -117,18 +117,18 @@ int main(int argc, char* argv[])
 	memset(&state_system_prev, 			0x00, sizeof(state_system_prev));
 	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
-	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
+	memset(&state_initErrors,	0x00, sizeof(state_initErrors));
 
 
-//	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-//			IO_RF_task,
-//			"IO_RF",
-//			IO_RF_TASK_STACK_SIZE,
-//			NULL,
-//			1,
-//			_iorfTaskStack,
-//			&_iorfTaskObj
-//	);
+	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+			IO_RF_task,
+			"IO_RF",
+			IO_RF_TASK_STACK_SIZE,
+			NULL,
+			1,
+			_iorfTaskStack,
+			&_iorfTaskObj
+	);
 
 
 	TaskHandle_t GPS_task_handle = xTaskCreateStatic(

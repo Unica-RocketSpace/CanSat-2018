@@ -265,8 +265,8 @@ void IMU_task() {
 
 	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
 	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
-	stateTasks_flags.MPU_E = mpu9255_initError;
-	printf("MPU9255 was initialised with error: %d\n", mpu9255_initError);
+	state_initErrors.MPU_E = mpu9255_initError;
+	printf("MPU9255 error: %d\n", mpu9255_initError);
 
 	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
 	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
@@ -279,8 +279,8 @@ void IMU_task() {
 	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
 	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
 	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
-	stateTasks_flags.BMP_E = bmp280_initError;
-	printf("BMP280 was initialised with error: %d\n", bmp280_initError);
+	state_initErrors.BMP_E = bmp280_initError;
+	printf("BMP280 error: %d\n", bmp280_initError);
 
 
 //	taskEXIT_CRITICAL();

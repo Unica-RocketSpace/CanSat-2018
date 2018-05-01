@@ -124,13 +124,13 @@ typedef struct {
 } state_zero_t;
 
 
-//	struct for keeping flags for switching FreeRTOS tasks
+//	struct for keeping flags
 typedef struct {
 	uint8_t MPU_E;
 	uint8_t BMP_E;
 	uint8_t GPS_E;
-
-} stateTasks_flags_t;
+	uint8_t NRF_E;
+} state_initErrors_t;
 
 
 typedef enum {
@@ -162,6 +162,6 @@ extern state_zero_t			state_zero;
 extern stateIMU_isc_t		stateIMU_isc_prev;
 extern state_system_t		state_system_prev;
 
-extern stateTasks_flags_t	stateTasks_flags;
+extern state_initErrors_t	state_initErrors;
 
 #endif /* STATE_H_ */

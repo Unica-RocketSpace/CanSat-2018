@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stm32f4xx_hal.h>
 #include "diag/Trace.h"
+
 #include "state.h"
 
 // ----------------------------------------------------------------------------

@@ -39,6 +39,10 @@
 #define GYRO_RANGE			0			//250degps - 00, 500degps - 01, 1000degps - 10, 2000degps - 11
 
 
+extern rscs_bmp280_descriptor_t * bmp280;
+extern const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
+
+
 /*#################################################*/
 /*################## СТРУКТУРЫ ###################*/
 /*#################################################*/
@@ -87,9 +91,7 @@ typedef enum {
 // addresses of mpu9255 (for getting acsess to accel and gyro)
 typedef enum {
 	GYRO_AND_ACCEL = 0b11010000,
-	COMPASS = 0b00011000,
-	BMP180 = 0b11100111
-
+	COMPASS = 0b00011000
 } mpu9255_address_t;
 
 

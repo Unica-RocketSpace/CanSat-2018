@@ -25,15 +25,15 @@ static char _dma_buffer[GPS_DMA_BUFFER_SIZE];
 static size_t _msg_carret;
 static char _msg_buffer[GPS_MSG_BUFFER_SIZE];
 
-//uint8_t dma_usartBuffer[100];
+
+static UART_HandleTypeDef uart_GPS;
+static DMA_HandleTypeDef dma_GPS;
+
 
 inline static char _read_dma_buffer(void)
 {
 	// ждем, пока ДМА чего-нибудь скачает
-	while(_dma_carret == (size_t)(GPS_DMA_BUFFER_SIZE - GPS_DMA_USART_STREAM->NDTR)) {
-	}
-//	while((DMA1->HISR & (1 << 11)) != 1) {}
-	printf("OK\n");
+	while(_dma_carret == (size_t)(GPS_DMA_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(&dma_GPS))) {}
 
 	char retval = _dma_buffer[_dma_carret];
 
@@ -48,18 +48,20 @@ uint8_t gps_initAll() {
 	uint8_t error = 0;
 
 	//	Инициализация USART2 для работы с GPS
-	usart_GPS.Instance = USART2;
-	usart_GPS.Init.BaudRate = 9600;
-	usart_GPS.Init.WordLength = UART_WORDLENGTH_8B;
-	usart_GPS.Init.StopBits = UART_STOPBITS_1;
-	usart_GPS.Init.Parity = UART_PARITY_NONE;
-	usart_GPS.Init.Mode = UART_MODE_TX_RX;
+	uart_GPS.Instance = USART2;
+	uart_GPS.Init.BaudRate = 9600;
+	uart_GPS.Init.WordLength = UART_WORDLENGTH_8B;
+	uart_GPS.Init.StopBits = UART_STOPBITS_1;
+	uart_GPS.Init.Parity = UART_PARITY_NONE;
+	uart_GPS.Init.Mode = UART_MODE_TX_RX;
+	uart_GPS.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	uart_GPS.Init.OverSampling = UART_OVERSAMPLING_16;
 
-	HAL_UART_Init(&usart_GPS);
-
+	PROCESS_ERROR(HAL_UART_Init(&uart_GPS));
 	/* Peripheral interrupt init*/
 	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn);
+
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
@@ -71,13 +73,14 @@ uint8_t gps_initAll() {
 	dma_GPS.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;		// длина слова в периферии - байт
 	dma_GPS.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
 	dma_GPS.Init.Mode = DMA_CIRCULAR;							// режим - обычный
-	dma_GPS.Init.Priority = DMA_PRIORITY_LOW;				// приоритет - средний
+	dma_GPS.Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
 	dma_GPS.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 	dma_GPS.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
 	dma_GPS.Init.MemBurst = DMA_MBURST_SINGLE;
 	dma_GPS.Init.PeriphBurst = DMA_PBURST_SINGLE;
+	PROCESS_ERROR(HAL_DMA_Init(&dma_GPS));
 
-	__HAL_LINKDMA(&usart_GPS, hdmarx, dma_GPS);
+	__HAL_LINKDMA(&uart_GPS, hdmarx, dma_GPS);
 	/* DMA interrupt init */
 	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
@@ -94,26 +97,46 @@ void DMA1_Stream5_IRQHandler(void)
 
 void USART2_IRQHandler(void)
 {
-	HAL_UART_IRQHandler(&usart_GPS);
+	HAL_UART_IRQHandler(&uart_GPS);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART2) {
+		HAL_UART_Receive_DMA(huart, (uint8_t*)_dma_buffer, sizeof(_dma_buffer));
+	}
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+	if(huart->Instance == USART2) {
+		uint8_t gps_initError = gps_initAll();
+		stateTasks_flags.GPS_E = gps_initError;
+		printf("GPS was REinitialised with error: %d\n", gps_initError);
+		_dma_carret = 0;
+		_msg_carret = 0;
+		HAL_UART_RxCpltCallback(&uart_GPS);
+	}
 }
 
 void GPS_task()	{
 
-
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
+
+	uint8_t gps_initError = gps_initAll();
+	stateTasks_flags.GPS_E = gps_initError;
+	printf("GPS was initialised with error: %d\n", gps_initError);
 
 	_dma_carret = 0;
 	_msg_carret = 0;
 
+	HAL_UART_RxCpltCallback(&uart_GPS);
+
 	for ( ; ; )
 	{
-		HAL_USART_Receive_DMA(&usart_GPS, (uint8_t*)_dma_buffer, 100);
 		// ждем доллара
 		do {
 			_msg_buffer[0] = _read_dma_buffer();
 		} while (_msg_buffer[0] != '$');
-
-		printf("sdfkljdsfslkdfjlsdkfjsldkf\n");
 
 		// Оп! нашли
 		_msg_carret = 1;
@@ -145,8 +168,8 @@ void GPS_task()	{
 		if (frame.fix_quality == 0)
 			continue;
 
-		float _lon = minmea_tofloat(&frame.longitude);
-		float _lat = minmea_tofloat(&frame.latitude);
+		float _lon = minmea_tocoord(&frame.longitude);
+		float _lat = minmea_tocoord(&frame.latitude);
 		float _height = minmea_tofloat(&frame.altitude);
 
 		taskENTER_CRITICAL();
@@ -155,7 +178,7 @@ void GPS_task()	{
 		stateGPS.coordinates[1] = _lat;
 		stateGPS.coordinates[2] = _height;
 
-		printf("x: &%f, y: %f, z: %f\n", stateGPS.coordinates[0], stateGPS.coordinates[1], stateGPS.coordinates[2]);
+		printf("x: %f, y: %f, z: %f\n", stateGPS.coordinates[0], stateGPS.coordinates[1], stateGPS.coordinates[2]);
 
 		taskEXIT_CRITICAL();
 

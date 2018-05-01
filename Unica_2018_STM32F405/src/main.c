@@ -18,6 +18,7 @@
 #include "kinematic_unit.h"
 #include "gps_nmea.h"
 #include "MPU9255.h"
+#include "UNICS_bmp280.h"
 #include "nRF24L01.h"
 #include "telemetry.h"
 
@@ -37,10 +38,7 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
 
-I2C_HandleTypeDef i2c_mpu9255;
-USART_HandleTypeDef usart_GPS;
-USART_HandleTypeDef usart_dbg;
-DMA_HandleTypeDef dma_GPS;
+
 SPI_HandleTypeDef	spi_nRF24L01;
 
 // глобальные структуры
@@ -60,20 +58,22 @@ stateCamera_orient_t stateCamera_orient_prev;
 
 stateTasks_flags_t		stateTasks_flags;
 
+rscs_bmp280_descriptor_t * bmp280;
+const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 //	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE 1024
+#define IO_RF_TASK_STACK_SIZE (10*configMINIMAL_STACK_SIZE)
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
 
 //	параметры GPS_task
-#define GPS_TASK_STACK_SIZE 1024
+#define GPS_TASK_STACK_SIZE (10*configMINIMAL_STACK_SIZE)
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 //	параметры IMU_task
-#define IMU_TASK_STACK_SIZE 2048
+#define IMU_TASK_STACK_SIZE (10*configMINIMAL_STACK_SIZE)
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 

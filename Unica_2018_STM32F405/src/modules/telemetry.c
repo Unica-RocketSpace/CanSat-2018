@@ -141,7 +141,7 @@ void IO_RF_task() {
 //taskENTER_CRITICAL();
 		char buffer[32];
 		sprintf(buffer, "UNICA's broadcasting %lu\n", i);
-		nRF24L01_write(&spi_nRF24L01, (uint8_t*)buffer, strlen(buffer), 0);
+		nRF24L01_write(&spi_nRF24L01, (uint8_t*)buffer, strlen(buffer), 1);
 		i++;
 //taskEXIT_CRITICAL();
 

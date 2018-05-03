@@ -24,11 +24,4 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>mavlink-messages</name>
-			<type>2</type>
-			<location>/home/developer/git/Unica_2018_STM32F405/mavlink-messages</location>
-		</link>
-	</linkedResources>
 </projectDescription>

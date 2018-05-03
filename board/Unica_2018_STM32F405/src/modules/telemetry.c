@@ -7,15 +7,17 @@
  * 	Authors: Korr237i, RaKetov
  */
 
-#include <stdint.h>
-
 #include "diag/Trace.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "mavlink/UNISAT/mavlink.h"
+
+#include "stdint.h"
+
 #include "state.h"
-#include "c_source/UNISAT_messages/mavlink.h"
+
 #include "telemetry.h"
 #include "nRF24L01.h"
 

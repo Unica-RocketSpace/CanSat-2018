@@ -3,7 +3,9 @@
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.205776643">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.205776643" moduleId="org.eclipse.cdt.core.settings" name="Debug">
-				<externalSettings/>
+				<externalSettings>
+					<externalSetting/>
+				</externalSettings>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -52,18 +54,7 @@
 							<builder buildPath="${workspace_loc:/Unica_2018_STM32F405}/Debug" id="ilg.gnuarmeclipse.managedbuild.cross.builder.1662794035" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.15590866" name="Cross ARM GNU Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.325649236" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.64823080" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;../include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/cmsis&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/stm32f4-hal&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/mavlink-messages}&quot;"/>
-								</option>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.64823080" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.726797778" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="DEBUG"/>
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
@@ -86,7 +77,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/sofa}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/library}&quot;"/>
@@ -106,15 +96,19 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.438477569" name="Cross ARM GNU C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.905680663" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;../include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/cmsis&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/stm32f4-hal&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include/cmsis}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include/stm32f4-hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/sofa}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/modules}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/mavlink-messages}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.noexceptions.686799775" name="Do not use exceptions (-fno-exceptions)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.noexceptions" useByScannerDiscovery="true" value="true" valueType="boolean"/>
@@ -232,62 +226,9 @@
 							<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1420724732" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 						</tool>
 					</fileInfo>
-					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.205776643.166323185" name="/" resourcePath="mavlink-messages">
-						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.debug.34380075" name="Cross ARM GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.debug" unusedChildren="">
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.2021380986.232013883" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.2021380986"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.400439223.210550281" name="Message length (-fmessage-length=0)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.400439223"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.1527197419.874125015" name="'char' is signed (-fsigned-char)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.1527197419"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.843381528.271218544" name="Function sections (-ffunction-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.843381528"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.723169770.1786454759" name="Data sections (-fdata-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.723169770"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.648130710.542140389" name="Debug level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.648130710"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.810678554.608036840" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.810678554"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.2122811172.1442167332" name="ARM family" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.2122811172"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.abi.1026855407.552785738" name="Float ABI" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.abi.1026855407"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn.1839662456.1711028129" name="Enable all common warnings (-Wall)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn.1839662456"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.1849944389.745824773" name="Enable extra warnings (-Wextra)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.1849944389"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.freestanding.327636265.2011795301" name="Assume freestanding environment (-ffreestanding)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.freestanding.327636265"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.nomoveloopinvariants.470333212.1813799838" name="Disable loop invariant move (-fno-move-loop-invariants)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.nomoveloopinvariants.470333212"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.451616129.1670679917" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.451616129"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.228276095.1015433064" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.228276095"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.826272626.505130360" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.826272626"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.1502819487.300239784" name="Prefix" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.1502819487"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.1026840962.2097308266" name="C compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.1026840962"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp.792024169.500977279" name="C++ compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp.792024169"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar.1226555020.940109365" name="Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar.1226555020"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy.1574413674.1269357927" name="Hex/Bin converter" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy.1574413674"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump.1565681.2043466725" name="Listing generator" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump.1565681"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.314603232.1272625263" name="Size command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.314603232"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.948937453.427202038" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.948937453"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.487510817.213287480" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.487510817"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.852708897.1216631294" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.852708897"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.860654486.1894749755" name="Print size" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.860654486"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.architecture.653409749.876835388" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.architecture.653409749"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.endianness.1933023345.1510150592" name="Endianness" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.endianness.1933023345"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.1584330862.1904430860" name="FPU Type" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.1584330862"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.568704553" name="Cross ARM GNU Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.15590866">
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1799684134" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
-							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1238662130" name="Cross ARM GNU C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1191920062">
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.794736061" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
-							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.260840345" name="Cross ARM GNU C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.438477569">
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1191372837" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
-							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.946635031" name="Cross ARM GNU C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.1074021654">
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.useprintffloat.1479975448" name="Use float with nano printf (-u _printf_float)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.useprintffloat" value="true" valueType="boolean"/>
-							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.1911635417" name="Cross ARM GNU C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.176366372"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.2052572138" name="Cross ARM GNU Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1116282877"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash.17859606" name="Cross ARM GNU Create Flash Image" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash.1579646237"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting.2135570414" name="Cross ARM GNU Create Listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting.1608092454"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize.1862866678" name="Cross ARM GNU Print Size" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize.784016028"/>
-						</toolChain>
-					</folderInfo>
 					<sourceEntries>
 						<entry excluding="portable/MemMang/heap_3.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="FreeRTOS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="FreeRTOS-usr"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="mavlink-messages"/>
 						<entry excluding="ltecm.c|eqec06.c|s00b.c|gst06.c|s00a.c|ldn.c|fave03.c|xys00a.c|trxpv.c|apcg13.c|numat.c|ee00a.c|obl80.c|gmst06.c|apci.c|zpv.c|atio13.c|xys00b.c|fk5hz.c|starpm.c|c2ibpn.c|ir.c|pom00.c|epb.c|s2c.c|epb2jd.c|atic13.c|refco.c|icrs2g.c|bp00.c|apcg.c|p06e.c|ry.c|nutm80.c|pn00b.c|ecm06.c|ppp.c|dtf2d.c|fk52h.c|c2i00a.c|c2s.c|fw2m.c|rx.c|af2a.c|pvdpv.c|bp06.c|num06a.c|p2pv.c|bpn2xy.c|c2txy.c|eform.c|ltpb.c|cal2jd.c|c2i00b.c|ee00b.c|tcgtt.c|ab.c|eo06a.c|pv2s.c|pvtob.c|fk5hip.c|pvxpv.c|anp.c|s2xpv.c|pn00a.c|rz.c|gmst00.c|hfk5z.c|bi00.c|ut1tt.c|s06.c|ee06a.c|atioq.c|tdbtcb.c|rxr.c|fasa03.c|fw2xy.c|tf2d.c|s06a.c|xys06a.c|apco13.c|rm2v.c|pmat06.c|utcut1.c|pn06a.c|gd2gce.c|tttdb.c|taiutc.c|epj.c|d2dtf.c|aper13.c|aticq.c|gst06a.c|pn00.c|atoc13.c|apcs13.c|gd2gc.c|c2tcio.c|falp03.c|tf2a.c|atco13.c|apio13.c|pn06.c|faf03.c|aticqn.c|eect00.c|dat.c|rxpv.c|dtdb.c|faju03.c|c2ixys.c|pvppv.c|tdbtt.c|lteqec.c|ldsun.c|fad03.c|pnm00b.c|pmat00.c|num00b.c|fane03.c|gst00a.c|fae03.c|pxp.c|pvm.c|ld.c|trxp.c|pnm00a.c|pap.c|taitt.c|atciq.c|atciqn.c|gmst82.c|d2tf.c|gst94.c|lteceq.c|a2tf.c|eceq06.c|atoiq.c|gc2gde.c|pvstar.c|faom03.c|nut06a.c|num00a.c|tttai.c|c2teqx.c|pm.c|epj2jd.c|pas.c|fal03.c|tttcg.c|a2af.c|xy06.c|pmat76.c|atoi13.c|tcbtdb.c|cpv.c|era00.c|ee00.c|g2icrs.c|apcs.c|s00.c|nut00a.c|c2tpe.c|atci13.c|rv2m.c|nut00b.c|ttut1.c|gst00b.c|cr.c|pr00.c|taiut1.c|s2p.c|ppsp.c|pv2p.c|sxpv.c|pnm80.c|pb06.c|pvu.c|jdcalf.c|zp.c|sp00.c|h2fk5.c|starpv.c|prec76.c|fapa03.c|pnm06a.c|p2s.c|sxp.c|aper.c|apco.c|ltp.c|fame03.c|pfw06.c|pmsafe.c|zr.c|apci13.c|c2i06a.c|c2t06a.c|pmpx.c|epv00.c|pn.c|anpm.c|ut1utc.c|sepp.c|faur03.c|atciqz.c|pvmpv.c|plan94.c|s2pv.c|fama03.c|obl06.c|ut1tai.c|eors.c|c2ixy.c|seps.c|nut80.c|eqeq94.c|tr.c|ltpecl.c|utctai.c|c2t00b.c|apio.c|jd2cal.c|pdp.c|pvup.c|gc2gd.c|c2t00a.c|ltpequ.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="sofa"/>
 						<entry excluding="library|modules|telemetry|sensors|drivers|dynamic_unit|kinematic_unit" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/drivers"/>
@@ -349,19 +290,7 @@
 							<builder buildPath="${workspace_loc:/Unica_2018_STM32F405}/Release" id="ilg.gnuarmeclipse.managedbuild.cross.builder.560392166" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1437437717" name="Cross ARM GNU Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.2094566210" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1995557444" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;../include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/cmsis&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/stm32f4-hal&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/sofa}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/mavlink-messages}&quot;"/>
-								</option>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1995557444" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.737417184" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG"/>
 									<listOptionValue builtIn="false" value="STM32F405xx"/>
@@ -375,17 +304,16 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include/cmsis}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include/stm32f4-hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/sofa}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/modules}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/mavlink-messages}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.39386583" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
@@ -398,15 +326,19 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1246188588" name="Cross ARM GNU C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.539941897" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;../include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/cmsis&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../system/include/stm32f4-hal&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include/cmsis}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system/include/stm32f4-hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS/portable/GCC/ARM_CM4F}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/system-usr}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/FreeRTOS-usr}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/sofa}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/src/modules}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Unica_2018_STM32F405/mavlink-messages}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.noexceptions.637249994" name="Do not use exceptions (-fno-exceptions)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.noexceptions" useByScannerDiscovery="true" value="true" valueType="boolean"/>

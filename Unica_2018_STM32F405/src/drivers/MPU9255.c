@@ -20,9 +20,11 @@
 
 #include "kinematic_unit.h"
 #include "MPU9255.h"
+#include "UNICS_bmp280.h"
 
 
-//I2C_HandleTypeDef* i2c_mpu9255 = NULL;
+static I2C_HandleTypeDef i2c_mpu9255;
+USART_HandleTypeDef usart_dbg;
 
 
 int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
@@ -61,6 +63,7 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
 	PROCESS_ERROR(HAL_I2C_Init(hi2c));
+	vTaskDelay(100/portTICK_RATE_MS);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
 	vTaskDelay(100/portTICK_RATE_MS);
@@ -104,13 +107,9 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(Z_ACCEL_OFFSET << 1));
 	mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(Z_ACCEL_OFFSET << 7));*/
 
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000010));	//режим bypass on
-
 	//compass init
-	PROCESS_ERROR(mpu9255_writeRegister(COMPASS,		  	0x0A,	0b00010110));	//control 1
-
-	//TODO:	bmp280 init
-
+	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000010));	//режим bypass on
+	PROCESS_ERROR(mpu9255_writeRegister(COMPASS,		0x0A,	0b00010110));	//control 1
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000000));	//режим bypass off
 
 end:
@@ -207,7 +206,7 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 
 
 static int IMU_updateDataAll() {
-	//	массивы для хранения опросов
+	//	массивы для хранения //FIXME: LOWопросов
 	int error = 0;
 	int16_t accelData[3] = {0, 0, 0};
 	int16_t gyroData[3] = {0, 0, 0};
@@ -249,19 +248,41 @@ void IMU_task() {
 	gpioc.Mode = GPIO_MODE_OUTPUT_OD;
 	gpioc.Pin = GPIO_PIN_12;
 	gpioc.Pull = GPIO_NOPULL;
-	gpioc.Speed = GPIO_SPEED_FREQ_LOW;
+	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
 
 	HAL_GPIO_Init(GPIOC, &gpioc);
 
+	usart_dbg.Instance = USART3;
 	usart_dbg.Init.BaudRate = 256000;
 	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
 	usart_dbg.Init.StopBits = UART_STOPBITS_1;
 	usart_dbg.Init.Parity = UART_PARITY_NONE;
 	usart_dbg.Init.Mode = UART_MODE_TX_RX;
 
-	usart_dbg.Instance = USART3;
-
 	HAL_USART_Init(&usart_dbg);
+
+	const TickType_t _delay = 500 / portTICK_RATE_MS;
+
+	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
+	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
+	state_initErrors.MPU_E = mpu9255_initError;
+	printf("MPU9255 error: %d\n", mpu9255_initError);
+
+	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
+	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
+	rscs_bmp280_parameters_t bmp280_parameters;
+	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
+	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
+	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
+	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
+
+	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
+	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
+	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
+	state_initErrors.BMP_E = bmp280_initError;
+	printf("BMP280 error: %d\n", bmp280_initError);
+
+
 //	taskEXIT_CRITICAL();
 
 	/*for (;;) {
@@ -332,6 +353,27 @@ void IMU_task() {
 //	printf("mpu_error = %d\n", mpu9255init_error);
 
 	for (;;) {
+
+//		printf("Time:\t\t%f s\r\n", (double)HAL_GetTick()/1000);
+//
+//		//---ОПРОС MPU9255---//
+//		IMU_updateDataAll();
+//
+//		printf("Accelerations:\t\t%f m/s\t%f m/s\t%f m/s\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
+//		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
+//		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
+//
+//		//---ОПРОС BMP280---//
+//		//Примечание - Запись данных в STATE производится в критических зонах
+//		rscs_bmp280_read(bmp280, &stateSensors_raw.pressure, &stateSensors_raw.temp);
+//		rscs_bmp280_calculate(bmp280_calibration_values, stateSensors_raw.pressure, stateSensors_raw.temp, &stateSensors.pressure, &stateSensors.temp);
+//
+//
+//		printf("Preasure:\t\t%f Pa\n", stateSensors.pressure);
+//		printf("Temperature:\t\t%f oC\n", stateSensors.temp);
+//		printf("\n");
+		vTaskDelay(_delay);
+
 //		int error = IMU_updateDataAll();
 //		printf("IMU_error = %d\n", error);
 //		const TickType_t _delay = 10 / portTICK_RATE_MS;
@@ -382,15 +424,3 @@ void IMU_task() {
 		volatile x = 0;
 	}
 }
-
-
-//
-//int mpu9255_readBMP280(I2C_HandleTypeDef* uint16_t* raw_pressure, uint16_t* raw_temp) {
-//	int error = 0;
-//
-//	//PROCESS_ERROR()
-//
-//end:
-//	return error;
-//}
-

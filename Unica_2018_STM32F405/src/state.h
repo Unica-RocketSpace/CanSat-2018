@@ -21,6 +21,8 @@
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_dma.h"
 
+#include "drivers/UNICS_bmp280.h"
+
 
 // if error set value and go to end
 #define PROCESS_ERROR(x) if (0 != (error = (x))) { goto end; }
@@ -44,8 +46,8 @@ typedef struct {
 
 typedef struct {
 	//	temperature and pressure
-	int16_t temp;
-	int16_t pressure;
+	int32_t temp;
+	int32_t pressure;
 } stateSensors_raw_t;
 
 
@@ -122,14 +124,13 @@ typedef struct {
 } state_zero_t;
 
 
-//	struct for keeping flags for switching FreeRTOS tasks
+//	struct for keeping flags
 typedef struct {
-	uint8_t IO_RF_flag;
-	bool zeroOrient_isSet;		//	zero orient is set
-	uint8_t GPS_flag;
-	uint8_t RPI_IO_flag;
-
-} stateTasks_flags_t;
+	uint8_t MPU_E;
+	uint8_t BMP_E;
+	uint8_t GPS_E;
+	uint8_t NRF_E;
+} state_initErrors_t;
 
 
 typedef enum {
@@ -143,12 +144,8 @@ typedef enum {
 /*################### ПЕРЕМЕННЫЕ ###################*/
 /*##################################################*/
 
-extern I2C_HandleTypeDef 	i2c_mpu9255;
-extern USART_HandleTypeDef 	usart_GPS;
-extern USART_HandleTypeDef usart_dbg;
-extern DMA_HandleTypeDef 	dma_GPS;
+extern USART_HandleTypeDef	usart_dbg;
 extern SPI_HandleTypeDef	spi_nRF24L01;
-extern USART_HandleTypeDef usart_motor;
 
 // глобальные структуры
 extern stateIMU_raw_t 		stateIMU_raw;
@@ -165,6 +162,6 @@ extern state_zero_t			state_zero;
 extern stateIMU_isc_t		stateIMU_isc_prev;
 extern state_system_t		state_system_prev;
 
-extern stateTasks_flags_t	stateTasks_flags;
+extern state_initErrors_t	state_initErrors;
 
 #endif /* STATE_H_ */

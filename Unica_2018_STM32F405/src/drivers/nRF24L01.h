@@ -206,76 +206,76 @@ extern uint8_t nRF24L01_RX_BUFFER[nRF24L01_RX_BUFFER_LEN];
 /*
  * Инициализация радиомодуля.
  */
-void nRF24L01_init();
+uint8_t nRF24L01_init();
 
 /*
  * Функция для чтения данных.
  * Параметры: read_buffer - буффер, в которые приходят данные, buffer_size - размер буффера.
  * Возвращает "1" если данные пришли, "0" если данных нет.
  */
-bool nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t buffer_size);
+uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t buffer_size, bool* isData);
 
 /*
  * Функция для записи данных.
  * Параметры: write_buffer - буффер для записи данных, buffer_size - размер буффера, ACK - ответ (1 если нужен, 0 если нет).
  */
-void nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buffer_size, bool ACK);
+uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buffer_size, bool ACK);
 
 /*
  * Позволяет записать адрес регистра (размер до 5 байт)
  * Параметры: address - адрес регистра, data_register - данные регистра, data_len - длина регистра.
  */
-void nRF24L01_write_register_address (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t * data_register, size_t data_len);
+uint8_t nRF24L01_write_register_address (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t * data_register, size_t data_len);
 
 /*
  * Позволяет записать данные в регистер
  * Параметры: address - адрес регистра, data_register - данные, которые надо записать.
  */
-void nRF24L01_write_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t data_register);
+uint8_t nRF24L01_write_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t data_register);
 
 /*
  * Позволяет прочитать адрес регистра
  * Параметры: address - адрес регистра, data_register - данные регистра, data_len - длина регистра.
  */
-void nRF24L01_read_register_address (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t * data_register, size_t data_len);
+uint8_t nRF24L01_read_register_address (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t * data_register, size_t data_len);
 
 /*
  * Позволяет прочитать регистр
  * Параметры: address - адрес регистра.
  * Возвращает данные регистра.
  */
-uint8_t nRF24L01_read_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address);
+uint8_t nRF24L01_read_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t address, uint8_t* data);
 
 /*
  * Позволяет прочитать статус регистр
  * Возвращает данные статус регстра
  */
-uint8_t nRF24L01_read_status(SPI_HandleTypeDef* hspi);
+uint8_t nRF24L01_read_status(SPI_HandleTypeDef* hspi, uint8_t* status);
 
 /*
  * Позволяет поменять режим работы (RX or TX)
  * Параметры: mode - 1 - режим приема данных, 0 - режим передачи данных.
  */
-void nRF24L01_RX_mode_on (SPI_HandleTypeDef* hspi, bool mode);
+uint8_t nRF24L01_RX_mode_on (SPI_HandleTypeDef* hspi, bool mode);
 
 /*
  * Позволяет очистить статус регистр (погасить флаги: RX_DR, TX_DS, MAX_RT)
  * Параметры: flag_RX_DR - флаг получения входных данных, flag_TX_DS - флаг отправки выходных данных, flag_MAX_RT - флаг превышения лимита повторов передачи данных.
  * Гасит флаги если записана 1.
  */
-void nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool flag_TX_DS,bool flag_MAX_RT);
+uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool flag_TX_DS,bool flag_MAX_RT);
 
 /*
  * Позволяет очистить TX_FIFO
  * Использует команду FLUSH_TX_FIFO
  */
-void nRF24L01_clear_TX_FIFO (SPI_HandleTypeDef* hspi);
+uint8_t nRF24L01_clear_TX_FIFO (SPI_HandleTypeDef* hspi);
 
 /*
  * Позволяет очистить RX_FIFO
  * Использует команду FLUSH_RX_FIFO
  */
-void nRF24L01_clear_RX_FIFO (SPI_HandleTypeDef* hspi);
+uint8_t nRF24L01_clear_RX_FIFO (SPI_HandleTypeDef* hspi);
 
 
 #endif /* NRF24L01_H_ */

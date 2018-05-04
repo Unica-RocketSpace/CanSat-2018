@@ -18,9 +18,9 @@
 #include "kinematic_unit.h"
 #include "gps_nmea.h"
 #include "MPU9255.h"
+#include "UNICS_bmp280.h"
 #include "nRF24L01.h"
 #include "telemetry.h"
-#include "dynamic_unit.h"
 
 // ----- Timing definitions -------------------------------------------------
 
@@ -38,12 +38,8 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
 
-I2C_HandleTypeDef i2c_mpu9255;
-USART_HandleTypeDef usart_GPS;
-USART_HandleTypeDef usart_dbg;
-DMA_HandleTypeDef dma_GPS;
+
 SPI_HandleTypeDef	spi_nRF24L01;
-USART_HandleTypeDef usart_motor;
 
 // глобальные структуры
 stateIMU_raw_t 		stateIMU_raw;
@@ -60,24 +56,48 @@ stateIMU_isc_t		stateIMU_isc_prev;
 state_system_t		state_system_prev;
 stateCamera_orient_t stateCamera_orient_prev;
 
-stateTasks_flags_t		stateTasks_flags;
+state_initErrors_t		state_initErrors;
 
+rscs_bmp280_descriptor_t * bmp280;
+const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 //	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE 1024
+#define IO_RF_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
 
 //	параметры GPS_task
-#define GPS_TASK_STACK_SIZE 1024
+#define GPS_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 //	параметры IMU_task
-#define IMU_TASK_STACK_SIZE 2048
+#define IMU_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
+
+
+//void DUMMY_task() {
+//
+//	const TickType_t _delay = 200 / portTICK_RATE_MS;
+//	for(;;) {
+////		vTaskDelay(_delay);
+////		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+////		vTaskDelay(_delay);
+////		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
+////		HAL_USART_Transmit(&usart_dbg, stateIMU_isc.accel, sizeof(stateIMU_isc.accel), 100);
+//		taskENTER_CRITICAL();
+////		printf("%f, %f, %f\n", stateIMU_isc.accel[0], stateIMU_isc.accel[1], stateIMU_isc.accel[2]);
+////		printf("%f, %f, %f\n", stateIMU_isc.gyro[0], stateIMU_isc.gyro[1], stateIMU_isc.gyro[2]);
+////		printf("%f, %f, %f\n", stateIMU_isc.compass[0], stateIMU_isc.compass[1], stateIMU_isc.compass[2]);
+////		printf("\n");
+//		printf("\n");
+//		taskEXIT_CRITICAL();
+//		vTaskDelay(_delay);
+//	}
+//
+//}
 
 
 int main(int argc, char* argv[])
@@ -97,48 +117,48 @@ int main(int argc, char* argv[])
 	memset(&state_system_prev, 			0x00, sizeof(state_system_prev));
 	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
-	memset(&stateTasks_flags,	0x00, sizeof(stateTasks_flags));
+	memset(&state_initErrors,	0x00, sizeof(state_initErrors));
 
 
-//	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-//			IO_RF_task,
-//			"IO_RF",
-//			IO_RF_TASK_STACK_SIZE,
-//			NULL,
-//			1,
-//			_iorfTaskStack,
-//			&_iorfTaskObj
-//	);
+	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+			IO_RF_task,
+			"IO_RF",
+			IO_RF_TASK_STACK_SIZE,
+			NULL,
+			1,
+			_iorfTaskStack,
+			&_iorfTaskObj
+	);
+
+
+	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
+			GPS_task, 			// функция
+			"GPS",				// имя
+			GPS_TASK_STACK_SIZE,// глубина стека
+			NULL,				// аргумент
+			1,					// приоритет
+			_gpsTaskStack,		// стек
+			&_gpsTaskObj		// объект задания
+	);
+
+
+	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
+			IMU_task, 			// функция
+			"IMU",				// имя
+			IMU_TASK_STACK_SIZE,// глубина стека
+			NULL,				// аргумент
+			1,					// приоритет
+			_IMUTaskStack,		// стек
+			&_IMUTaskObj		// объект задания
+	);
+
+//	#define DUMMY_TASK_STACK_SIZE 512
+//	static StackType_t	_dummyTaskStack[DUMMY_TASK_STACK_SIZE];
+//	static StaticTask_t	_dummyTaskObj;
 //
+//	xTaskCreateStatic(DUMMY_task, "dummy", DUMMY_TASK_STACK_SIZE, NULL, 1,
+//						_dummyTaskStack, &_dummyTaskObj);
 //
-//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-//			GPS_task, 			// функция
-//			"GPS",				// имя
-//			GPS_TASK_STACK_SIZE,// глубина стека
-//			NULL,				// аргумент
-//			1,					// приоритет
-//			_gpsTaskStack,		// стек
-//			&_gpsTaskObj		// объект задания
-//	);
-//
-//
-//	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
-//			IMU_task, 			// функция
-//			"IMU",				// имя
-//			IMU_TASK_STACK_SIZE,// глубина стека
-//			NULL,				// аргумент
-//			1,					// приоритет
-//			_IMUTaskStack,		// стек
-//			&_IMUTaskObj		// объект задания
-//	);
-
-	#define MOTOR_TASK_STACK_SIZE 2048
-	static StackType_t	_motorTaskStack[MOTOR_TASK_STACK_SIZE];
-	static StaticTask_t	_motorTaskObj;
-
-	xTaskCreateStatic(MOTOR_task, "dummy", MOTOR_TASK_STACK_SIZE, NULL, 1,
-						_motorTaskStack, &_motorTaskObj);
-
 
 	vTaskStartScheduler();
 

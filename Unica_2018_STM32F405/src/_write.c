@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stm32f4xx_hal.h>
 #include "diag/Trace.h"
+
 #include "state.h"
 
 // ----------------------------------------------------------------------------
@@ -59,7 +60,7 @@ _write (int fd __attribute__((unused)), const char* buf __attribute__((unused)),
     {
 //      return trace_write (buf, nbyte);
 	  // IF YOU USE USART
-	  return HAL_USART_Transmit(&usart_motor, (uint8_t*)buf, nbyte, 0xFF);
+	  return HAL_USART_Transmit(&usart_dbg, (uint8_t*)buf, nbyte, 0xFF);
     }
 
   errno = ENOSYS;

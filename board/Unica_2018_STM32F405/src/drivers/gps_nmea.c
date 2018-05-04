@@ -173,15 +173,12 @@ void GPS_task()	{
 		float _height = minmea_tofloat(&frame.altitude);
 
 		taskENTER_CRITICAL();
-
 		stateGPS.coordinates[0] = _lon;
 		stateGPS.coordinates[1] = _lat;
 		stateGPS.coordinates[2] = _height;
-
-		printf("x: %f, y: %f, z: %f\n", stateGPS.coordinates[0], stateGPS.coordinates[1], stateGPS.coordinates[2]);
-
 		taskEXIT_CRITICAL();
 
+		printf("x: %f, y: %f, z: %f\n", _lon, _lat, _height);
 	}
 }
 

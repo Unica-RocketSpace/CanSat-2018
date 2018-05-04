@@ -19,6 +19,7 @@
 #include "task.h"
 
 #include "kinematic_unit.h"
+#include "dynamic_unit.h"
 #include "MPU9255.h"
 #include "UNICS_bmp280.h"
 
@@ -213,6 +214,12 @@ static int IMU_updateDataAll() {
 	int16_t compassData[3] = {0, 0, 0};
 	float accel[3] = {0, 0, 0}; float gyro[3] = {0, 0, 0}; float compass[3] = {0, 0, 0};
 
+	stateIMU_isc_t local_stateIMU_isc;
+	stateIMU_isc_t local_stateIMU_isc_prev;
+	state_system_t local_state_system;
+	state_system_t local_state_system_prev;
+	stateIMU_rsc_t local_stateIMU_rsc;
+
 	//	собираем данные
 	PROCESS_ERROR(mpu9255_readIMU(accelData, gyroData));
 	PROCESS_ERROR(mpu9255_readCompass(compassData));
@@ -227,12 +234,30 @@ taskENTER_CRITICAL();
 		stateIMU_rsc.gyro[k] = gyro[k];
 		stateIMU_rsc.compass[k] = compass[k];
 	}
-
-	//	обновляем ориентацию (предварительно запросив время)
 	state_system.time = HAL_GetTick()/1000;
+taskEXIT_CRITICAL();
+
+taskENTER_CRITICAL();
+	//	копируем глобальные структуры в локальные
+	memcpy(&local_stateIMU_isc, 		&stateIMU_isc, 		sizeof(stateIMU_isc));
+	memcpy(&local_stateIMU_isc_prev, 	&stateIMU_isc_prev, sizeof(stateIMU_isc_prev));
+	memcpy(&local_state_system, 		&state_system, 		sizeof(state_system));
+	memcpy(&local_state_system_prev, 	&state_system_prev,	sizeof(state_system_prev));
+	memcpy(&local_stateIMU_rsc, 		&stateIMU_rsc, 		sizeof(stateIMU_rsc));
+taskEXIT_CRITICAL();
+
+	//	обновляем ориентацию, используя локальные структуры
 	constructTrajectory(
-			&stateIMU_isc, &stateIMU_isc_prev,
-			&state_system, &state_system_prev, &stateIMU_rsc);
+		&local_stateIMU_isc, &local_stateIMU_isc_prev,
+		&local_state_system, &local_state_system_prev, &local_stateIMU_rsc);
+
+taskENTER_CRITICAL();
+	//	копируем локальные структуры в глобальные
+	memcpy(&stateIMU_isc, 		&local_stateIMU_isc, 		sizeof(local_stateIMU_isc));
+	memcpy(&stateIMU_isc_prev, 	&local_stateIMU_isc_prev, 	sizeof(local_stateIMU_isc_prev));
+	memcpy(&state_system, 		&local_state_system, 		sizeof(local_state_system));
+	memcpy(&state_system_prev,	&local_state_system_prev, 	sizeof(local_state_system_prev));
+	memcpy(&stateIMU_rsc, 		&local_stateIMU_rsc, 		sizeof(local_stateIMU_rsc));
 taskEXIT_CRITICAL();
 
 end:
@@ -261,8 +286,6 @@ void IMU_task() {
 
 	HAL_USART_Init(&usart_dbg);
 
-	const TickType_t _delay = 500 / portTICK_RATE_MS;
-
 	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
 	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
 	state_initErrors.MPU_E = mpu9255_initError;
@@ -282,8 +305,6 @@ void IMU_task() {
 	state_initErrors.BMP_E = bmp280_initError;
 	printf("BMP280 error: %d\n", bmp280_initError);
 
-
-//	taskEXIT_CRITICAL();
 
 	/*for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
@@ -372,55 +393,34 @@ void IMU_task() {
 //		printf("Preasure:\t\t%f Pa\n", stateSensors.pressure);
 //		printf("Temperature:\t\t%f oC\n", stateSensors.temp);
 //		printf("\n");
+
+//		vTaskDelay(_delay);
+
+		const TickType_t _delay = 10 / portTICK_RATE_MS;
+//		IMU_updateDataAll();
+//		printf("Accelerations:\t\t%f m/s\t%f m/s\t%f m/s\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
+//		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
+//		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
+
+//		calculate_angles();
+//		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
+
+
+		stateIMU_isc.quaternion[0] = sqrt(0.5);
+		stateIMU_isc.quaternion[1] = sqrt(0.5);
+		stateIMU_isc.quaternion[2] = 0;
+		stateIMU_isc.quaternion[3] = 0;
+		calculate_angles();
+		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
+
+
+
+	taskENTER_CRITICAL();
+		memcpy(&stateIMU_isc_prev, 			&stateIMU_isc,			sizeof(stateIMU_isc));
+		memcpy(&state_system_prev, 			&state_system,		 	sizeof(state_system));
+		memcpy(&stateCamera_orient_prev, 	&stateCamera_orient, 	sizeof(stateCamera_orient));
+	taskEXIT_CRITICAL();
+
 		vTaskDelay(_delay);
-
-//		int error = IMU_updateDataAll();
-//		printf("IMU_error = %d\n", error);
-//		const TickType_t _delay = 10 / portTICK_RATE_MS;
-//		vTaskDelay(_delay);
-//		int16_t accelData[3] = {0, 0, 0};
-//		int16_t gyroData[3] = {0, 0, 0};
-//		float accel[3] = {0, 0, 0};
-//
-//		uint8_t error =	mpu9255_readIMU(accelData, gyroData);
-//		mpu9255_recalcAccel(accelData, accel);
-//		taskENTER_CRITICAL();
-//		for (int i = 0; i < 3; i++) {
-//			stateIMU_rsc.accel[i] = accel[i];
-//		}
-//		taskEXIT_CRITICAL();
-//
-//
-//		taskENTER_CRITICAL();
-//
-////		char *msg = "dfglkj";
-////		uint8_t VT = 0b00001011;
-////		HAL_USART_Transmit(&usart_dbg, (uint8_t*)msg, strlen(msg), 2000);
-////		HAL_USART_Transmit(&usart_dbg, &VT, 1, 2000);
-////		HAL_USART_Transmit(&usart_dbg, &VT_H, 1, 2000);
-////		HAL_USART_Transmit(&usart_dbg, &((uint8_t)dummy), sizeof(dummy), 2000);
-////		HAL_USART_Transmit(&usart_dbg, (uint8_t*)accelData, sizeof(accelData), 2000);
-//
-////		trace_printf("%d\n", error);
-////		trace_printf("%X, %X, %X\n", accelData[0], accelData[1], accelData[2]);
-//
-//		trace_printf("%f, %f, %f\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
-//
-//
-//		taskEXIT_CRITICAL();
-//		taskENTER_CRITICAL();
-//		printf("%d\n", error);
-//		printf("%f, %f, %f\n", stateIMU_isc.accel[0], stateIMU_isc.accel[1], stateIMU_isc.accel[2]);
-//		printf("%f, %f, %f\n", stateIMU_isc.gyro[0], stateIMU_isc.gyro[1], stateIMU_isc.gyro[2]);
-//		printf("%f, %f, %f\n", stateIMU_isc.compass[0], stateIMU_isc.compass[1], stateIMU_isc.compass[2]);
-//		printf("\n");
-//		taskEXIT_CRITICAL();
-//		const TickType_t _delay = 100 / portTICK_RATE_MS;
-//		vTaskDelay(_delay);
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
-//		vTaskDelay(_delay);
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
-
-		volatile x = 0;
 	}
 }

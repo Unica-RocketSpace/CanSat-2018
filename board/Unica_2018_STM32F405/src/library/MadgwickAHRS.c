@@ -52,7 +52,7 @@ void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, f
 
 	// Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
 	if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-		MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
+		MadgwickAHRSupdateIMU(localStateIMU_isc, gx, gy, gz, ax, ay, az);
 		return;
 	}
 
@@ -147,7 +147,7 @@ void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, f
 //---------------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
+void MadgwickAHRSupdateIMU(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az) {
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
@@ -213,6 +213,11 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, flo
 	q1 *= recipNorm;
 	q2 *= recipNorm;
 	q3 *= recipNorm;
+
+	localStateIMU_isc->quaternion[0] = q0;
+	localStateIMU_isc->quaternion[1] = q1;
+	localStateIMU_isc->quaternion[2] = q2;
+	localStateIMU_isc->quaternion[3] = q3;
 }
 
 //---------------------------------------------------------------------------------------------------

@@ -29,14 +29,19 @@ void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
 	// getting integration time
 	float dt = (float)(localState_system->time - localState_system_prev->time);
 
+	//FIXME: ЗАМЕНИТЬ ОБРАТНО
 	// getting rotation quaternion
-	MadgwickAHRSupdate(localStateIMU_isc,
-				localStateIMU_rsc->gyro[0]-state_zero.gyro_staticShift[0],
+//	MadgwickAHRSupdate(localStateIMU_isc,
+//				localStateIMU_rsc->gyro[0]-state_zero.gyro_staticShift[0],
+//				localStateIMU_rsc->gyro[1]-state_zero.gyro_staticShift[1],
+//				localStateIMU_rsc->gyro[2]-state_zero.gyro_staticShift[2],
+//				localStateIMU_rsc->accel[0], localStateIMU_rsc->accel[1], localStateIMU_rsc->accel[2],
+//				localStateIMU_rsc->compass[0], localStateIMU_rsc->compass[1], localStateIMU_rsc->compass[2]
+//	);
+	MadgwickAHRSupdateIMU(localStateIMU_isc, localStateIMU_rsc->gyro[0]-state_zero.gyro_staticShift[0],
 				localStateIMU_rsc->gyro[1]-state_zero.gyro_staticShift[1],
 				localStateIMU_rsc->gyro[2]-state_zero.gyro_staticShift[2],
-				localStateIMU_rsc->accel[0], localStateIMU_rsc->accel[1], localStateIMU_rsc->accel[2],
-				localStateIMU_rsc->compass[0], localStateIMU_rsc->compass[1], localStateIMU_rsc->compass[2]
-	);
+				localStateIMU_rsc->accel[0], localStateIMU_rsc->accel[1], localStateIMU_rsc->accel[2]);
 
 	// rotation RSC vectors to ISC using quaternion
 	vect_rotate(localStateIMU_rsc->accel, localStateIMU_isc->quaternion, localStateIMU_isc->accel);

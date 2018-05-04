@@ -17,7 +17,7 @@
 #include "stdint.h"
 
 #include "state.h"
-
+#include "UNISAT_messages/mavlink.h"
 #include "telemetry.h"
 #include "nRF24L01.h"
 
@@ -124,28 +124,22 @@ void IO_RF_task() {
 	const TickType_t _delay = 500 / portTICK_RATE_MS;
 	for (;;) {
 
-		uint8_t nRF_status = 0;
-		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
-						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
-						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
-						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
-						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
-						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
+//		uint8_t nRF_status = 0;
+//		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
+//		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
+//						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
+//						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
+//						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
+//						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
+//						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
 //		if (nRF_status & (1 << TX_FULL))
 		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
 
-		uint8_t config = 0;
-		nRF24L01_read_register(&spi_nRF24L01, nRF24L01_CONFIG_ADDR, &config);
-		printf("config = %d\n", config);
-
-//taskENTER_CRITICAL();
 		char buffer[32];
 		sprintf(buffer, "UNICA's broadcasting %lu\n", i);
 		nRF24L01_write(&spi_nRF24L01, (uint8_t*)buffer, strlen(buffer), 1);
 		i++;
-//taskEXIT_CRITICAL();
 
 		vTaskDelay(_delay);
 //		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС

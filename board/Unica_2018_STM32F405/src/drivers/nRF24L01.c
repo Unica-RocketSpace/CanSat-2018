@@ -75,9 +75,6 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << PWR_UP) |
 			(0 << PRIM_RX);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_CONFIG_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_CONFIG_ADDR, &value);
-	printf("config = %d", value);
 
 	value = (1 << ENAA_P5)|
 			(1 << ENAA_P4)|
@@ -86,9 +83,6 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << ENAA_P1)|
 			(1 << ENAA_P0);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_EN_AA_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_EN_AA_ADDR, &value);
-	printf("en_aa = %d", value);
 
 	value = (1 << ERX_P5)|
 			(1 << ERX_P4)|
@@ -97,37 +91,22 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << ERX_P1)|
 			(1 << ERX_P0);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_EN_RXADDR_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_EN_RXADDR_ADDR, &value);
-	printf("en_rxaddr = %d", value);
 
 	value = (0b11 << AW);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_SETUP_AW_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_SETUP_AW_ADDR, &value);
-	printf("setup_aw = %d", value);
 
 	value = (0b0011 << ARD)|
 			(0b1111 << ARC);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_ARC_CNT_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_ARC_CNT_ADDR, &value);
-	printf("en_rxaddr = %d", value);
 
 
 	value = (0x4c << RF_CH);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RF_CH_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_RF_CH_ADDR, &value);
-	printf("rf_ch = %d", value);
 
 	value = (0 << RF_DR)|
 			(0b11 << RF_PWR)|
 			(0 << LNA_HCURR);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RF_SETUP_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_RF_SETUP_ADDR, &value);
-	printf("rf_setup = %d", value);
 
 	value = (1 << DPL_P5)|
 			(1 << DPL_P4)|
@@ -136,35 +115,20 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << DPL_P1)|
 			(1 << DPL_P0);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_DYNPD_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_DYNPD_ADDR, &value);
-	printf("dynpd = %d", value);
 
 	value = (1 << EN_DPL)|
 			(1 << EN_ACK_PAY)|
 			(1 << EN_DYN_ACK);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_FEATURE_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_FEATURE_ADDR, &value);
-	printf("feature = %d", value);
 
 	uint8_t device_address_P0[5] = nRF24L01_RX_ADDR_P0;
 	PROCESS_ERROR(nRF24L01_write_register_address(hspi, nRF24L01_RX_ADDR_P0_ADDR, device_address_P0, 5));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_RX_ADDR_P0_ADDR, &value);
-	printf("rx = %d", value);
 
 	uint8_t device_address_TX[5] = nRF24L01_TX_ADDR;
 	PROCESS_ERROR(nRF24L01_write_register_address(hspi, nRF24L01_TX_ADDR_ADDR, device_address_TX, 5));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_TX_ADDR_ADDR, &value);
-	printf("tx = %d", value);
 
 	value = nRF24L01_RX_PW_P0;
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RX_PW_P0_ADDR, value));
-	value = 0;
-	nRF24L01_read_register(hspi, nRF24L01_RX_PW_P0_ADDR, &value);
-	printf("rx_pw = %d", value);
 
 end:
 	return error;

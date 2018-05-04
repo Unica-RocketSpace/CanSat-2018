@@ -8,8 +8,10 @@
 #include <math.h>
 
 #include <stm32f4xx_hal.h>
+#include <math.h>
+#include <string.h>
 
-#include <FreeRTOS.h>
+#include "FreeRTOS.h"
 #include "task.h"
 
 #include "dynamic_unit.h"
@@ -31,8 +33,8 @@
 #define DRV8855_nFAULT_PIN	GPIO_PIN_10	//B11
 #define DRV8855_nFAULT_PORT	GPIOB
 
-#define TARGET_X			100
-#define TARGET_Y			100
+#define TARGET_X			10
+#define TARGET_Y			0
 
 
 
@@ -94,27 +96,51 @@ void step_engine_init () {
 }
 
 
-
 void calculate_angles () {
 
-	float quat_ISC_RSC[4] = {0, 0, 0, 0};		//	кватернион для перехода из инерциальной системы в связанную
-	float target[3] = {0, 0, 0};				//	направляющий вектор цели
-	float target_RSC[3] = {0, 0, 0};			//	направляющий вектор цели в ССК
+	float quat_ISC_RSC[4] = {0.0, 0.0, 0.0, 0.0};		//	кватернион для перехода из инерциальной системы в связанную
+	float target[3] = {0.0, 0.0, 0.0};				//	направляющий вектор цели
+	float target_RSC[3] = {0.0, 0.0, 0.0};			//	направляющий вектор цели в ССК
+	float local_quaternion[4] = {0.0, 0.0, 0.0, 0.0};	//	локальная переменная для нахождения кватерниона
+	float local_step_engine_pos = 0.0;
+	float local_servo_pos = 0.0;
 
+	//	находим координаты цели
+taskENTER_CRITICAL();
+	memcpy(local_quaternion, stateIMU_isc.quaternion, sizeof(stateIMU_isc.quaternion));
 	//TODO: CHOOSE WHAT DATA TO USE: IMU OR GPS
 	target[0] = TARGET_X - stateIMU_isc.coordinates[0];
 	target[1] = TARGET_Y - stateIMU_isc.coordinates[1];
 	target[2] = - stateIMU_isc.coordinates[2];
+taskEXIT_CRITICAL();
 
-	quat_invert(stateIMU_isc.quaternion, quat_ISC_RSC);		//	получаем кватернион ИСК->ССК
-	vect_rotate(target, quat_ISC_RSC, target_RSC);	//	получаем вектор цели в ССК
+	float target_mod = sqrt(pow(target[0], 2) + pow(target[1], 2) + pow(target[2], 2));
+	target[0] /= target_mod;
+	target[1] /= target_mod;
+	target[2] /= target_mod;
 
-	stateCamera_orient.step_engine_pos = atan(target_RSC[0] / target_RSC[1]);
-	stateCamera_orient.servo_pos = atan(target_RSC[2] / sqrt(pow(target_RSC[0], 2) + pow(target_RSC[1], 2)));
+//	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК
+//	vect_rotate(target, quat_ISC_RSC, target_RSC);			//	получаем вектор цели в ССК
+	vect_rotate(target, local_quaternion, target_RSC);			//	получаем вектор цели в ССК
+
+	if (target_RSC[0] != 0)
+		local_step_engine_pos = atan(target_RSC[1] / target_RSC[0]);
+	else local_step_engine_pos = 0;
+
+	float mod = sqrt(pow(target_RSC[0], 2) + pow(target_RSC[1], 2));
+	if (mod != 0)
+		local_servo_pos = atan(target_RSC[2] / mod);
+	else local_servo_pos = 0;
+
+	//	записываем углы в state
+taskENTER_CRITICAL();
+	stateCamera_orient.step_engine_pos = local_step_engine_pos;
+	stateCamera_orient.servo_pos = local_servo_pos;
+taskEXIT_CRITICAL();
 }
 
 
-/*error rotate_step_engine () {
+error rotate_step_engine () {
 
 	if (HAL_GPIO_ReadPin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN) == 0) return driver_overheat;
 

@@ -4,6 +4,7 @@
  *  Created on: 11 нояб. 2017 г.
  *      Author: developer
  */
+#include "stdbool.h"
 #include <math.h>
 
 #include <stm32f4xx_hal.h>
@@ -17,17 +18,17 @@
 
 #define STEP_DIVIDER		2
 
-#define DRV8855_STEP_PIN	GPIO_PIN_3
-#define DRV8855_STEP_PORT	GPIOC
-#define DRV8855_DIR_PIN		GPIO_PIN_4
-#define DRV8855_DIR_PORT	GPIOA
-#define DRV8855_MODE0_PIN	GPIO_PIN_2
-#define DRV8855_MODE0_PORT	GPIOD
-#define DRV8855_MODE1_PIN	GPIO_PIN_11
+#define DRV8855_STEP_PIN	GPIO_PIN_13	//C3
+#define DRV8855_STEP_PORT	GPIOB
+#define DRV8855_DIR_PIN		GPIO_PIN_14	//A4
+#define DRV8855_DIR_PORT	GPIOB
+#define DRV8855_MODE0_PIN	GPIO_PIN_6	//D2
+#define DRV8855_MODE0_PORT	GPIOC
+#define DRV8855_MODE1_PIN	GPIO_PIN_8	//C11
 #define DRV8855_MODE1_PORT	GPIOC
-#define DRV8855_MODE2_PIN	GPIO_PIN_10
-#define DRV8855_MODE2_PORT	GPIOA
-#define DRV8855_nFAULT_PIN	GPIO_PIN_11
+#define DRV8855_MODE2_PIN	GPIO_PIN_9	//A10
+#define DRV8855_MODE2_PORT	GPIOC
+#define DRV8855_nFAULT_PIN	GPIO_PIN_10	//B11
 #define DRV8855_nFAULT_PORT	GPIOB
 
 #define TARGET_X			100
@@ -36,6 +37,11 @@
 
 
 void step_engine_init () {
+
+	__GPIOA_CLK_ENABLE();
+	__GPIOB_CLK_ENABLE();
+	__GPIOC_CLK_ENABLE();
+	__GPIOD_CLK_ENABLE();
 
 	GPIO_InitTypeDef DRV8825_pins;
 
@@ -80,9 +86,10 @@ void step_engine_init () {
 	HAL_GPIO_Init(DRV8855_nFAULT_PORT, &DRV8825_pins);
 
 	//TODO:Написать определение MODE-ов с учетом STEP_DIVIDER
-	HAL_GPIO_WritePin(DRV8855_MODE0_PORT, DRV8855_MODE0_PIN, STEP_DIVIDER & (1<<0));
-	HAL_GPIO_WritePin(DRV8855_MODE1_PORT, DRV8855_MODE1_PIN, STEP_DIVIDER & (1<<1));
-	HAL_GPIO_WritePin(DRV8855_MODE2_PORT, DRV8855_MODE2_PIN, STEP_DIVIDER & (1<<2));
+	//DRV8855_MODE0_PORT->BSRR = 0xFF;
+	HAL_GPIO_WritePin(DRV8855_MODE0_PORT, DRV8855_MODE0_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(DRV8855_MODE1_PORT, DRV8855_MODE1_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(DRV8855_MODE2_PORT, DRV8855_MODE2_PIN, GPIO_PIN_SET);
 
 }
 
@@ -107,7 +114,7 @@ void calculate_angles () {
 }
 
 
-error rotate_step_engine () {
+/*error rotate_step_engine () {
 
 	if (HAL_GPIO_ReadPin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN) == 0) return driver_overheat;
 
@@ -116,21 +123,24 @@ error rotate_step_engine () {
 	rotate_step_engine_by_angles(&STEP_DEGREES);
 
 	return no_error;
-}
+}*/
 
-void rotate_step_engine_by_angles (float * angles) {
+void rotate_step_engine_by_angles (float * angles, bool direction) {
 
 	float STEP_DEGREES = *angles;
 
-	if (STEP_DEGREES > 0) HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, 1);
-	else HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, 0);
+	if (direction) HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_SET);
+	else HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_RESET);
 
-	float STEP_TERNS= STEP_DEGREES/ (M_PI *2) * 200 * pow(2, STEP_DIVIDER);
-	for(int i = 0; i < round(STEP_TERNS); i++) {
-		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, 1);
-		for(int j = 0; j< 15000; j++){}
-		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, 0);
-		for(int j = 0; j< 15000; j++){}
+	float STEP_TERNS = STEP_DEGREES/ (M_PI *2) * 200 * 2/* * pow(2, STEP_DIVIDER)*/;
+	printf("STEP_TERNS = %f\r\n", STEP_TERNS );
+	for(int i = 0; i < (int)round(STEP_TERNS); i++) {
+		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_SET);
+		//HAL_Delay(1);
+		for(int j = 0; j < 2000; j++){}			//Таймер
+		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_RESET);
+		//HAL_Delay(1);
+		for(int j = 0; j < 2000; j++){}			//Таймер
 	}
 
 }
@@ -151,12 +161,24 @@ void MOTOR_task() {
 	printf("error = %d", (int)error);
 //	HAL_USART_Transmit(&usart_motor, &error, 1, 0xFF);
 
+
+	//Инициализация драйвера ШД
+	step_engine_init();
+	float angle = 100*(M_PI / 4);
+
+
+
 //	HAL_USART_Receive_IT(&usart_motor, &data, sizeof(data));
+	const TickType_t _delay = 500 / portTICK_RATE_MS;
 
 	for(;;) {
-		while(((usart_motor.Instance->SR) & (1 << 5)) == 0){}
-		printf("data: %lu", usart_motor.Instance->DR);
-		printf("123\n");
+		//while(((usart_motor.Instance->SR) & (1 << 5)) == 0){}
+		//printf("data: %lu", usart_motor.Instance->DR);
+//		printf("123\n");
+
+		rotate_step_engine_by_angles(&angle, true);
+		vTaskDelay(_delay);
+		rotate_step_engine_by_angles(&angle, false);
 	}
 
 }

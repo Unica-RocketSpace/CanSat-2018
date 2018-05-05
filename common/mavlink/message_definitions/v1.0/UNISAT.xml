@@ -78,10 +78,10 @@
 
         <message id="157" name="ATMEGA">
             <description>FIXME: ...</description>
-            <field type="uint32_t" name="package_number">number of transmitted package</field>
             <field type="float" name="time">current time</field>
             <field type="float" name="pressure">pressure</field>
             <field type="float" name="height">height</field>
+            <field type="float" name="temp">temp</field>
             <field type="uint8_t" name="state">state of ATmega</field>
         </message>
 

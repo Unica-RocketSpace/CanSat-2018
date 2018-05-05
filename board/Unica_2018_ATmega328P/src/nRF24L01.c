@@ -100,7 +100,7 @@ void nRF24L01_init (){
 
 
 
-	value = (0x4c << RF_CH);
+	value = (0x11 << RF_CH);
 	nRF24L01_write_register(nRF24L01_RF_CH_ADDR, value);
 	printf("RF_CH = 0x%X\n", nRF24L01_read_register(nRF24L01_RF_CH_ADDR));
 

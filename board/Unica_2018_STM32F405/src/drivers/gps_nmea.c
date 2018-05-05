@@ -178,7 +178,7 @@ void GPS_task()	{
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
 
-		printf("x: %f, y: %f, z: %f\n", _lon, _lat, _height);
+//		printf("x: %f, y: %f, z: %f\n", _lon, _lat, _height);
 	}
 }
 

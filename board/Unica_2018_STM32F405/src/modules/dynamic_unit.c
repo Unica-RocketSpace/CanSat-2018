@@ -114,14 +114,13 @@ taskENTER_CRITICAL();
 	target[2] = - stateIMU_isc.coordinates[2];
 taskEXIT_CRITICAL();
 
-	float target_mod = sqrt(pow(target[0], 2) + pow(target[1], 2) + pow(target[2], 2));
+	float target_mod = vect_abs(target);
 	target[0] /= target_mod;
 	target[1] /= target_mod;
 	target[2] /= target_mod;
 
-//	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК
-//	vect_rotate(target, quat_ISC_RSC, target_RSC);			//	получаем вектор цели в ССК
-	vect_rotate(target, local_quaternion, target_RSC);			//	получаем вектор цели в ССК
+	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК
+	vect_rotate(target, quat_ISC_RSC, target_RSC);			//	получаем вектор цели в ССК
 
 	if (target_RSC[0] != 0)
 		local_step_engine_pos = atan(target_RSC[1] / target_RSC[0]);

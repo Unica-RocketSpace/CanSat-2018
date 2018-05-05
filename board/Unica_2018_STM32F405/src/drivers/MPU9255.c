@@ -384,35 +384,30 @@ void IMU_task() {
 //		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
 //		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
 //
-//		//---ОПРОС BMP280---//
-//		//Примечание - Запись данных в STATE производится в критических зонах
-//		rscs_bmp280_read(bmp280, &stateSensors_raw.pressure, &stateSensors_raw.temp);
-//		rscs_bmp280_calculate(bmp280_calibration_values, stateSensors_raw.pressure, stateSensors_raw.temp, &stateSensors.pressure, &stateSensors.temp);
-//
-//
+		//---ОПРОС BMP280---//
+		//Примечание - Запись данных в STATE производится в критических зонах
+		rscs_bmp280_read(bmp280, &stateSensors_raw.pressure, &stateSensors_raw.temp);
+		rscs_bmp280_calculate(bmp280_calibration_values, stateSensors_raw.pressure, stateSensors_raw.temp, &stateSensors.pressure, &stateSensors.temp);
+
+
 //		printf("Preasure:\t\t%f Pa\n", stateSensors.pressure);
 //		printf("Temperature:\t\t%f oC\n", stateSensors.temp);
 //		printf("\n");
 
-//		vTaskDelay(_delay);
-
-		const TickType_t _delay = 10 / portTICK_RATE_MS;
-//		IMU_updateDataAll();
+		const TickType_t _delay = 100 / portTICK_RATE_MS;
+		IMU_updateDataAll();
 //		printf("Accelerations:\t\t%f m/s\t%f m/s\t%f m/s\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
 //		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
 //		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
 
 //		calculate_angles();
 //		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
-
-
-		stateIMU_isc.quaternion[0] = sqrt(0.5);
-		stateIMU_isc.quaternion[1] = sqrt(0.5);
-		stateIMU_isc.quaternion[2] = 0;
-		stateIMU_isc.quaternion[3] = 0;
-		calculate_angles();
+//		stateIMU_isc.quaternion[0] = sqrt(0.5);
+//		stateIMU_isc.quaternion[1] = sqrt(0.5);
+//		stateIMU_isc.quaternion[2] = 0;
+//		stateIMU_isc.quaternion[3] = 0;
+//		calculate_angles();
 //		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
-
 
 
 	taskENTER_CRITICAL();

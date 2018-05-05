@@ -42,24 +42,44 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgState);
-	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 0);
 	return error;
 }
 
 static uint8_t mavlink_msg_imu_rsc_send() {
 
-	mavlink_message_t msgIMU;
+//	mavlink_message_t msgIMU;
+//taskENTER_CRITICAL();
+//	mavlink_msg_imu_rsc_pack(
+//		UNISAT_ID, UNISAT_IMU,
+//		&msgIMU,
+//		stateIMU_rsc.accel, stateIMU_rsc.gyro, stateIMU_rsc.compass,
+//		HAL_GetTick()/1000);
+//taskEXIT_CRITICAL();
+//	uint8_t buffer[100];
+////	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgIMU);
+//
+//	uint16_t len = mavlink_msg_
+//	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 0);
+//	return error;
+
 taskENTER_CRITICAL();
-	mavlink_msg_imu_rsc_pack(
-		UNISAT_ID, UNISAT_IMU,
-		&msgIMU,
-		stateIMU_rsc.accel, stateIMU_rsc.gyro, stateIMU_rsc.compass,
-		HAL_GetTick()/1000);
+	mavlink_imu_rsc_t msg_imu_rsc;
+	for (int i = 0; i < 3; i++) {
+		msg_imu_rsc.accel[i] = stateIMU_rsc.accel[i];
+		msg_imu_rsc.gyro[i] = stateIMU_rsc.gyro[i];
+		msg_imu_rsc.compass[i] = stateIMU_rsc.compass[i];
+	}
+	msg_imu_rsc.time = HAL_GetTick() / 1000;
 taskEXIT_CRITICAL();
+
+	mavlink_message_t msg;
+	uint16_t len = mavlink_msg_imu_rsc_encode(UNISAT_GPS, UNISAT_IMU, &msg, &msg_imu_rsc);
 	uint8_t buffer[100];
-	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgIMU);
-	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+	len = mavlink_msg_to_send_buffer(buffer, &msg);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 0);
 	return error;
+
 }
 
 static uint8_t mavlink_msg_imu_isc_send() {
@@ -96,7 +116,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgSensors);
-	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 0);
 	return error;
 }
 
@@ -110,7 +130,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgGPS);
-	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 0);
 	return error;
 }
 
@@ -158,13 +178,18 @@ void IO_RF_task() {
 	for (;;) {
 
 		uint8_t nRF_status = 0;
+
 		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
-						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
-						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
-						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
-						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
-						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
+//		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
+//						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
+//						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
+//						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
+//						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
+//						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
+//
+//		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
+//		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+
 //		if (nRF_status & (1 << TX_FULL))
 //		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 //		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
@@ -178,11 +203,12 @@ void IO_RF_task() {
 //		if (nRF_status & (1 << TX_FULL))
 //			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 
-		mavlink_msg_state_send();
-		mavlink_msg_imu_isc_send();
-		mavlink_msg_sensors_send();
-		mavlink_msg_gps_send();
-		mavlink_msg_camera_orientation_send();
+//		mavlink_msg_state_send();
+//		mavlink_msg_imu_isc_send();
+		mavlink_msg_imu_rsc_send();
+//		mavlink_msg_sensors_send();
+//		mavlink_msg_gps_send();
+//		mavlink_msg_camera_orientation_send();
 
 
 		vTaskDelay(_delay);

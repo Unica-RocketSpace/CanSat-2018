@@ -294,28 +294,28 @@ end:
 uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t buffer_size, bool ACK) {
 
 	uint8_t error = 0;
-	uint16_t data_to_send = buffer_size;
 
-	const uint8_t * begin =  write_buffer;
-	const uint8_t * end = write_buffer + buffer_size;
-	const uint8_t * carret = begin;
+	uint8_t * begin =  write_buffer;
+	uint8_t * end = write_buffer + buffer_size;
+	uint8_t * carret = begin;
 
 	while (carret != end)
 	{
 		uint16_t portion = _MIN(end-carret, nRF24L01_BUFFER_LEN);
 
 		uint8_t nRF_status = 0;
-		while(1)
-		{
-			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
-			if (finished)
-				break;
-		}
+//		while(1)
+//		{
+//			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
+//			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
+//			if (finished)
+//				break;
+//		}
 
+		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
 		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
-//			if (nRF_status & (1 << TX_FULL))
-		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+		if (nRF_status & (1 << TX_FULL))
+			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 		PROCESS_ERROR(nRF24L01_write(hspi, carret, portion, ACK));
 		carret += portion;
 	}

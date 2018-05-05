@@ -139,17 +139,17 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 }
 
-
-error rotate_step_engine () {
-
-	if (HAL_GPIO_ReadPin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN) == 0) return driver_overheat;
-
-	float STEP_DEGREES = stateCamera_orient.step_engine_pos - stateCamera_orient_prev.step_engine_pos;
-
-	rotate_step_engine_by_angles(&STEP_DEGREES);
-
-	return no_error;
-}*/
+// FIXME: ДОДЕЛАТЬ
+//error rotate_step_engine () {
+//
+//	if (HAL_GPIO_ReadPin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN) == 0) return driver_overheat;
+//
+//	float STEP_DEGREES = stateCamera_orient.step_engine_pos - stateCamera_orient_prev.step_engine_pos;
+//
+//	rotate_step_engine_by_angles(&STEP_DEGREES);
+//
+//	return no_error;
+//}
 
 void rotate_step_engine_by_angles (float * angles, bool direction) {
 
@@ -175,6 +175,7 @@ uint8_t data = 0;
 
 void MOTOR_task() {
 
+	USART_HandleTypeDef usart_motor;
 	//Инициализация UART
 	usart_motor.Instance = USART1;
 	usart_motor.Init.BaudRate = 9600;

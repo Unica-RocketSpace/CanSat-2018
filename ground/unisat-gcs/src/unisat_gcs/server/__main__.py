@@ -15,8 +15,10 @@ def main(argv):
     parser = ArgumentParser(add_help=True)
     parser.add_argument("mavuri", nargs="?", action="store", default="udpin:0.0.0.0:12000")
 
-
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO,
+        format="%(asctime)-15s %(message)s"
+    )
 
     args = parser.parse_args(argv)
     mavuri = args.mavuri
@@ -27,7 +29,12 @@ def main(argv):
 
     while True:
         msg = mav.recv_match(blocking=True)
-        _log.info("got message %s", msg)
+        # _log.info("%s", msg)
+        _log.info(
+            "{cseq: %d, time : %0.3f, pressure : %0.3f, height : %0.2f, temp : %0.1f, state : %d}"
+            %
+            (msg.get_header().seq, msg.time, msg.pressure, msg.height, msg.temp, msg.state)
+        )
 
 
 if __name__ == "__main__":

@@ -411,7 +411,7 @@ void IMU_task() {
 		stateIMU_isc.quaternion[2] = 0;
 		stateIMU_isc.quaternion[3] = 0;
 		calculate_angles();
-		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
+//		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
 
 
 

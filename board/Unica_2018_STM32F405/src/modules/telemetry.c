@@ -22,7 +22,6 @@
 
 #include "mavlink/UNISAT/mavlink.h"
 
-
 uint8_t UNISAT_ID = 0x01;
 uint8_t UNISAT_NoComp = 0xFF;
 uint8_t UNISAT_IMU = 0x02;
@@ -43,7 +42,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgState);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -59,7 +58,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgIMU);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -75,7 +74,14 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgIMU);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+//	printf("msg body = ");
+//	for (size_t i = 0; i < len; i++)
+//	{
+//		printf("%02X ", (int)buffer[i]);
+//	}
+//	printf("\n");
+
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -90,7 +96,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgSensors);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -104,7 +110,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgGPS);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -120,7 +126,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgStateZero);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -135,7 +141,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	uint16_t len = mavlink_msg_to_send_buffer(buffer, &msgCameraOrient);
-	uint8_t error = nRF24L01_write(&spi_nRF24L01, buffer, len, 1);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 	return error;
 }
 
@@ -146,19 +152,19 @@ void IO_RF_task() {
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
 	vTaskDelay(100/portTICK_RATE_MS);
 	state_initErrors.NRF_E = nRF24L01_initError;
-//	printf("nRF24L01 error: %d\n", nRF24L01_initError);
+	printf("nRF24L01 error: %d\n", nRF24L01_initError);
 
 	const TickType_t _delay = 500 / portTICK_RATE_MS;
 	for (;;) {
 
-//		uint8_t nRF_status = 0;
-//		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-//		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
-//						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
-//						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
-//						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
-//						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
-//						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
+		uint8_t nRF_status = 0;
+		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
+		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
+						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
+						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
+						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
+						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
+						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
 //		if (nRF_status & (1 << TX_FULL))
 //		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 //		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
@@ -167,11 +173,17 @@ void IO_RF_task() {
 //		nRF24L01_write(&spi_nRF24L01, (uint8_t*)buffer, strlen(buffer), 1);
 //		i++;
 
+//		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
+//
+//		if (nRF_status & (1 << TX_FULL))
+//			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+
 		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();
 		mavlink_msg_sensors_send();
 		mavlink_msg_gps_send();
 		mavlink_msg_camera_orientation_send();
+
 
 		vTaskDelay(_delay);
 //		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС

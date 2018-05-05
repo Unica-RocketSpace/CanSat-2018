@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <stm32f4xx_hal.h>
 
@@ -100,7 +101,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_ARC_CNT_ADDR, value));
 
 
-	value = (0x4c << RF_CH);
+	value = (0x11 << RF_CH);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RF_CH_ADDR, value));
 
 	value = (0 << RF_DR)|
@@ -155,6 +156,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	PROCESS_ERROR(nRF24L01_RX_mode_on(hspi, false));
 	*isData = 0;
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -166,8 +168,8 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	else write_command = nRF24L01_WRITE_TX_FIFO_NO_ACK;
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &write_command, 1, _TIMEOUT_));
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, write_buffer, buffer_size, _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -181,8 +183,8 @@ uint8_t nRF24L01_write_register_address (SPI_HandleTypeDef* hspi, nRF24L01_regis
 		buffer[i + 1] = data_register[i];
 	}
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, buffer, n, _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -193,8 +195,8 @@ uint8_t nRF24L01_write_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_
 	buffer[0] = nRF24L01_WRITE_REGISTER(address);
 	buffer[1] = data_register;
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, buffer, sizeof(buffer), _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -204,8 +206,8 @@ uint8_t nRF24L01_read_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t
 	uint8_t command = nRF24L01_READ_REGISTER(address);
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
 	PROCESS_ERROR(HAL_SPI_Receive(hspi, data, sizeof(*data), _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -215,8 +217,8 @@ uint8_t nRF24L01_read_register_address (SPI_HandleTypeDef* hspi, nRF24L01_regist
 	uint8_t command = nRF24L01_READ_REGISTER(address);
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
 	PROCESS_ERROR(HAL_SPI_Receive(hspi, data_register, data_len, _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -226,8 +228,8 @@ uint8_t nRF24L01_read_status(SPI_HandleTypeDef* hspi, uint8_t* status){
 //	status = 0x00;
 	uint8_t dummy = 0xFF;
 	PROCESS_ERROR(HAL_SPI_TransmitReceive(hspi, &dummy, status, 1, _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -235,18 +237,18 @@ uint8_t nRF24L01_RX_mode_on (SPI_HandleTypeDef* hspi, bool mode) {
 	uint8_t error = 0;
 	_cs_enable();
 	uint8_t config = 0;
-	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_CONFIG_ADDR, config));
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_CONFIG_ADDR, &config));
 	if (mode) config |= (1 << PRIM_RX);
 	else config &= ~(1 << PRIM_RX);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_CONFIG_ADDR, config));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
 uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool flag_TX_DS,bool flag_MAX_RT) {
 	uint8_t error = 0;
-	_ce_disable();	//Не факт, что это нужно
+	//_ce_disable();	//Не факт, что это нужно
 
 	_cs_enable();
 	uint8_t NOP = 0xFF;
@@ -259,10 +261,9 @@ uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool fl
 	if (flag_TX_DS) status |= (1 << TX_DS);
 	if (flag_MAX_RT) status |= (1 << MAX_RT);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_STATUS_ADDR, status));
-	_cs_disable();
-
-	_ce_enable();	//Не факт, что это нужно
+	//_ce_enable();	//Не факт, что это нужно
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -271,8 +272,8 @@ uint8_t nRF24L01_clear_TX_FIFO (SPI_HandleTypeDef* hspi) {
 	_cs_enable();
 	uint8_t command = nRF24L01_FLUSH_TX_FIFO;
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
@@ -281,10 +282,45 @@ uint8_t nRF24L01_clear_RX_FIFO (SPI_HandleTypeDef* hspi) {
 	_cs_enable();
 	uint8_t command = nRF24L01_FLUSH_RX_FIFO;
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
-	_cs_disable();
 end:
+	_cs_disable();
 	return error;
 }
 
 
+#define _MIN(a, b) ((a < b) ? a : b)
+
+
+uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t buffer_size, bool ACK) {
+
+	uint8_t error = 0;
+	uint16_t data_to_send = buffer_size;
+
+	const uint8_t * begin =  write_buffer;
+	const uint8_t * end = write_buffer + buffer_size;
+	const uint8_t * carret = begin;
+
+	while (carret != end)
+	{
+		uint16_t portion = _MIN(end-carret, nRF24L01_BUFFER_LEN);
+
+		uint8_t nRF_status = 0;
+		while(1)
+		{
+			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
+			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
+			if (finished)
+				break;
+		}
+
+		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
+//			if (nRF_status & (1 << TX_FULL))
+		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+		PROCESS_ERROR(nRF24L01_write(hspi, carret, portion, ACK));
+		carret += portion;
+	}
+
+end:
+	return error;
+}
 

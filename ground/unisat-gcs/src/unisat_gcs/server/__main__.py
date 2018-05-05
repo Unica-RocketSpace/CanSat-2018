@@ -30,11 +30,14 @@ def main(argv):
     while True:
         msg = mav.recv_match(blocking=True)
         # _log.info("%s", msg)
-        _log.info(
-            "{cseq: %d, time : %0.3f, pressure : %0.3f, height : %0.2f, temp : %0.1f, state : %d}"
-            %
-            (msg.get_header().seq, msg.time, msg.pressure, msg.height, msg.temp, msg.state)
-        )
+        if isinstance(msg, MAVLink_atmega_message):
+            _log.info(
+                "{cseq: %d, time : %0.3f, pressure : %0.3f, height : %0.2f, temp : %0.1f, state : %d}"
+                %
+                (msg.get_header().seq, msg.time, msg.pressure, msg.height, msg.temp, msg.state)
+            )
+
+        _log.info(msg)
 
 
 if __name__ == "__main__":

@@ -247,9 +247,9 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 
 	//	обновляем ориентацию, используя локальные структуры
-	constructTrajectory(
-		&local_stateIMU_isc, &local_stateIMU_isc_prev,
-		&local_state_system, &local_state_system_prev, &local_stateIMU_rsc);
+//	constructTrajectory(
+//		&local_stateIMU_isc, &local_stateIMU_isc_prev,
+//		&local_state_system, &local_state_system_prev, &local_stateIMU_rsc);
 
 taskENTER_CRITICAL();
 	//	копируем локальные структуры в глобальные
@@ -386,8 +386,19 @@ void IMU_task() {
 //
 		//---ОПРОС BMP280---//
 		//Примечание - Запись данных в STATE производится в критических зонах
-		rscs_bmp280_read(bmp280, &stateSensors_raw.pressure, &stateSensors_raw.temp);
-		rscs_bmp280_calculate(bmp280_calibration_values, stateSensors_raw.pressure, stateSensors_raw.temp, &stateSensors.pressure, &stateSensors.temp);
+		int32_t pressure = 0;
+		int32_t temp = 0;
+		float pressure_f = 0;
+		float temp_f = 0;
+		rscs_bmp280_read(bmp280, &pressure, &temp);
+		rscs_bmp280_calculate(bmp280_calibration_values, pressure, temp, &pressure_f, &temp_f);
+
+	taskENTER_CRITICAL();
+		stateSensors_raw.pressure = pressure;
+		stateSensors_raw.temp = temp;
+		stateSensors.pressure = pressure_f;
+		stateSensors.temp = temp_f;
+	taskEXIT_CRITICAL();
 
 
 //		printf("Preasure:\t\t%f Pa\n", stateSensors.pressure);

@@ -15,12 +15,30 @@ def process_message(msg):
         # _log.info("%s", msg)
     if isinstance(msg, MAVLink_atmega_message):
         _log.info(
-            "{cseq: %d, time : %0.3f, pressure : %0.3f, height : %0.2f, temp : %0.1f, state : %d}"
+            "ATmega {cseq: %d, time : %0.3f, pressure : %0.3f, height : %0.2f, temp : %0.1f, state : %d}"
             %
             (msg.get_header().seq, msg.time, msg.pressure, msg.height, msg.temp, msg.state)
         )
-
-    _log.info(msg)
+    elif isinstance(msg, MAVLink_imu_rsc_message):
+        _log.info(
+            "IMU {cseq: %d, time: %0.3f, accel: [%0.3f, %0.3f, %0.3f] gyro: [%0.3f, %0.3f, %0.3f] compass: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
+        )
+    elif isinstance(msg, MAVLink_sensors_message):
+        _log.info(
+            "SENSORS {cseq: %d, time: %0.3f, temp: %0.3f, pressure: %0.3f, height: %0.3f}"
+            %
+            (msg.get_header().seq, msg.time, msg.temp, msg.pressure, msg.height)
+        )
+    elif isinstance(msg, MAVLink_gps_message):
+        _log.info(
+            "GPS {cseq: %d, time: %0.3f, coordinates: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.coordinates)
+        )
+    else:
+        _log.info(msg)
 
 
 

@@ -53,7 +53,7 @@
 
         <message id="154" name="GPS">
             <description>FIXME: ...</description>
-            <field type="float[2]" name="coordinates">coordinates from GPS</field>
+            <field type="float[3]" name="coordinates">coordinates from GPS</field>
             <field type="float" name="time">current time</field>
         </message>
 

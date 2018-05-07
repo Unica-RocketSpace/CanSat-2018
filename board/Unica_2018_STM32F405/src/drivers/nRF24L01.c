@@ -31,12 +31,12 @@ static void _cs_disable(){
 	HAL_GPIO_WritePin(nRF24L01_CS_PORT, nRF24L01_CS_PIN, SET);
 }
 
-static void _ce_enable(){
+static void _ce_up(){
 //	nRF24L01_CE_PORT |= nRF24L01_CE_PIN;
 	HAL_GPIO_WritePin(nRF24L01_CE_PORT, nRF24L01_CE_PIN, SET);
 }
 
-static void _ce_disable(){
+static void _ce_down(){
 //	nRF24L01_CE_PORT &= ~nRF24L01_CE_PIN;
 	HAL_GPIO_WritePin(nRF24L01_CE_PORT, nRF24L01_CE_PIN, RESET);
 }
@@ -63,7 +63,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 
 	// Настраиваем CS
 	_cs_disable();
-	_ce_enable();
+	_ce_down();
 
 	uint8_t value;
 
@@ -168,6 +168,10 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	else write_command = nRF24L01_WRITE_TX_FIFO_NO_ACK;
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &write_command, 1, _TIMEOUT_));
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, write_buffer, buffer_size, _TIMEOUT_));
+	_ce_up();
+	for (volatile int i = 0; i < 100; i++)
+	{}
+	_ce_down();
 end:
 	_cs_disable();
 	return error;
@@ -248,7 +252,7 @@ end:
 
 uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool flag_TX_DS,bool flag_MAX_RT) {
 	uint8_t error = 0;
-	//_ce_disable();	//Не факт, что это нужно
+	//_ce_down();	//Не факт, что это нужно
 
 	_cs_enable();
 	uint8_t NOP = 0xFF;
@@ -303,21 +307,22 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 	{
 		uint16_t portion = _MIN(end-carret, nRF24L01_BUFFER_LEN);
 
-		uint8_t nRF_status = 0;
-//		while(1)
-//		{
-//			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-//			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
-//			if (finished)
-//				break;
-//		}
-
-		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
+//		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
 		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
-		if (nRF_status & (1 << TX_FULL))
-			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+//		if (nRF_status & (1 << TX_FULL))
+//			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 		PROCESS_ERROR(nRF24L01_write(hspi, carret, portion, ACK));
+
 		carret += portion;
+
+		uint8_t nRF_status = 0;
+		while(1)
+		{
+			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
+			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
+			if (finished)
+				break;
+		}
 	}
 
 end:

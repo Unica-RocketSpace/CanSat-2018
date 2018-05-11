@@ -20,7 +20,7 @@
 #include "state.h"
 
 static size_t _dma_carret;
-static char _dma_buffer[GPS_DMA_BUFFER_SIZE];
+static char _dma_buffer[GPS_DMA_BUFFER_SIZE] = {0};
 
 static size_t _msg_carret;
 static char _msg_buffer[GPS_MSG_BUFFER_SIZE];
@@ -72,7 +72,7 @@ uint8_t gps_initAll() {
 	dma_GPS.Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
 	dma_GPS.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;		// длина слова в периферии - байт
 	dma_GPS.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
-	dma_GPS.Init.Mode = DMA_CIRCULAR;							// режим - обычный
+	dma_GPS.Init.Mode = DMA_NORMAL;								// режим - обычный
 	dma_GPS.Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
 	dma_GPS.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 	dma_GPS.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
@@ -111,7 +111,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART2) {
 		uint8_t gps_initError = gps_initAll();
 		state_initErrors.GPS_E = gps_initError;
-		printf("GPS RE error: %d\n", gps_initError);
+//		printf("GPS RE error: %d\n", gps_initError);
 		_dma_carret = 0;
 		_msg_carret = 0;
 		HAL_UART_RxCpltCallback(&uart_GPS);
@@ -178,7 +178,7 @@ void GPS_task()	{
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
 
-		printf("x: %f, y: %f, z: %f\n", _lon, _lat, _height);
+//		printf("x: %f, y: %f, z: %f\n", _lon, _lat, _height);
 	}
 }
 

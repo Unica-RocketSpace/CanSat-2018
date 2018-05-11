@@ -28,14 +28,14 @@
 #define nRF24L01_RX_ADDR_P5		0x0000000000	//Адрес получателя 5
 #define nRF24L01_TX_ADDR		{0xe7, 0xe7, 0xe7, 0xe7, 0xe7}	//Адрес устройства
 
-#define nRF24L01_RX_PW_P0		nRF24L01_RX_BUFFER_LEN		//Кол-во байт, получаемых по каналу 0
+#define nRF24L01_RX_PW_P0		nRF24L01_BUFFER_LEN		//Кол-во байт, получаемых по каналу 0
 #define nRF24L01_RX_PW_P1		0							//Кол-во байт, получаемых по каналу 1
 #define nRF24L01_RX_PW_P2		0							//Кол-во байт, получаемых по каналу 2
 #define nRF24L01_RX_PW_P3		0							//Кол-во байт, получаемых по каналу 3
 #define nRF24L01_RX_PW_P4		0							//Кол-во байт, получаемых по каналу 4
 #define nRF24L01_RX_PW_P5		0							//Кол-во байт, получаемых по каналу 5
 
-#define nRF24L01_RX_BUFFER_LEN			32
+#define nRF24L01_BUFFER_LEN			32
 
 #define nRF24L01_CS_PORT GPIOA
 //#define nRF24L01_CS_DDR  DDRB
@@ -123,7 +123,7 @@ typedef enum {
 							‘0010’ – Wait 750μS
 							……..
 							‘1111’ – Wait 4000μS  */
-	ARC  = 3				/*Кол-во повторных передач
+	ARC  = 0				/*Кол-во повторных передач
 							‘0000’ –Re-Transmit disabled
 							‘0001’ – Up to 1 Re-Transmit on fail of AA
 							……
@@ -201,7 +201,7 @@ typedef enum {
 
 
 //extern const uint8_t nRF24L01_RX_BUFFER_LEN;
-extern uint8_t nRF24L01_RX_BUFFER[nRF24L01_RX_BUFFER_LEN];
+extern uint8_t nRF24L01_RX_BUFFER[nRF24L01_BUFFER_LEN];
 
 /*
  * Инициализация радиомодуля.
@@ -277,5 +277,11 @@ uint8_t nRF24L01_clear_TX_FIFO (SPI_HandleTypeDef* hspi);
  */
 uint8_t nRF24L01_clear_RX_FIFO (SPI_HandleTypeDef* hspi);
 
+
+/*
+ * Отправляем буфер через nRF24L01
+ * Функция производит отправку буфера, учитывая максимальную длину пакета и ожидая отправки предыдущего
+ */
+uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t buffer_size, bool ACK);
 
 #endif /* NRF24L01_H_ */

@@ -62,7 +62,7 @@ rscs_bmp280_descriptor_t * bmp280;
 const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 //	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
+#define IO_RF_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
@@ -73,7 +73,7 @@ static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 //	параметры IMU_task
-#define IMU_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
+#define IMU_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
@@ -131,15 +131,15 @@ int main(int argc, char* argv[])
 	);
 
 
-//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-//			GPS_task, 			// функция
-//			"GPS",				// имя
-//			GPS_TASK_STACK_SIZE,// глубина стека
-//			NULL,				// аргумент
-//			1,					// приоритет
-//			_gpsTaskStack,		// стек
-//			&_gpsTaskObj		// объект задания
-//	);
+	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
+			GPS_task, 			// функция
+			"GPS",				// имя
+			GPS_TASK_STACK_SIZE,// глубина стека
+			NULL,				// аргумент
+			1,					// приоритет
+			_gpsTaskStack,		// стек
+			&_gpsTaskObj		// объект задания
+	);
 
 
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(

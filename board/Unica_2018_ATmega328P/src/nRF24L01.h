@@ -124,7 +124,7 @@ typedef enum {
 							‘0010’ – Wait 750μS
 							……..
 							‘1111’ – Wait 4000μS  */
-	ARC  = 3				/*Кол-во повторных передач
+	ARC  = 0				/*Кол-во повторных передач FIXME: в даташите написано от 0 до 3
 							‘0000’ –Re-Transmit disabled
 							‘0001’ – Up to 1 Re-Transmit on fail of AA
 							……

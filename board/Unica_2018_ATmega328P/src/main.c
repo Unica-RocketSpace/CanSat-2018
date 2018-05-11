@@ -45,7 +45,7 @@ uint8_t RM_input_data[nRF24L01_RX_BUFFER_LEN];
 
 typedef enum {
 	STAGE_INITIAL = 0,		// Состояние, в котором инициализируем все
-	STAGE_LOADING = 1,// Состояние в котором мы мы ничего не делаем и ждем команды
+	STAGE_LOADING = 1,		// Состояние в котором мы мы ничего не делаем и ждем команды
 	STAGE_INITIAL_PARAM = 2,// Состояни, в котором мы определяем начальное давление
 	STAGE_GOING_UP = 3, 	// Состояние, в котором мы летим вверх
 	STAGE_GOING_DOWN = 4, 	// Состояние, в котором мы летим вниз
@@ -94,6 +94,10 @@ int main() {
 	//***ИНИЦИАЛИЗАЦИЯ nRF24L01***//
 	nRF24L01_init();
 
+	//FIXME: УБРАТЬ
+	initial_params.zero_pressure = set_zero_pressure();
+	initial_params.zero_pressure = set_zero_pressure();
+
 	//Включение внешних прервыений 0
 	EICRA = (1 << ISC01) | (1 << ISC00); //Прерывание срабатывает при возрастании сигнала
 	EIMSK = (1 << INT0);						//Включение прерывания INT0
@@ -102,7 +106,7 @@ int main() {
 
 	while (1) {
 
-		printf("\n-------------------------\nSTEP = %ld\n", step);
+//		printf("\n-------------------------\nSTEP = %ld\n", step);
 		step++;
 
 		//Читаем датчики
@@ -116,13 +120,27 @@ int main() {
 		TM_package.height = calculate_height(TM_package.pressure,
 				initial_params.zero_pressure);
 
+
+
 		//Отправляем телеметрию
 //		send_package();
 		mavlink_message_t msg;
 		mavlink_msg_atmega_pack(1, 1, &msg, TM_package.time, TM_package.pressure,
 				TM_package.height, TM_package.temperature, TM_package.state);
-		uint8_t buffer[200];
+		uint8_t buffer[100];
 		uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+//		while(1)
+//		{
+//			uint8_t status = nRF24L01_read_status();
+//			if ((status & (1 << TX_DS)) || (status & (1 << MAX_RT)))
+//				break;
+//		}
+
+		printf("here");
+
+//		nRF24L01_clear_TX_FIFO();
+		nRF24L01_clear_status(true, true, true);
 		nRF24L01_write(buffer, len, true);
 
 		//Отправляем тестовое сообщение
@@ -138,26 +156,26 @@ int main() {
 		 (((data_register) & (1 << TX_FULL))) >> TX_FULL);
 		 */
 
-		printf("time = %f s\n", TM_package.time);
-		printf("bmp280_press = %f\n bmp280_temp = %f\n", TM_package.pressure,
-				TM_package.temperature);
-		printf("height = %f\n", TM_package.height);
-
-		//Если по радиоканалу пришли данные, то читаем их
-		memset(RM_input_data, 0x00, sizeof(RM_input_data));
-		RM_input_data_len = get_package(RM_input_data);
-		if (!RM_input_data_len)
-			printf("NO INCOMING TRANSMISSION\n");
-		else {
-			RM_input_data[RM_input_data_len] = 0x00;
-			printf("INCOMING TRANSMISSION: %s\n", RM_input_data);
-		}
-
-		printf("state_parachute = %d\n",
-				(bool) (TM_package.state & (1 << state_parachute)));
+//		printf("time = %f s\n", TM_package.time);
+//		printf("bmp280_press = %f\n bmp280_temp = %f\n", TM_package.pressure,
+//				TM_package.temperature);
+//		printf("height = %f\n", TM_package.height);
+//
+//		//Если по радиоканалу пришли данные, то читаем их
+//		memset(RM_input_data, 0x00, sizeof(RM_input_data));
+//		RM_input_data_len = get_package(RM_input_data);
+//		if (!RM_input_data_len)
+//			printf("NO INCOMING TRANSMISSION\n");
+//		else {
+//			RM_input_data[RM_input_data_len] = 0x00;
+//			printf("INCOMING TRANSMISSION: %s\n", RM_input_data);
+//		}
+//
+//		printf("state_parachute = %d\n",
+//				(bool) (TM_package.state & (1 << state_parachute)));
 
 		//FIXME: TEST: Получаем команды с UART
-		RX_get = rscs_uart_read_some(uart0, RX_buffer, 1);
+//		RX_get = rscs_uart_read_some(uart0, RX_buffer, 1);
 
 		switch (my_stage) {
 		case STAGE_INITIAL:
@@ -237,7 +255,7 @@ int main() {
 		}
 
 		printf("my_stage = %d", my_stage);
-		_delay_ms(1000);
+		_delay_ms(500);
 	}
 	return 0;
 }

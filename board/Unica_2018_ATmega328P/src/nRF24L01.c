@@ -69,7 +69,7 @@ void nRF24L01_init (){
 			(1 << PWR_UP) |
 			(0 << PRIM_RX);
 	nRF24L01_write_register(nRF24L01_CONFIG_ADDR, value);
-	printf("CONFIG = 0x%X\n", nRF24L01_read_register(nRF24L01_CONFIG_ADDR));
+//	printf("CONFIG = 0x%X\n", nRF24L01_read_register(nRF24L01_CONFIG_ADDR));
 
 	value = (1 << ENAA_P5)|
 			(1 << ENAA_P4)|
@@ -78,7 +78,7 @@ void nRF24L01_init (){
 			(1 << ENAA_P1)|
 			(1 << ENAA_P0);
 	nRF24L01_write_register(nRF24L01_EN_AA_ADDR, value);
-	printf("EN_AA = 0x%X\n", nRF24L01_read_register(nRF24L01_EN_AA_ADDR));
+//	printf("EN_AA = 0x%X\n", nRF24L01_read_register(nRF24L01_EN_AA_ADDR));
 
 	value = (1 << ERX_P5)|
 			(1 << ERX_P4)|
@@ -87,28 +87,28 @@ void nRF24L01_init (){
 			(1 << ERX_P1)|
 			(1 << ERX_P0);
 	nRF24L01_write_register(nRF24L01_EN_RXADDR_ADDR, value);
-	printf("EN_RXADDR = 0x%X\n", nRF24L01_read_register(nRF24L01_EN_RXADDR_ADDR));
+//	printf("EN_RXADDR = 0x%X\n", nRF24L01_read_register(nRF24L01_EN_RXADDR_ADDR));
 
 	value = (0b11 << AW);
 	nRF24L01_write_register(nRF24L01_SETUP_AW_ADDR, value);
-	printf("SETUP_AW = 0x%X\n", nRF24L01_read_register(nRF24L01_SETUP_AW_ADDR));
+//	printf("SETUP_AW = 0x%X\n", nRF24L01_read_register(nRF24L01_SETUP_AW_ADDR));
 
 	value = (0b0011 << ARD)|
 			(0b0000 << ARC);
 	nRF24L01_write_register(nRF24L01_ARC_CNT_ADDR, value);
-	printf("ARC_CNT = 0x%X\n", nRF24L01_read_register(nRF24L01_ARC_CNT_ADDR));
+//	printf("ARC_CNT = 0x%X\n", nRF24L01_read_register(nRF24L01_ARC_CNT_ADDR));
 
 
 
-	value = (0x11 << RF_CH);
+	value = (0x4c << RF_CH);
 	nRF24L01_write_register(nRF24L01_RF_CH_ADDR, value);
-	printf("RF_CH = 0x%X\n", nRF24L01_read_register(nRF24L01_RF_CH_ADDR));
+//	printf("RF_CH = 0x%X\n", nRF24L01_read_register(nRF24L01_RF_CH_ADDR));
 
 	value = (0 << RF_DR)|
 			(0b11 << RF_PWR)|
 			(0 << LNA_HCURR);
 	nRF24L01_write_register(nRF24L01_RF_SETUP_ADDR, value);
-	printf("RF_SETUP = 0x%X\n", nRF24L01_read_register(nRF24L01_RF_SETUP_ADDR));
+//	printf("RF_SETUP = 0x%X\n", nRF24L01_read_register(nRF24L01_RF_SETUP_ADDR));
 
 	value = (1 << DPL_P5)|
 			(1 << DPL_P4)|
@@ -117,27 +117,27 @@ void nRF24L01_init (){
 			(1 << DPL_P1)|
 			(1 << DPL_P0);
 	nRF24L01_write_register(nRF24L01_DYNPD_ADDR, value);
-	printf("DYNPD = 0x%X\n", nRF24L01_read_register(nRF24L01_DYNPD_ADDR));
+//	printf("DYNPD = 0x%X\n", nRF24L01_read_register(nRF24L01_DYNPD_ADDR));
 
 	value = (1 << EN_DPL)|
 			(1 << EN_ACK_PAY)|
 			(1 << EN_DYN_ACK);
 	nRF24L01_write_register(nRF24L01_FEATURE_ADDR, value);
-	printf("FEATURE = 0x%X\n", nRF24L01_read_register(nRF24L01_FEATURE_ADDR));
+//	printf("FEATURE = 0x%X\n", nRF24L01_read_register(nRF24L01_FEATURE_ADDR));
 
 	uint8_t device_address_P0[5] = nRF24L01_RX_ADDR_P0;
 	nRF24L01_write_register_address(nRF24L01_RX_ADDR_P0_ADDR, device_address_P0, 5);
 	nRF24L01_read_register_address(nRF24L01_RX_ADDR_P0_ADDR, device_address_P0, 5);
-	printf("RX_ADDR_P0 = 0x%X%X%X%X%X\n", device_address_P0[0], device_address_P0[1], device_address_P0[2], device_address_P0[3], device_address_P0[4]);
+//	printf("RX_ADDR_P0 = 0x%X%X%X%X%X\n", device_address_P0[0], device_address_P0[1], device_address_P0[2], device_address_P0[3], device_address_P0[4]);
 
 	uint8_t device_address_TX[5] = nRF24L01_TX_ADDR;
 	nRF24L01_write_register_address(nRF24L01_TX_ADDR_ADDR, device_address_TX, 5);
 	nRF24L01_read_register_address(nRF24L01_TX_ADDR_ADDR, device_address_TX, 5);
-	printf("TX_ADDR = 0x%X%X%X%X%X\n", device_address_P0[0], device_address_P0[1], device_address_P0[2], device_address_P0[3], device_address_P0[4]);
+//	printf("TX_ADDR = 0x%X%X%X%X%X\n", device_address_P0[0], device_address_P0[1], device_address_P0[2], device_address_P0[3], device_address_P0[4]);
 
 	value = nRF24L01_RX_PW_P0;
 	nRF24L01_write_register(nRF24L01_RX_PW_P0_ADDR, value);
-	printf("RX_PW_P0 = 0x%X\n", nRF24L01_read_register(nRF24L01_RX_PW_P0_ADDR));
+//	printf("RX_PW_P0 = 0x%X\n", nRF24L01_read_register(nRF24L01_RX_PW_P0_ADDR));
 }
 
 bool nRF24L01_read (void * read_buffer, size_t buffer_size){
@@ -166,6 +166,9 @@ void nRF24L01_write (void * write_buffer, size_t buffer_size, bool ACK){
 	else write_command = nRF24L01_WRITE_TX_FIFO_NO_ACK;
 	rscs_spi_write(&write_command, 1);
 	rscs_spi_write(write_buffer, buffer_size);
+	_ce_enable();
+	for (volatile int i = 0; i < 100; i++) {}
+	_ce_disable();
 	_cs_disable();
 }
 

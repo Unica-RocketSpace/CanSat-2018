@@ -227,6 +227,15 @@ static int IMU_updateDataAll() {
 	mpu9255_recalcGyro(gyroData, gyro);
 	mpu9255_recalcCompass(compassData, compass);
 
+	float compass_mod = 0;
+	for (int i = 0; i < 3; i++) {
+		compass_mod += pow(compass[i], 2);
+	}
+	compass_mod = sqrt(compass_mod);
+	for (int i = 0; i < 3; i++) {
+		compass[i] /= compass_mod;
+	}
+
 taskENTER_CRITICAL();
 	//	пересчитываем их и записываем в структуры
 	for (int k = 0; k < 3; k++) {
@@ -289,7 +298,7 @@ void IMU_task() {
 	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
 	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
 	state_initErrors.MPU_E = mpu9255_initError;
-	printf("MPU9255 error: %d\n", mpu9255_initError);
+//	printf("MPU9255 error: %d\n", mpu9255_initError);
 
 	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
 	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
@@ -303,7 +312,7 @@ void IMU_task() {
 	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
 	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
 	state_initErrors.BMP_E = bmp280_initError;
-	printf("BMP280 error: %d\n", bmp280_initError);
+//	printf("BMP280 error: %d\n", bmp280_initError);
 
 
 	/*for (;;) {
@@ -372,6 +381,7 @@ void IMU_task() {
 
 //	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
 //	printf("mpu_error = %d\n", mpu9255init_error);
+	uint16_t num = 0;
 
 	for (;;) {
 
@@ -405,19 +415,20 @@ void IMU_task() {
 //		printf("Temperature:\t\t%f oC\n", stateSensors.temp);
 //		printf("\n");
 
-		const TickType_t _delay = 100 / portTICK_RATE_MS;
+		const TickType_t _delay = 200 / portTICK_RATE_MS;
 		IMU_updateDataAll();
 //		printf("Accelerations:\t\t%f m/s\t%f m/s\t%f m/s\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
 //		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
 //		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
 
-//		calculate_angles();
-//		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
-//		stateIMU_isc.quaternion[0] = sqrt(0.5);
-//		stateIMU_isc.quaternion[1] = sqrt(0.5);
-//		stateIMU_isc.quaternion[2] = 0;
-//		stateIMU_isc.quaternion[3] = 0;
-//		calculate_angles();
+		if (num == 10) {num = 0;}
+
+		stateIMU_isc.quaternion[0] = cos(num*M_PI/36);
+		stateIMU_isc.quaternion[1] = -0*sin(num*M_PI/36);
+		stateIMU_isc.quaternion[2] = -0*sin(num*M_PI/36);
+		stateIMU_isc.quaternion[3] = -1*sin(num*M_PI/36);
+		calculate_angles();
+		num += 1;
 //		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
 
 

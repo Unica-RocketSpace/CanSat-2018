@@ -181,12 +181,12 @@ void IO_RF_task() {
 	state_initErrors.NRF_E = nRF24L01_initError;
 	printf("nRF24L01 error: %d\n", nRF24L01_initError);
 
-	const TickType_t _delay = 500 / portTICK_RATE_MS;
+	const TickType_t _delay = 200 / portTICK_RATE_MS;
 	for (;;) {
 
-		uint8_t nRF_status = 0;
+//		uint8_t nRF_status = 0;
+//		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
 
-		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
 //		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
 //						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
 //						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
@@ -211,11 +211,11 @@ void IO_RF_task() {
 //			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 
 //		mavlink_msg_state_send();
-//		mavlink_msg_imu_isc_send();
-		mavlink_msg_imu_rsc_send();
+		mavlink_msg_imu_isc_send();
+//		mavlink_msg_imu_rsc_send();
 		mavlink_msg_sensors_send();
 		mavlink_msg_gps_send();
-//		mavlink_msg_camera_orientation_send();
+		mavlink_msg_camera_orientation_send();
 
 
 		vTaskDelay(_delay);

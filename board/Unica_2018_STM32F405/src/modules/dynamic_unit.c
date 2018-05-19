@@ -95,6 +95,25 @@ void step_engine_init () {
 
 }
 
+static void get_servo_angle(float* vect, float* angle) {
+	float proj_xy = sqrt(pow(vect[0], 2) + pow(vect[1], 2));
+
+	float angle_current = 0;
+	if (proj_xy != 0) {angle_current = (float)atan(vect[2]/proj_xy);}
+	else angle_current = M_PI/2;
+
+	*angle = angle_current;
+}
+
+static void get_step_engine_angle(float* vect, float* angle) {
+	float angle_current = 0;
+
+	if (vect[0] != 0) {angle_current = (float)atan(vect[0]/vect[1]);}
+	else angle_current = M_PI/2;
+
+ 	*angle = angle_current;
+}
+
 
 void calculate_angles () {
 
@@ -102,8 +121,6 @@ void calculate_angles () {
 	float target[3] = {0.0, 0.0, 0.0};				//	направляющий вектор цели
 	float target_RSC[3] = {0.0, 0.0, 0.0};			//	направляющий вектор цели в ССК
 	float local_quaternion[4] = {0.0, 0.0, 0.0, 0.0};	//	локальная переменная для нахождения кватерниона
-	float local_step_engine_pos = 0.0;
-	float local_servo_pos = 0.0;
 
 	//	находим координаты цели
 taskENTER_CRITICAL();
@@ -114,27 +131,26 @@ taskENTER_CRITICAL();
 	target[2] = - stateIMU_isc.coordinates[2];
 taskEXIT_CRITICAL();
 
-	float target_mod = vect_abs(target);
-	target[0] /= target_mod;
-	target[1] /= target_mod;
-	target[2] /= target_mod;
+	vect_normalise(target, target);
+	vect_rotate(target, local_quaternion, target_RSC);
 
-	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК
-	vect_rotate(target, quat_ISC_RSC, target_RSC);			//	получаем вектор цели в ССК
+taskENTER_CRITICAL();
+	memcpy(stateCamera_orient.target, target_RSC, sizeof(target_RSC));
+//	for (int i = 0; i < 3; i++) {target_RSC_prev[i] = stateCamera_orient_prev.target[i];}
+taskEXIT_CRITICAL();
 
-	if (target_RSC[0] != 0)
-		local_step_engine_pos = atan(target_RSC[1] / target_RSC[0]);
-	else local_step_engine_pos = 0;
+//	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК
+//	vect_rotate(target, quat_ISC_RSC, target_RSC);			//	получаем вектор цели в ССК
 
-	float mod = sqrt(pow(target_RSC[0], 2) + pow(target_RSC[1], 2));
-	if (mod != 0)
-		local_servo_pos = atan(target_RSC[2] / mod);
-	else local_servo_pos = 0;
+	float step_engine_pos = 0;
+	float servo_pos = 0;
+	get_servo_angle(target_RSC, &servo_pos);
+	get_step_engine_angle(target_RSC, &step_engine_pos);
 
 	//	записываем углы в state
 taskENTER_CRITICAL();
-	stateCamera_orient.step_engine_pos = local_step_engine_pos;
-	stateCamera_orient.servo_pos = local_servo_pos;
+	stateCamera_orient.step_engine_pos = step_engine_pos;
+	stateCamera_orient.servo_pos = servo_pos;
 taskEXIT_CRITICAL();
 }
 

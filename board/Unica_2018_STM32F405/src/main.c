@@ -131,15 +131,15 @@ int main(int argc, char* argv[])
 	);
 
 
-	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-			GPS_task, 			// функция
-			"GPS",				// имя
-			GPS_TASK_STACK_SIZE,// глубина стека
-			NULL,				// аргумент
-			1,					// приоритет
-			_gpsTaskStack,		// стек
-			&_gpsTaskObj		// объект задания
-	);
+//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
+//			GPS_task, 			// функция
+//			"GPS",				// имя
+//			GPS_TASK_STACK_SIZE,// глубина стека
+//			NULL,				// аргумент
+//			1,					// приоритет
+//			_gpsTaskStack,		// стек
+//			&_gpsTaskObj		// объект задания
+//	);
 
 
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(

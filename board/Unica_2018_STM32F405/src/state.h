@@ -95,6 +95,7 @@ typedef struct {
 	//	"position" of servo and step engine
 	float servo_pos;
 	float step_engine_pos;
+	float target[3];
 } stateCamera_orient_t;
 
 //	system parameters

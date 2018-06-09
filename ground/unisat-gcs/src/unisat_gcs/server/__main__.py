@@ -11,6 +11,7 @@ from . import _log as _root_log
 
 _log = _root_log.getChild("main")
 
+f = open("/home/developer/calibration/accel_1.txt", "a")
 
 def process_message(msg):
         # _log.info("%s", msg)
@@ -19,42 +20,50 @@ def process_message(msg):
         pass
     elif isinstance(msg, MAVLink_atmega_message):
         _log.info(
-            "ATmega {cseq: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"
+            "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"
             %
             (msg.get_header().seq, msg.time, msg.pressure, msg.temp)
         )
     elif isinstance(msg, MAVLink_imu_rsc_message):
         _log.info(
-            "IMU\t {cseq: %ld, time: %0.3f, accel: [%0.3f, %0.3f, %0.3f] gyro: [%0.3f, %0.3f, %0.3f] compass: [%0.3f, %0.3f, %0.3f]}"
+            "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
             %
             (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
         )
+
+        # f.write(str(msg.accel[0]) + "\t" + str(msg.accel[1]) + "\t" + str(msg.accel[2]) + "\n")
+
     elif isinstance(msg, MAVLink_imu_isc_message):
         _log.info(
-            "IMU\t {cseq: %ld, time: %0.3f, accel: [%0.3f, %0.3f, %0.3f] gyro: [%0.3f, %0.3f, %0.3f] compass: [%0.3f, %0.3f, %0.3f]}"
+            "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
             %
-            (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
+            (msg.get_header().seq, msg.time, *msg.accel, *msg.compass)
         )
         _log.info(
-            "QUAT\t {cseq: %ld, time: %0.3f, quat: [%0.3f, %0.3f, %0.3f, %0.3f]}"
+            "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
             %
             (msg.get_header().seq, msg.time, *msg.quaternion)
         )
+        _log.info(
+            "POS\t {n: %ld, time: %0.3f, velo: [%0.3f, %0.3f, %0.3f], pos: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.velocities, *msg.coordinates)
+        )
     elif isinstance(msg, MAVLink_sensors_message):
         _log.info(
-            "SENSORS  {cseq: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
+            "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
             %
             (msg.get_header().seq, msg.time, msg.temp, msg.pressure)
         )
     elif isinstance(msg, MAVLink_gps_message):
         _log.info(
-            "GPS\t {cseq: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
+            "GPS\t {n: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
             %
             (msg.get_header().seq, msg.time, msg.coordinates[1], msg.coordinates[0], msg.coordinates[2])
         )
     elif isinstance(msg, MAVLink_camera_orientation_message):
         _log.info(
-            "CAM\t {cseq: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
+            "CAM\t {n: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
             %
             (msg.get_header().seq, msg.time, 180*msg.step_engine_pos/math.pi, 180*msg.servo_pos/math.pi)
         )
@@ -90,6 +99,6 @@ def main(argv):
         if msg2:
             process_message(msg2)
 
-
 if __name__ == "__main__":
     exit(main(sys.argv[1:]))
+    f.close()

@@ -15,17 +15,11 @@
 
 #include "state.h"
 
-//----------------------------------------------------------------------------------------------------
-// Variable declaration
-
-extern volatile float beta;				// algorithm gain
-extern volatile float q0, q1, q2, q3;	// quaternion of sensor frame relative to auxiliary frame
-
 //---------------------------------------------------------------------------------------------------
 // Function declarations
 
-void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-void MadgwickAHRSupdateIMU(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az);
+void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz, float dt);
+void MadgwickAHRSupdateIMU(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az, float dt);
 
 #endif
 //=====================================================================================================

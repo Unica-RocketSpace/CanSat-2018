@@ -80,28 +80,28 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	108,	0b00000000));	//power managment 2
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	27,		(0b00000000 | (GYRO_RANGE << 4)) ));	//gyro config (rate 500dps = 01, Fch_b = 00)
 
-	/*Установка OFFSET-ов*/
-	uint8_t x_offset_l, x_offset_h, y_offset_l, y_offset_h, z_offset_l, z_offset_h;
-	int16_t x_offset, y_offset, z_offset;
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 120, &x_offset_l, 1));
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 119, &x_offset_h, 1));
-	x_offset = (x_offset_h << 7) + (x_offset_l >> 1) - 17;
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	120,	(uint8_t)(x_offset << 1)));
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	119,	(uint8_t)(x_offset >> 7)));
-
-
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 123, &y_offset_l, 1));
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 122, &y_offset_h, 1));
-	y_offset = (y_offset_h << 7) + (y_offset_l >> 1) - 16;
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(y_offset << 1)));
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(y_offset >> 7)));
-
-
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 126, &z_offset_l, 1));
-	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 125, &z_offset_h, 1));
-	z_offset = (z_offset_h << 7) + (z_offset_l >> 1) - 20;
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(z_offset << 1)));
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(z_offset >> 7)));
+//	/*Установка OFFSET-ов*/
+//	uint8_t x_offset_l, x_offset_h, y_offset_l, y_offset_h, z_offset_l, z_offset_h;
+//	int16_t x_offset, y_offset, z_offset;
+//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 120, &x_offset_l, 1));
+//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 119, &x_offset_h, 1));
+//	x_offset = (x_offset_h << 7) + (x_offset_l >> 1) - 17;
+//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	120,	(uint8_t)(x_offset << 1)));
+//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	119,	(uint8_t)(x_offset >> 7)));
+//
+//
+//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 123, &y_offset_l, 1));
+//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 122, &y_offset_h, 1));
+//	y_offset = (y_offset_h << 7) + (y_offset_l >> 1) - 16;
+//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(y_offset << 1)));
+//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(y_offset >> 7)));
+//
+//
+//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 126, &z_offset_l, 1));
+//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 125, &z_offset_h, 1));
+//	z_offset = (z_offset_h << 7) + (z_offset_l >> 1) - 20;
+//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(z_offset << 1)));
+//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(z_offset >> 7)));
 
 	/*mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(Y_ACCEL_OFFSET << 1));
 	mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(Y_ACCEL_OFFSET << 7));
@@ -177,9 +177,23 @@ end:
 
 void mpu9255_recalcAccel(const int16_t * raw_accelData, float * accelData)
 {
-	accelData[0] = (float)(raw_accelData[0]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE) * X_ACCEL_KOEFF;
-	accelData[1] = (float)(raw_accelData[1]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE) * Y_ACCEL_KOEFF;
-	accelData[2] = (float)(raw_accelData[2]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE) * Z_ACCEL_KOEFF;
+	float _accelData[3] = {0, 0, 0};
+
+	_accelData[0] = (float)(raw_accelData[0]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* X_ACCEL_KOEFF;
+	_accelData[1] = (float)(raw_accelData[1]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* Y_ACCEL_KOEFF;
+	_accelData[2] = (float)(raw_accelData[2]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); // * Z_ACCEL_KOEFF;
+
+	float offset_vector[3] = {X_ACCEL_OFFSET, Y_ACCEL_OFFSET, Z_ACCEL_OFFSET};
+	float transform_matrix[3][3] =	{{XX_ACCEL_TRANSFORM_MATIX, XY_ACCEL_TRANSFORM_MATIX, XZ_ACCEL_TRANSFORM_MATIX},
+									 {XY_ACCEL_TRANSFORM_MATIX, YY_ACCEL_TRANSFORM_MATIX, YZ_ACCEL_TRANSFORM_MATIX},
+									 {XZ_ACCEL_TRANSFORM_MATIX, YZ_ACCEL_TRANSFORM_MATIX, ZZ_ACCEL_TRANSFORM_MATIX}};
+
+	iauPmp(_accelData, offset_vector, accelData);
+	iauRxp(transform_matrix, accelData, accelData);
+
+//	for (int i = 0; i < 3; i++) {
+//		accelData[i] = _accelData[i];
+//	}
 }
 
 void mpu9255_recalcGyro(const int16_t * raw_gyroData, float * gyroData)
@@ -190,19 +204,18 @@ void mpu9255_recalcGyro(const int16_t * raw_gyroData, float * gyroData)
 
 void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 {
+//	float raw_data[3] = {(float)raw_compassData[0], (float)raw_compassData[1], (float)raw_compassData[2]};
+//	float offset_vector[3] = {X_COMPAS_OFFSET, Y_COMPAS_OFFSET, Z_COMPAS_OFFSET};
+//	float transform_matrix[3][3] =	{	{XX_COMPAS_TRANSFORM_MATIX, XY_COMPAS_TRANSFORM_MATIX, XZ_COMPAS_TRANSFORM_MATIX},
+//										{XY_COMPAS_TRANSFORM_MATIX, YY_COMPAS_TRANSFORM_MATIX, YZ_COMPAS_TRANSFORM_MATIX},
+//										{XZ_COMPAS_TRANSFORM_MATIX, YZ_COMPAS_TRANSFORM_MATIX, ZZ_COMPAS_TRANSFORM_MATIX}};
+//
+//	iauPmp(raw_data, offset_vector, compassData);
+//	iauRxp(transform_matrix, compassData, compassData);
 
-	float raw_data[3] = {(float)raw_compassData[0], (float)raw_compassData[1], (float)raw_compassData[2]};
-	float offset_vector[3] = {X_COMPAS_OFFSET, Y_COMPAS_OFFSET, Z_COMPAS_OFFSET};
-	float transform_matrix[3][3] =	{	{XX_COMPAS_TRANSFORM_MATIX, XY_COMPAS_TRANSFORM_MATIX, XZ_COMPAS_TRANSFORM_MATIX},
-										{XY_COMPAS_TRANSFORM_MATIX, YY_COMPAS_TRANSFORM_MATIX, YZ_COMPAS_TRANSFORM_MATIX},
-										{XZ_COMPAS_TRANSFORM_MATIX, YZ_COMPAS_TRANSFORM_MATIX, ZZ_COMPAS_TRANSFORM_MATIX}};
-
-	//printf("raw_compass_XYZ = %d, %d, %d\n", raw_compass_XYZ[0], raw_compass_XYZ[1], raw_compass_XYZ[2]);
-	//printf("raw_compass_XYZ = %f, %f, %f\n", (float)raw_compass_XYZ[0], (float)raw_compass_XYZ[1], (float)raw_compass_XYZ[2]);
-	iauPmp(raw_data, offset_vector, compassData);
-	//printf("offset_compass_XYZ = %f, %f, %f\n", compass_XYZ[0], compass_XYZ[1], compass_XYZ[2]);
-	iauRxp(transform_matrix, compassData, compassData);
-	//printf("transform_compass_XYZ = %f, %f, %f\n\n", compass_XYZ[0], compass_XYZ[1], compass_XYZ[2]);
+	for (int i = 0; i < 3; i++) {
+		compassData[i] = (float)raw_compassData[i];
+	}
 }
 
 
@@ -227,23 +240,23 @@ static int IMU_updateDataAll() {
 	mpu9255_recalcGyro(gyroData, gyro);
 	mpu9255_recalcCompass(compassData, compass);
 
-	float compass_mod = 0;
-	for (int i = 0; i < 3; i++) {
-		compass_mod += pow(compass[i], 2);
-	}
-	compass_mod = sqrt(compass_mod);
-	for (int i = 0; i < 3; i++) {
-		compass[i] /= compass_mod;
-	}
+//	float compass_mod = 0;
+//	for (int i = 0; i < 3; i++) {
+//		compass_mod += pow(compass[i], 2);
+//	}
+//	compass_mod = sqrt(compass_mod);
+//	for (int i = 0; i < 3; i++) {
+//		compass[i] /= compass_mod;
+//	}
 
 taskENTER_CRITICAL();
 	//	пересчитываем их и записываем в структуры
 	for (int k = 0; k < 3; k++) {
 		stateIMU_rsc.accel[k] = accel[k];
-		stateIMU_rsc.gyro[k] = gyro[k];
+		stateIMU_rsc.gyro[k] = gyro[k] - state_zero.gyro_staticShift[k];
 		stateIMU_rsc.compass[k] = compass[k];
 	}
-	state_system.time = HAL_GetTick()/1000;
+	state_system.time = (float)HAL_GetTick() / 1000;
 taskEXIT_CRITICAL();
 
 taskENTER_CRITICAL();
@@ -256,9 +269,9 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 
 	//	обновляем ориентацию, используя локальные структуры
-//	constructTrajectory(
-//		&local_stateIMU_isc, &local_stateIMU_isc_prev,
-//		&local_state_system, &local_state_system_prev, &local_stateIMU_rsc);
+	constructTrajectory(
+		&local_stateIMU_isc, &local_stateIMU_isc_prev,
+		&local_state_system, &local_state_system_prev, &local_stateIMU_rsc);
 
 taskENTER_CRITICAL();
 	//	копируем локальные структуры в глобальные
@@ -272,6 +285,38 @@ taskEXIT_CRITICAL();
 end:
 	return error;
 }
+
+
+uint8_t get_staticShifts(float* gyro_staticShift, float* accel_staticShift) {
+	uint8_t error = 0;
+	uint8_t zero_orientCnt = 20;
+
+	//	находим статическое смещение гироскопа
+	for (int i = 0; i < zero_orientCnt; i++) {
+		int16_t accelData[3] = {0, 0, 0};
+		int16_t gyroData[3] = {0, 0, 0};
+		float accel[3] = {0, 0, 0};
+		float gyro[3] = {0, 0, 0};
+
+		//	собираем данные
+		PROCESS_ERROR(mpu9255_readIMU(accelData, gyroData));
+		mpu9255_recalcGyro(gyroData, gyro);
+		mpu9255_recalcAccel(accelData, accel);
+
+		for (int m = 0; m < 3; m++) {
+			gyro_staticShift[m] += gyro[m];
+			accel_staticShift[m] += accel[m];
+		}
+//		vTaskDelay(10 / portTICK_RATE_MS);
+	}
+	for (int m = 0; m < 3; m++) {
+		gyro_staticShift[m] /= zero_orientCnt;
+		accel_staticShift[m] /= zero_orientCnt;
+	}
+end:
+	return error;
+}
+
 
 void IMU_task() {
 
@@ -343,7 +388,7 @@ void IMU_task() {
 				mpu9255_recalcGyro(gyroData, gyro);
 
 				for (int m = 0; m < 3; m++) {
-					gyro_staticShift[i] += gyroData[i];
+					gyro_staticShift[i] += gyro[i];
 				}
 			}
 
@@ -381,19 +426,22 @@ void IMU_task() {
 
 //	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
 //	printf("mpu_error = %d\n", mpu9255init_error);
-	uint16_t num = 0;
+//	uint16_t num = 0;
+
+
+	float gyro_staticShift[3] = {0, 0, 0};
+	float accel_staticShift[3] = {0, 0, 0};
+	get_staticShifts(gyro_staticShift, accel_staticShift);
+taskENTER_CRITICAL();
+	for (int i = 0; i < 3; i++) {
+		state_zero.gyro_staticShift[i] = gyro_staticShift[i];
+		state_zero.accel_staticShift[i] = accel_staticShift[i];
+	}
+taskEXIT_CRITICAL();
+
 
 	for (;;) {
 
-//		printf("Time:\t\t%f s\r\n", (double)HAL_GetTick()/1000);
-//
-//		//---ОПРОС MPU9255---//
-//		IMU_updateDataAll();
-//
-//		printf("Accelerations:\t\t%f m/s\t%f m/s\t%f m/s\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
-//		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
-//		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
-//
 		//---ОПРОС BMP280---//
 		//Примечание - Запись данных в STATE производится в критических зонах
 		int32_t pressure = 0;
@@ -410,25 +458,20 @@ void IMU_task() {
 		stateSensors.temp = temp_f;
 	taskEXIT_CRITICAL();
 
-
-//		printf("Preasure:\t\t%f Pa\n", stateSensors.pressure);
-//		printf("Temperature:\t\t%f oC\n", stateSensors.temp);
-//		printf("\n");
-
-		const TickType_t _delay = 200 / portTICK_RATE_MS;
+		const TickType_t _delay = 10 / portTICK_RATE_MS;
 		IMU_updateDataAll();
-//		printf("Accelerations:\t\t%f m/s\t%f m/s\t%f m/s\n", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
-//		printf("Ang velocities:\t\t%f 1/s\t%f 1/s\t%f 1/s\n", stateIMU_rsc.gyro[0], stateIMU_rsc.gyro[1], stateIMU_rsc.gyro[2]);
-//		printf("Magnetic derection:\t%f \t%f \t%f \n", stateIMU_rsc.compass[0], stateIMU_rsc.compass[1], stateIMU_rsc.compass[2]);
-
-		if (num == 10) {num = 0;}
-
-		stateIMU_isc.quaternion[0] = cos(num*M_PI/36);
-		stateIMU_isc.quaternion[1] = -0*sin(num*M_PI/36);
-		stateIMU_isc.quaternion[2] = -0*sin(num*M_PI/36);
-		stateIMU_isc.quaternion[3] = -1*sin(num*M_PI/36);
 		calculate_angles();
-		num += 1;
+
+//		printf("%f\t%f\t%f\n\r", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
+
+//		if (num == 10) {num = 0;}
+//
+//		stateIMU_isc.quaternion[0] = cos(num*M_PI/36);
+//		stateIMU_isc.quaternion[1] = -0*sin(num*M_PI/36);
+//		stateIMU_isc.quaternion[2] = -0*sin(num*M_PI/36);
+//		stateIMU_isc.quaternion[3] = -1*sin(num*M_PI/36);
+//		num += 1;
+//		calculate_angles();
 //		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
 
 

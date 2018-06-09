@@ -122,6 +122,8 @@ typedef struct {
 	float zero_quaternion[4];
 	float zero_GPS[3];
 	float gyro_staticShift[3];
+	//TODO: ДОБАВИТЬ В MAVLink
+	float accel_staticShift[3];
 } state_zero_t;
 
 

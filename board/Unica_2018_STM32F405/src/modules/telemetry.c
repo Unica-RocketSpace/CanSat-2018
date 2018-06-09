@@ -35,7 +35,7 @@ uint8_t UNISAT_CAM = 0x06;
 static uint8_t mavlink_msg_state_send() {
 
 	mavlink_state_t msg_state;
-	msg_state.time = HAL_GetTick() / 1000;
+	msg_state.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	msg_state.accel_state	= state_system.accel_state;
 	msg_state.gyro_state	= state_system.gyro_state;
@@ -56,7 +56,7 @@ taskEXIT_CRITICAL();
 static uint8_t mavlink_msg_imu_rsc_send() {
 
 	mavlink_imu_rsc_t msg_imu_rsc;
-	msg_imu_rsc.time = HAL_GetTick() / 1000;
+	msg_imu_rsc.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	for (int i = 0; i < 3; i++) {
 		msg_imu_rsc.accel[i] = stateIMU_rsc.accel[i];
@@ -76,7 +76,7 @@ taskEXIT_CRITICAL();
 static uint8_t mavlink_msg_imu_isc_send() {
 
 	mavlink_imu_isc_t msg_imu_isc;
-	msg_imu_isc.time = HAL_GetTick() / 1000;
+	msg_imu_isc.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	for (int i = 0; i < 3; i++) {
 		msg_imu_isc.accel[i] = stateIMU_isc.accel[i];
@@ -101,7 +101,7 @@ taskEXIT_CRITICAL();
 static uint8_t mavlink_msg_sensors_send() {
 
 	mavlink_sensors_t msg_sensors;
-	msg_sensors.time = HAL_GetTick() / 1000;
+	msg_sensors.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	msg_sensors.temp = stateSensors.temp;
 	msg_sensors.pressure = stateSensors.pressure;
@@ -119,7 +119,7 @@ taskEXIT_CRITICAL();
 static uint8_t mavlink_msg_gps_send() {
 
 	mavlink_gps_t msg_gps;
-	msg_gps.time = HAL_GetTick() / 1000;
+	msg_gps.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	for (int i = 0; i < 3; i++)
 		msg_gps.coordinates[i] = stateGPS.coordinates[i];
@@ -136,7 +136,7 @@ taskEXIT_CRITICAL();
 static uint8_t mavlink_msg_state_zero_send() {
 
 	mavlink_state_zero_t msg_state_zero;
-	msg_state_zero.time = HAL_GetTick() / 1000;
+	msg_state_zero.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	msg_state_zero.zero_pressure = state_zero.zero_pressure;
 	for (int i = 0; i < 4; i++)
@@ -158,7 +158,7 @@ taskEXIT_CRITICAL();
 static uint8_t mavlink_msg_camera_orientation_send() {
 
 	mavlink_camera_orientation_t msg_camera_orient;
-	msg_camera_orient.time = HAL_GetTick() / 1000;
+	msg_camera_orient.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
 	msg_camera_orient.servo_pos = stateCamera_orient.servo_pos;
 	msg_camera_orient.step_engine_pos = stateCamera_orient.step_engine_pos;
@@ -179,14 +179,13 @@ void IO_RF_task() {
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
 	vTaskDelay(100/portTICK_RATE_MS);
 	state_initErrors.NRF_E = nRF24L01_initError;
-	printf("nRF24L01 error: %d\n", nRF24L01_initError);
+//	printf("nRF24L01 error: %d\n", nRF24L01_initError);
 
-	const TickType_t _delay = 200 / portTICK_RATE_MS;
+	const TickType_t _delay = 100 / portTICK_RATE_MS;
 	for (;;) {
 
 //		uint8_t nRF_status = 0;
 //		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-
 //		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
 //						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
 //						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
@@ -196,7 +195,6 @@ void IO_RF_task() {
 //
 //		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
 //		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
-
 //		if (nRF_status & (1 << TX_FULL))
 //		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 //		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
@@ -210,9 +208,10 @@ void IO_RF_task() {
 //		if (nRF_status & (1 << TX_FULL))
 //			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 
+
 //		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();
-//		mavlink_msg_imu_rsc_send();
+		mavlink_msg_imu_rsc_send();
 		mavlink_msg_sensors_send();
 		mavlink_msg_gps_send();
 		mavlink_msg_camera_orientation_send();

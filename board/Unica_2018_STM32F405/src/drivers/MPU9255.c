@@ -6,9 +6,7 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
-#include <string.h>
 
 #include <stm32f4xx_hal.h>
 #include "diag/Trace.h"
@@ -20,12 +18,10 @@
 
 #include "kinematic_unit.h"
 #include "dynamic_unit.h"
+#include "MadgwickAHRS.h"
 #include "MPU9255.h"
+#include "state.h"
 #include "UNICS_bmp280.h"
-
-
-static I2C_HandleTypeDef i2c_mpu9255;
-USART_HandleTypeDef usart_dbg;
 
 
 int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
@@ -44,6 +40,7 @@ int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_
 end:
 	return error;
 }
+
 
 int mpu9255_init(I2C_HandleTypeDef* hi2c)
 {
@@ -102,11 +99,11 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 //	z_offset = (z_offset_h << 7) + (z_offset_l >> 1) - 20;
 //	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(z_offset << 1)));
 //	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(z_offset >> 7)));
-
-	/*mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(Y_ACCEL_OFFSET << 1));
-	mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(Y_ACCEL_OFFSET << 7));
-	mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(Z_ACCEL_OFFSET << 1));
-	mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(Z_ACCEL_OFFSET << 7));*/
+//
+//	mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(Y_ACCEL_OFFSET << 1));
+//	mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(Y_ACCEL_OFFSET << 7));
+//	mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(Z_ACCEL_OFFSET << 1));
+//	mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(Z_ACCEL_OFFSET << 7));
 
 	//compass init
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000010));	//режим bypass on
@@ -215,272 +212,5 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 
 	for (int i = 0; i < 3; i++) {
 		compassData[i] = (float)raw_compassData[i];
-	}
-}
-
-
-static int IMU_updateDataAll() {
-	//	массивы для хранения //FIXME: LOWопросов
-	int error = 0;
-	int16_t accelData[3] = {0, 0, 0};
-	int16_t gyroData[3] = {0, 0, 0};
-	int16_t compassData[3] = {0, 0, 0};
-	float accel[3] = {0, 0, 0}; float gyro[3] = {0, 0, 0}; float compass[3] = {0, 0, 0};
-
-	stateIMU_isc_t local_stateIMU_isc;
-	stateIMU_isc_t local_stateIMU_isc_prev;
-	state_system_t local_state_system;
-	state_system_t local_state_system_prev;
-	stateIMU_rsc_t local_stateIMU_rsc;
-
-	//	собираем данные
-	PROCESS_ERROR(mpu9255_readIMU(accelData, gyroData));
-	PROCESS_ERROR(mpu9255_readCompass(compassData));
-	mpu9255_recalcAccel(accelData, accel);
-	mpu9255_recalcGyro(gyroData, gyro);
-	mpu9255_recalcCompass(compassData, compass);
-
-//	float compass_mod = 0;
-//	for (int i = 0; i < 3; i++) {
-//		compass_mod += pow(compass[i], 2);
-//	}
-//	compass_mod = sqrt(compass_mod);
-//	for (int i = 0; i < 3; i++) {
-//		compass[i] /= compass_mod;
-//	}
-
-taskENTER_CRITICAL();
-	//	пересчитываем их и записываем в структуры
-	for (int k = 0; k < 3; k++) {
-		stateIMU_rsc.accel[k] = accel[k];
-		stateIMU_rsc.gyro[k] = gyro[k] - state_zero.gyro_staticShift[k];
-		stateIMU_rsc.compass[k] = compass[k];
-	}
-	state_system.time = (float)HAL_GetTick() / 1000;
-taskEXIT_CRITICAL();
-
-taskENTER_CRITICAL();
-	//	копируем глобальные структуры в локальные
-	memcpy(&local_stateIMU_isc, 		&stateIMU_isc, 		sizeof(stateIMU_isc));
-	memcpy(&local_stateIMU_isc_prev, 	&stateIMU_isc_prev, sizeof(stateIMU_isc_prev));
-	memcpy(&local_state_system, 		&state_system, 		sizeof(state_system));
-	memcpy(&local_state_system_prev, 	&state_system_prev,	sizeof(state_system_prev));
-	memcpy(&local_stateIMU_rsc, 		&stateIMU_rsc, 		sizeof(stateIMU_rsc));
-taskEXIT_CRITICAL();
-
-	//	обновляем ориентацию, используя локальные структуры
-	constructTrajectory(
-		&local_stateIMU_isc, &local_stateIMU_isc_prev,
-		&local_state_system, &local_state_system_prev, &local_stateIMU_rsc);
-
-taskENTER_CRITICAL();
-	//	копируем локальные структуры в глобальные
-	memcpy(&stateIMU_isc, 		&local_stateIMU_isc, 		sizeof(local_stateIMU_isc));
-	memcpy(&stateIMU_isc_prev, 	&local_stateIMU_isc_prev, 	sizeof(local_stateIMU_isc_prev));
-	memcpy(&state_system, 		&local_state_system, 		sizeof(local_state_system));
-	memcpy(&state_system_prev,	&local_state_system_prev, 	sizeof(local_state_system_prev));
-	memcpy(&stateIMU_rsc, 		&local_stateIMU_rsc, 		sizeof(local_stateIMU_rsc));
-taskEXIT_CRITICAL();
-
-end:
-	return error;
-}
-
-
-uint8_t get_staticShifts(float* gyro_staticShift, float* accel_staticShift) {
-	uint8_t error = 0;
-	uint8_t zero_orientCnt = 20;
-
-	//	находим статическое смещение гироскопа
-	for (int i = 0; i < zero_orientCnt; i++) {
-		int16_t accelData[3] = {0, 0, 0};
-		int16_t gyroData[3] = {0, 0, 0};
-		float accel[3] = {0, 0, 0};
-		float gyro[3] = {0, 0, 0};
-
-		//	собираем данные
-		PROCESS_ERROR(mpu9255_readIMU(accelData, gyroData));
-		mpu9255_recalcGyro(gyroData, gyro);
-		mpu9255_recalcAccel(accelData, accel);
-
-		for (int m = 0; m < 3; m++) {
-			gyro_staticShift[m] += gyro[m];
-			accel_staticShift[m] += accel[m];
-		}
-//		vTaskDelay(10 / portTICK_RATE_MS);
-	}
-	for (int m = 0; m < 3; m++) {
-		gyro_staticShift[m] /= zero_orientCnt;
-		accel_staticShift[m] /= zero_orientCnt;
-	}
-end:
-	return error;
-}
-
-
-void IMU_task() {
-
-//	taskENTER_CRITICAL();
-	//	usart_dbg init
-	__GPIOC_CLK_ENABLE();
-	GPIO_InitTypeDef gpioc;
-	gpioc.Mode = GPIO_MODE_OUTPUT_OD;
-	gpioc.Pin = GPIO_PIN_12;
-	gpioc.Pull = GPIO_NOPULL;
-	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
-
-	HAL_GPIO_Init(GPIOC, &gpioc);
-
-	usart_dbg.Instance = USART3;
-	usart_dbg.Init.BaudRate = 256000;
-	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
-	usart_dbg.Init.StopBits = UART_STOPBITS_1;
-	usart_dbg.Init.Parity = UART_PARITY_NONE;
-	usart_dbg.Init.Mode = UART_MODE_TX_RX;
-
-	HAL_USART_Init(&usart_dbg);
-
-	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
-	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
-	state_initErrors.MPU_E = mpu9255_initError;
-//	printf("MPU9255 error: %d\n", mpu9255_initError);
-
-	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
-	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
-	rscs_bmp280_parameters_t bmp280_parameters;
-	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
-	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
-	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
-	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
-
-	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
-	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
-	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
-	state_initErrors.BMP_E = bmp280_initError;
-//	printf("BMP280 error: %d\n", bmp280_initError);
-
-
-	/*for (;;) {
-		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
-		if (state_system.globalStage == 0) {
-			mpu9255_init(&i2c_mpu9255);
-			//TODO: ГДЕ ОБНОВЛЯТЬ СОСТОЯНИЕ ДАТЧИКОВ
-		}
-//		// Этап 1. Погрузка в ракету
-//		if (state_system.globalStage == 1) {		//НИЧЕГО НЕ ДЕЛАЕМ
-//		}
-		// Этап 2. Определение начального состояния
-		if (state_system.globalStage == 2) {
-
-			uint8_t zero_orientCnt = 10;
-			//	массив для хранения статического смещения
-			float gyro_staticShift[3] = {0, 0, 0};
-
-			//	находим статическое смещение гироскопа
-			for (int i = 0; i < zero_orientCnt; i++) {
-				int16_t accelData[3] = {0, 0, 0};
-				int16_t gyroData[3] = {0, 0, 0};
-
-				float accel[3]; float gyro[3];
-
-				//	собираем данные
-				mpu9255_readIMU(accelData, gyroData);
-				mpu9255_recalcGyro(gyroData, gyro);
-
-				for (int m = 0; m < 3; m++) {
-					gyro_staticShift[i] += gyro[i];
-				}
-			}
-
-			taskENTER_CRITICAL();
-			//	записываем смещение в state
-			for (int m = 0; m < 3; m++) {
-				state_zero.gyro_staticShift[m] = gyro_staticShift[m]/zero_orientCnt;
-			}
-			taskEXIT_CRITICAL();
-
-			for (int i = 0; i < zero_orientCnt; i++) {
-				IMU_updateDataAll();
-			}
-		}
-		// Этап 3. Полет в ракете
-		if (state_system.globalStage == 3) {
-
-		}
-		// Этап 4. Свободное падение
-		if (state_system.globalStage == 4) {
-
-		}
-		// Этап 5. Спуск
-		if (state_system.globalStage == 5) {
-
-		}
-		// Этап 6. Окончание полета
-		if (state_system.globalStage == 6) {
-
-		}
-
-
-
-	}*/
-
-//	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
-//	printf("mpu_error = %d\n", mpu9255init_error);
-//	uint16_t num = 0;
-
-
-	float gyro_staticShift[3] = {0, 0, 0};
-	float accel_staticShift[3] = {0, 0, 0};
-	get_staticShifts(gyro_staticShift, accel_staticShift);
-taskENTER_CRITICAL();
-	for (int i = 0; i < 3; i++) {
-		state_zero.gyro_staticShift[i] = gyro_staticShift[i];
-		state_zero.accel_staticShift[i] = accel_staticShift[i];
-	}
-taskEXIT_CRITICAL();
-
-
-	for (;;) {
-
-		//---ОПРОС BMP280---//
-		//Примечание - Запись данных в STATE производится в критических зонах
-		int32_t pressure = 0;
-		int32_t temp = 0;
-		float pressure_f = 0;
-		float temp_f = 0;
-		rscs_bmp280_read(bmp280, &pressure, &temp);
-		rscs_bmp280_calculate(bmp280_calibration_values, pressure, temp, &pressure_f, &temp_f);
-
-	taskENTER_CRITICAL();
-		stateSensors_raw.pressure = pressure;
-		stateSensors_raw.temp = temp;
-		stateSensors.pressure = pressure_f;
-		stateSensors.temp = temp_f;
-	taskEXIT_CRITICAL();
-
-		const TickType_t _delay = 10 / portTICK_RATE_MS;
-		IMU_updateDataAll();
-		calculate_angles();
-
-//		printf("%f\t%f\t%f\n\r", stateIMU_rsc.accel[0], stateIMU_rsc.accel[1], stateIMU_rsc.accel[2]);
-
-//		if (num == 10) {num = 0;}
-//
-//		stateIMU_isc.quaternion[0] = cos(num*M_PI/36);
-//		stateIMU_isc.quaternion[1] = -0*sin(num*M_PI/36);
-//		stateIMU_isc.quaternion[2] = -0*sin(num*M_PI/36);
-//		stateIMU_isc.quaternion[3] = -1*sin(num*M_PI/36);
-//		num += 1;
-//		calculate_angles();
-//		printf("engine angle: %f\n", 180*stateCamera_orient.step_engine_pos/M_PI);
-
-
-	taskENTER_CRITICAL();
-		memcpy(&stateIMU_isc_prev, 			&stateIMU_isc,			sizeof(stateIMU_isc));
-		memcpy(&state_system_prev, 			&state_system,		 	sizeof(state_system));
-		memcpy(&stateCamera_orient_prev, 	&stateCamera_orient, 	sizeof(stateCamera_orient));
-	taskEXIT_CRITICAL();
-
-		vTaskDelay(_delay);
 	}
 }

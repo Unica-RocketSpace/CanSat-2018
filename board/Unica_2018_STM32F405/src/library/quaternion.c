@@ -68,25 +68,10 @@ void quat_mult_by_quat(float * a, float * b, float* res_quat) {
 	res[2] = a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1];
 	res[3] = a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0];
 
-	float res_[4] = {0, 0, 0, 0};
-	quat_normalize(res, res_);
-	memcpy(res_quat, res_, sizeof(res_));
+//	float res_[4] = {0, 0, 0, 0};
+//	quat_normalize(res, res_);
+	memcpy(res_quat, res, sizeof(res));
 }
-
-//void quat_mult_by_vect(float* a, float* b, float* res_quat) {
-//
-//	float vectQuat[4] = {0, b[1], b[2], b[3]};			//	quat from vect
-//	float res_quat[4] = {0, 0, 0, 0};					//	quat from multiply
-//	float vect[3] = {0, 0, 0};							//	vect from res_quat
-//	float vect_n[3] = {0, 0, 0};						//	normalised vector
-//
-//	quat_mult_by_quat(a, vectQuat, res_quat);
-//	for (int i = 0; i < 3; i++) {
-//		vect[i] = res_quat[i+1];
-//	}
-//	vect_normalise(vect, vect_n);
-//	memcpy(res_vect, vect_n, sizeof(vect_n));
-//}
 
 
 void quat_mult_by_vect(float* a, float* b, float* res_quat) {

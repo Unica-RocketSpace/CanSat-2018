@@ -18,8 +18,8 @@
 //---------------------------------------------------------------------------------------------------
 // Function declarations
 
-void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz, float dt);
-void MadgwickAHRSupdateIMU(stateIMU_isc_t* localStateIMU_isc, float gx, float gy, float gz, float ax, float ay, float az, float dt);
+void MadgwickAHRSupdate(float* quaternion, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz, float dt);
+void MadgwickAHRSupdateIMU(float* quaternion, float gx, float gy, float gz, float ax, float ay, float az, float dt);
 
 #endif
 //=====================================================================================================

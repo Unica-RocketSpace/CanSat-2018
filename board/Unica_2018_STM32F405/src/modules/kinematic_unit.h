@@ -10,21 +10,13 @@
 
 #include "state.h"
 
-/*###############################################*/
-/*################### ФУНКЦИИ ###################*/
-/*###############################################*/
+extern rscs_bmp280_descriptor_t * bmp280;
+extern const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 /*
- *  Построение траектории
- *  Параметры:
- *
+ * 	FreeRTOS задача для работы с IMU
  */
-void constructTrajectory(	stateIMU_isc_t* localStateIMU_isc,
-							stateIMU_isc_t* localStateIMU_isc_prev,
-							state_system_t* localState_system,
-							state_system_t* localState_system_prev,
-							stateIMU_rsc_t* localStateIMU_rsc
-						);
+void IMU_task();
 
 
 #endif /* KINEMATIC_UNIT_H_ */

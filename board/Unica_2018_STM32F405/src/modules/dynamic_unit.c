@@ -6,11 +6,10 @@
  */
 #include "stdbool.h"
 #include <math.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include <stm32f4xx_hal.h>
-#include <math.h>
-#include <string.h>
-
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -36,6 +35,20 @@
 #define TARGET_X			10
 #define TARGET_Y			0
 
+
+USART_HandleTypeDef usart_HC05;
+
+void HC05_Init() {
+
+	usart_HC05.Instance = USART1;
+	usart_HC05.Init.BaudRate = 9600;
+	usart_HC05.Init.WordLength = UART_WORDLENGTH_8B;
+	usart_HC05.Init.StopBits = UART_STOPBITS_1;
+	usart_HC05.Init.Parity = UART_PARITY_NONE;
+	usart_HC05.Init.Mode = UART_MODE_TX_RX;
+
+	HAL_USART_Init(&usart_HC05);
+}
 
 
 void step_engine_init () {
@@ -115,9 +128,9 @@ static void get_step_engine_angle(float* vect, float* angle) {
 }
 
 
-void calculate_angles () {
+void calculate_angles (float* step_engine_pos, float* servo_pos) {
 
-	float quat_ISC_RSC[4] = {0.0, 0.0, 0.0, 0.0};		//	кватернион для перехода из инерциальной системы в связанную
+	float quat_ISC_RSC[4] = {0.0, 0.0, 0.0, 0.0};
 	float target[3] = {0.0, 0.0, 0.0};				//	направляющий вектор цели
 	float target_RSC[3] = {0.0, 0.0, 0.0};			//	направляющий вектор цели в ССК
 	float local_quaternion[4] = {0.0, 0.0, 0.0, 0.0};	//	локальная переменная для нахождения кватерниона
@@ -132,43 +145,31 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 
 	vect_normalise(target, target);
-	vect_rotate(target, local_quaternion, target_RSC);
+	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК (invert)
+	vect_rotate(target, quat_ISC_RSC, target_RSC);		//	получаем вектор цели в ССК
 
 taskENTER_CRITICAL();
 	memcpy(stateCamera_orient.target, target_RSC, sizeof(target_RSC));
 //	for (int i = 0; i < 3; i++) {target_RSC_prev[i] = stateCamera_orient_prev.target[i];}
 taskEXIT_CRITICAL();
 
-//	quat_invert(local_quaternion, quat_ISC_RSC);			//	получаем кватернион ИСК->ССК
-//	vect_rotate(target, quat_ISC_RSC, target_RSC);			//	получаем вектор цели в ССК
-
-	float step_engine_pos = 0;
-	float servo_pos = 0;
-	get_servo_angle(target_RSC, &servo_pos);
-	get_step_engine_angle(target_RSC, &step_engine_pos);
-
-	//	записываем углы в state
-taskENTER_CRITICAL();
-	stateCamera_orient.step_engine_pos = step_engine_pos;
-	stateCamera_orient.servo_pos = servo_pos;
-taskEXIT_CRITICAL();
+//TODO: добавить составляющие углов по оринтации
+	get_servo_angle(target_RSC, servo_pos);
+	get_step_engine_angle(target_RSC, step_engine_pos);
 }
 
-// FIXME: ДОДЕЛАТЬ
-//error rotate_step_engine () {
-//
-//	if (HAL_GPIO_ReadPin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN) == 0) return driver_overheat;
-//
-//	float STEP_DEGREES = stateCamera_orient.step_engine_pos - stateCamera_orient_prev.step_engine_pos;
-//
-//	rotate_step_engine_by_angles(&STEP_DEGREES);
-//
-//	return no_error;
-//}
 
-void rotate_step_engine_by_angles (float * angles, bool direction) {
+void send_stepEngine_angle (float* SE_pos, float* SE_pos_prev) {
+
+	float STEP_DEGREES = *SE_pos - *SE_pos_prev;
+	rotate_step_engine_by_angles(&STEP_DEGREES);
+
+}
+
+void rotate_step_engine_by_angles (float* angles) {
 
 	float STEP_DEGREES = *angles;
+	bool direction = (STEP_DEGREES >= 0) ? 1 : 0;
 
 	if (direction) HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_SET);
 	else HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_RESET);
@@ -186,60 +187,47 @@ void rotate_step_engine_by_angles (float * angles, bool direction) {
 
 }
 
-uint8_t data = 0;
 
-void MOTOR_task() {
+void send_servo_pos(float* servo_pos) {
 
-	USART_HandleTypeDef usart_motor;
-	//Инициализация UART
-	usart_motor.Instance = USART1;
-	usart_motor.Init.BaudRate = 9600;
-	usart_motor.Init.WordLength = UART_WORDLENGTH_8B;
-	usart_motor.Init.StopBits = UART_STOPBITS_1;
-	usart_motor.Init.Parity = UART_PARITY_NONE;
-	usart_motor.Init.Mode = UART_MODE_TX_RX;
+	float data = *servo_pos;
+	char msg[sizeof(data) + 2];
+	sprintf(msg, "%0.7f\n", data);
 
-	uint8_t error = HAL_USART_Init(&usart_motor);
-	printf("error = %d", (int)error);
-//	HAL_USART_Transmit(&usart_motor, &error, 1, 0xFF);
+	HAL_USART_Transmit(&usart_HC05, (uint8_t*)msg, strlen(msg), 0xFF);
+	vTaskDelay(10/portTICK_RATE_MS);
+}
 
 
-	//Инициализация драйвера ШД
+void MOTORS_task() {
+
+	//	Инициализация USART1 для Bluetooth (HC-05)
+	HC05_Init();
+	//	Инициализация драйвера ШД
 	step_engine_init();
-	float angle = 100*(M_PI / 4);
 
-
-
-//	HAL_USART_Receive_IT(&usart_motor, &data, sizeof(data));
-	const TickType_t _delay = 500 / portTICK_RATE_MS;
+	const TickType_t _delay = 50 / portTICK_RATE_MS;
+	vTaskDelay(40*_delay);
 
 	for(;;) {
-		//while(((usart_motor.Instance->SR) & (1 << 5)) == 0){}
-		//printf("data: %lu", usart_motor.Instance->DR);
-//		printf("123\n");
+		//	рассчитываем углы
+		float step_engine_pos = 0;
+		float servo_pos = 0;
+	taskENTER_CRITICAL();
+		float step_engine_pos_prev = stateCamera_orient_prev.step_engine_pos;
+	taskEXIT_CRITICAL();
+		calculate_angles(&step_engine_pos, &servo_pos);
 
-		rotate_step_engine_by_angles(&angle, true);
+		//	передаем углы исполняющим органам
+		send_servo_pos(&servo_pos);
+		send_stepEngine_angle(&step_engine_pos, &step_engine_pos_prev);
+
+		//	записываем углы в state
+	taskENTER_CRITICAL();
+		stateCamera_orient.step_engine_pos = step_engine_pos;
+		stateCamera_orient.servo_pos = servo_pos;
+	taskEXIT_CRITICAL();
 		vTaskDelay(_delay);
-		rotate_step_engine_by_angles(&angle, false);
 	}
 
 }
-
-//void HAL_USART_RxCpltCallback(USART_HandleTypeDef * husart) {
-//
-//	if(husart->Instance == USART1) {
-//		printf("%d\n", data);
-//		HAL_USART_Receive_IT(&usart_motor, &data, sizeof(data));
-//	}
-//	else {}
-//}
-//
-//
-//void USART1_IRQHandler(){
-//
-//
-//}
-
-
-
-

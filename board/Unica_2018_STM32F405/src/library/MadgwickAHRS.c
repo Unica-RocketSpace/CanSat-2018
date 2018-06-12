@@ -251,7 +251,7 @@
 // System constants
 //#define deltat 0.001f // sampling period in seconds (shown as 1 ms)
 //#define gyroMeasError 3.14159265358979f * (5.0f / 180.0f) // gyroscope measurement error in rad/s (shown as 5 deg/s)
-//#define gyroMeasError	M_PI * (GYRO_NOISE / 180.0f)
+//#define gyroMeasError	0.033
 #define gyroMeasError	M_PI * (0.1f / 180.0f)
 #define beta sqrt(3.0f / 4.0f) * gyroMeasError // compute beta
 //#define gyroMeasDrift 3.14159265358979 * (0.2f / 180.0f) // gyroscope measurement error in rad/s/s (shown as 0.2f deg/s/s)
@@ -260,7 +260,7 @@
 
 float SEq_1 = 1.0f, SEq_2 = 0.0f, SEq_3 = 0.0f, SEq_4 = 0.0f; // estimated orientation quaternion elements with initial conditions
 
-void MadgwickAHRSupdateIMU(stateIMU_isc_t* localStateIMU_isc, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float dt)
+void MadgwickAHRSupdateIMU(float* quaternion, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float dt)
 {
 	float deltat = dt;
 
@@ -321,14 +321,10 @@ void MadgwickAHRSupdateIMU(stateIMU_isc_t* localStateIMU_isc, float w_x, float w
     SEq_3 /= norm;
     SEq_4 /= norm;
 
-	localStateIMU_isc->quaternion[0] = SEq_1;
-	localStateIMU_isc->quaternion[1] = SEq_2;
-	localStateIMU_isc->quaternion[2] = SEq_3;
-	localStateIMU_isc->quaternion[3] = SEq_4;
-taskENTER_CRITICAL();
-	memcpy(stateIMU_isc.quaternion, localStateIMU_isc->quaternion, 4);
-taskEXIT_CRITICAL();
-
+	quaternion[0] = SEq_1;
+	quaternion[1] = SEq_2;
+	quaternion[2] = SEq_3;
+	quaternion[3] = SEq_4;
 }
 
 
@@ -336,7 +332,7 @@ float b_x = 1, b_z = 0; // reference direction of flux in earth frame
 float w_bx = 0, w_by = 0, w_bz = 0; // estimate gyroscope biases error
 
 // Function to compute one filter iteration
-void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float m_x, float m_y, float m_z, float dt)
+void MadgwickAHRSupdate(float* quaternion, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float m_x, float m_y, float m_z, float dt)
 {
 	float deltat = dt;
 //	w_bx = state_zero.gyro_staticShift[0];
@@ -467,12 +463,9 @@ void MadgwickAHRSupdate(stateIMU_isc_t* localStateIMU_isc, float w_x, float w_y,
     b_x = sqrt((h_x * h_x) + (h_y * h_y));
     b_z = h_z;
 
-    localStateIMU_isc->quaternion[0] = SEq_1;
-	localStateIMU_isc->quaternion[1] = SEq_2;
-	localStateIMU_isc->quaternion[2] = SEq_3;
-	localStateIMU_isc->quaternion[3] = SEq_4;
-taskENTER_CRITICAL();
-	memcpy(stateIMU_isc.quaternion, localStateIMU_isc->quaternion, 4);
-taskEXIT_CRITICAL();
+    quaternion[0] = SEq_1;
+	quaternion[1] = SEq_2;
+	quaternion[2] = SEq_3;
+	quaternion[3] = SEq_4;
 }
 

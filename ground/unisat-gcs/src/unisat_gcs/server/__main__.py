@@ -1,6 +1,7 @@
 import sys
 import logging
 import math
+import serial
 
 from argparse import ArgumentParser
 

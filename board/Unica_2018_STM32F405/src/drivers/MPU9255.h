@@ -64,10 +64,6 @@
 #define GYRO_RANGE			0			//250degps - 00, 500degps - 01, 1000degps - 10, 2000degps - 11
 
 
-extern rscs_bmp280_descriptor_t * bmp280;
-extern const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
-
-
 /*#################################################*/
 /*################## СТРУКТУРЫ ###################*/
 /*#################################################*/
@@ -194,11 +190,6 @@ void mpu9255_recalcCompass(const int16_t* raw_compassData, float* compassData);
  *		i2c	- хэндл инициализируемой шины
  */
 int mpu9255_init(I2C_HandleTypeDef* hi2c);		//инициализация mpu9255
-
-/*
- * 	FreeRTOS задача для работы с IMU
- */
-void IMU_task();
 
 
 

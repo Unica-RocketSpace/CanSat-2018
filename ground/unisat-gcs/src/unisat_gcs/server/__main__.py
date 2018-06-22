@@ -10,6 +10,10 @@ from pymavlink.dialects.v20.UNISAT import *
 
 from . import _log as _root_log
 
+import graphing
+
+
+
 _log = _root_log.getChild("main")
 
 f = open("/home/developer/calibration/accel_1.txt", "a")
@@ -74,6 +78,8 @@ def process_message(msg):
 
 
 def main(argv):
+
+
     parser = ArgumentParser(add_help=True)
     parser.add_argument("mavuri", nargs="?", action="store", default="udpin:0.0.0.0:12000")
 

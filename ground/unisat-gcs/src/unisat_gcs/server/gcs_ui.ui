@@ -37,6 +37,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCommandLinkButton" name="commandLinkButton">
+        <property name="text">
+         <string>Отправить команду</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
@@ -72,26 +79,13 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
+         <widget class="QLabel" name="state">
           <property name="text">
-           <string>PushButton</string>
+           <string/>
           </property>
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QCommandLinkButton" name="commandLinkButton">
-        <property name="text">
-         <string>Комманда</string>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QTextBrowser" name="textBrowser_2">

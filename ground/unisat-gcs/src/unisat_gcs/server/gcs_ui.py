@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Ground_new.ui'
+# Form implementation generated from reading ui file 'gcs_ui.ui'
 #
 # Created by: PyQt5 UI code generator 5.10.1
 #
@@ -25,6 +25,9 @@ class Ui_MainWindow(object):
         self.textBrowser.setReadOnly(False)
         self.textBrowser.setObjectName("textBrowser")
         self.verticalLayout_3.addWidget(self.textBrowser)
+        self.commandLinkButton = QtWidgets.QCommandLinkButton(self.centralwidget)
+        self.commandLinkButton.setObjectName("commandLinkButton")
+        self.verticalLayout_3.addWidget(self.commandLinkButton)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -39,14 +42,11 @@ class Ui_MainWindow(object):
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout_2.addWidget(self.pushButton)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout.addWidget(self.pushButton_2)
+        self.state = QtWidgets.QLabel(self.centralwidget)
+        self.state.setText("")
+        self.state.setObjectName("state")
+        self.horizontalLayout.addWidget(self.state)
         self.verticalLayout_3.addLayout(self.horizontalLayout)
-        self.commandLinkButton = QtWidgets.QCommandLinkButton(self.centralwidget)
-        self.commandLinkButton.setObjectName("commandLinkButton")
-        self.verticalLayout_3.addWidget(self.commandLinkButton)
         self.textBrowser_2 = QtWidgets.QTextBrowser(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -134,10 +134,9 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.commandLinkButton.setText(_translate("MainWindow", "Отправить команду"))
         self.pushButton_3.setText(_translate("MainWindow", "PushButton"))
         self.pushButton.setText(_translate("MainWindow", "Создать график"))
-        self.pushButton_2.setText(_translate("MainWindow", "PushButton"))
-        self.commandLinkButton.setText(_translate("MainWindow", "Комманда"))
         self.pushButton_13.setText(_translate("MainWindow", "PushButton"))
         self.pushButton_14.setText(_translate("MainWindow", "PushButton"))
         self.pushButton_12.setText(_translate("MainWindow", "PushButton"))

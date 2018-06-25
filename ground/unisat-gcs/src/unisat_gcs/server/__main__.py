@@ -3,7 +3,6 @@ import logging
 import math
 import serial
 
-import numpy as np
 
 from argparse import ArgumentParser
 
@@ -12,7 +11,8 @@ from pymavlink.dialects.v20.UNISAT import *
 
 from . import _log as _root_log
 
-import graphing as gr
+from . import graphing as gr
+from . import gcs_ui as qt
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -101,6 +101,10 @@ def msg_parser(msg):
         v_y.append(msg.velocities[1])
         v_z.append(msg.velocities[2])
 
+        mov_x.append(msg.coordinates[0])
+        mov_y.append(msg.coordinates[1])
+        mov_z.append(msg.coordinates[2])
+
         quat = msg.quaternion
 
     elif isinstance(msg, MAVLink_sensors_message):
@@ -132,8 +136,22 @@ def process_message(msg):
             %
             (msg.get_header().seq, msg.time, msg.pressure, msg.temp)
         )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
+            "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"
+            %
+            (msg.get_header().seq, msg.time, msg.pressure, msg.temp)
+        )
+
     elif isinstance(msg, MAVLink_imu_rsc_message):
         _log.info(
+            "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
+        )
+
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
             "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
             %
             (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
@@ -147,7 +165,19 @@ def process_message(msg):
             %
             (msg.get_header().seq, msg.time, *msg.accel, *msg.compass)
         )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
+            "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.accel, *msg.compass)
+        )
         _log.info(
+            "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.quaternion)
+        )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
             "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
             %
             (msg.get_header().seq, msg.time, *msg.quaternion)
@@ -157,8 +187,21 @@ def process_message(msg):
             %
             (msg.get_header().seq, msg.time, *msg.velocities, *msg.coordinates)
         )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
+            "POS\t {n: %ld, time: %0.3f, velo: [%0.3f, %0.3f, %0.3f], pos: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.velocities, *msg.coordinates)
+        )
+
     elif isinstance(msg, MAVLink_sensors_message):
         _log.info(
+            "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
+            %
+            (msg.get_header().seq, msg.time, msg.temp, msg.pressure)
+        )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
             "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
             %
             (msg.get_header().seq, msg.time, msg.temp, msg.pressure)
@@ -169,16 +212,28 @@ def process_message(msg):
             %
             (msg.get_header().seq, msg.time, msg.coordinates[1], msg.coordinates[0], msg.coordinates[2])
         )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
+            "GPS\t {n: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
+            %
+            (msg.get_header().seq, msg.time, msg.coordinates[1], msg.coordinates[0], msg.coordinates[2])
+        )
     elif isinstance(msg, MAVLink_camera_orientation_message):
         _log.info(
             "CAM\t {n: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
             %
             (msg.get_header().seq, msg.time, 180*msg.step_engine_pos/math.pi, 180*msg.servo_pos/math.pi)
         )
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
+            "CAM\t {n: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
+            %
+            (msg.get_header().seq, msg.time, 180 * msg.step_engine_pos / math.pi, 180 * msg.servo_pos / math.pi)
+        )
     else:
         _log.info(msg)
-
-    pass
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(msg)
 
 
 def main(argv):
@@ -207,12 +262,12 @@ def main(argv):
         if msg1:
             process_message(msg1)
             msg_parser(msg1)
-            gr.MyWin.plotting(msg1)
+            gr.MyWin.plotting()
 
         if msg2:
             process_message(msg2)
             msg_parser(msg2)
-            gr.MyWin.plotting(msg2)
+            gr.MyWin.plotting()
 
 if __name__ == "__main__":
     # exit(main(sys.argv[1:]))

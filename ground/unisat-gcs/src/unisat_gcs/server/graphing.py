@@ -9,7 +9,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread
 import pyqtgraph.opengl as gl
 
-import __main__
+from . import __main__
 
 # from . import __main__
 
@@ -17,6 +17,7 @@ log_text = ''
 global_vars={'x': 0, 'y': 0}
 now_graf = None
 str_now_graf = None
+len = 20
 
 # glwid = gl.GLViewWidget()
 
@@ -143,7 +144,7 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.glwid.addItem(self.or_mod)
         self.ui.glwid.show()
 
-        self.drawing_plot()
+        # self.drawing_plot()
 
         # Здесь прописываем событие нажатия на кнопку
         self.ui.pushButton_3.clicked.connect(self.Remove_graf)
@@ -388,12 +389,12 @@ class MyWin(QtWidgets.QMainWindow):
         self.p_thread.start()
 
 
-    def plotting(self, msg):
+    def plotting(self):
         global a_ISC_x, a_ISC_y, a_ISC_z, a_RSC_x, a_RSC_y, a_RSC_z, v_x, v_y, v_z, av_x, av_y, av_z, mov_x, mov_y, mov_z, vmf_x, vmf_y, vmf_z
-        global x, y, z, state, temp_atmega, temp_sensors, pressure_atmega, pressure_sensors, quat, time_atm, time_RSC, time_ISC, time_sens, GPS
+        global len, x, y, z, state, temp_atmega, temp_sensors, pressure_atmega, pressure_sensors, quat, time_atm, time_RSC, time_ISC, time_sens, GPS
 
-        if time_sens == None or time_atm == None or time_RSC == None or time_ISC:
-            return 'No data'
+        # if (time_sens == None) or (time_atm == None) or (time_RSC == None) or (time_ISC == None):
+        #     return 1
 
         self.pl_graf_top1 = self.sc_item_top1.plot()
         self.pl_graf_top2 = self.sc_item_top2.plot()
@@ -408,7 +409,7 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_down3 = self.sc_item_down3.plot()
 
 
-        if len(time_RSC) == 20:
+        if len(time_RSC) == len:
             a_RSC_x.pop()
             a_RSC_y.pop()
             a_RSC_z.pop()
@@ -433,7 +434,7 @@ class MyWin(QtWidgets.QMainWindow):
         #  #
 
 
-        if len(time_ISC) == 20:
+        if len(time_ISC) == len:
             a_ISC_x.pop()
             a_ISC_y.pop()
             a_ISC_z.pop()
@@ -448,6 +449,10 @@ class MyWin(QtWidgets.QMainWindow):
             v_y.pop()
             v_z.pop()
 
+            mov_x.pop()
+            mov_y.pop()
+            mov_z.pop()
+
         self.pl_graf_top1.setData(x=a_ISC_x, y=time_ISC, pen=('r'))
         self.pl_graf_top1.setData(x=a_ISC_y, y=time_ISC, pen=('g'))
         self.pl_graf_top1.setData(x=a_ISC_z, y=time_ISC, pen=('b'))
@@ -460,8 +465,12 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_top3.setData(x=v_y, y=time_ISC, pen=('g'))
         self.pl_graf_top3.setData(x=v_z, y=time_ISC, pen=('b'))
 
+        self.pl_graf_middle2.setData(x=mov_x, y=time_ISC, pen=('r'))
+        self.pl_graf_middle2.setData(x=mov_y, y=time_ISC, pen=('g'))
+        self.pl_graf_middle2.setData(x=mov_z, y=time_ISC, pen=('b'))
 
-        if len(time_atm) == 20:
+
+        if len(time_atm) == len:
             time_atm.pop()
             pressure_atmega.pop()
             temp_atmega.pop()
@@ -473,23 +482,13 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.state.append(state)
 
 
-        if len(time_sens) == 20:
+        if len(time_sens) == len:
             time_sens.pop()
             pressure_sensors.pop()
             temp_sensors.pop()
 
         self.pl_graf_down1.setData(x=temp_sensors, y=time_sens, pen=('g'))
         self.pl_graf_down2.setData(x=pressure_sensors, y=time_sens, pen=('g'))
-
-
-        # app = []
-        # app.append(x_app)
-        # app.append(y_app)
-        # app.append(sec)
-        #
-        # app = np.array([x_app, y_app, sec])
-        # print('app = ', app)
-        # graf_3d = np.vstack((graf_3d, app))
 
         # self.plt.setData(pos=GPS, color=(1.0, 1.0, 1.0, 1.0)
         i = len(x)
@@ -498,10 +497,3 @@ class MyWin(QtWidgets.QMainWindow):
         else:
             self.or_mod.translate(x[i] - x[i-1], y[i] - y[i-1], z[i] - z[i-1])
         # Цвета в pg.glColor
-
-
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication(sys.argv)
-#     myapp = MyWin()
-#     myapp.show()
-#     sys.exit(app.exec_())

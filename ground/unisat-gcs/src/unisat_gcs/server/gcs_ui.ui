@@ -115,21 +115,21 @@
         <item>
          <widget class="QPushButton" name="pushButton_13">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_14">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_12">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
@@ -143,21 +143,21 @@
         <item>
          <widget class="QPushButton" name="pushButton_6">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_7">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_5">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
@@ -171,21 +171,21 @@
         <item>
          <widget class="QPushButton" name="pushButton_8">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_9">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_10">
           <property name="text">
-           <string>PushButton</string>
+           <string>Увеличить</string>
           </property>
          </widget>
         </item>

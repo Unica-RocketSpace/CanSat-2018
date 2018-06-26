@@ -57,11 +57,12 @@ GPS = []
 
 quat = []
 
+time_atm = []
+time_RSC = []
+time_ISC = []
+time_sens = []
+
 state = None
-time_atm = None
-time_RSC = None
-time_ISC = None
-time_sens = None
 
 
 def msg_parser(msg):
@@ -107,9 +108,12 @@ def msg_parser(msg):
 
         quat = msg.quaternion
 
+        time_ISC = msg.time
+
     elif isinstance(msg, MAVLink_sensors_message):
         pressure_sensors.append(msg.pressure)
         temp_sensors.append(msg.temp)
+
         time_sens.append(msg.time)
 
     elif isinstance(msg, MAVLink_gps_message):
@@ -129,7 +133,10 @@ def process_message(msg):
     _log.info("%s", msg)
 
     if isinstance(msg, MAVLink_bad_data):
-        pass
+        Win = qt.Ui_MainWindow()
+        Win.textBrowser_2.append(
+        'bad data')
+
     elif isinstance(msg, MAVLink_atmega_message):
         _log.info(
             "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"

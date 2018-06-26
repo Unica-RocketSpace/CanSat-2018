@@ -9,15 +9,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread
 import pyqtgraph.opengl as gl
 
-from . import __main__
-
-# from . import __main__
+from . import __main__ as m
 
 log_text = ''
 global_vars={'x': 0, 'y': 0}
 now_graf = None
 str_now_graf = None
-len = 20
+lenght = 20
 
 # glwid = gl.GLViewWidget()
 
@@ -30,7 +28,7 @@ class PlotThread(QThread):
 
     def run(self):
         myapp = MyWin()
-        __main__.msg_parser(myapp)
+        m.msg_parser(myapp)
 
 
 # Главный класс
@@ -52,20 +50,20 @@ class MyWin(QtWidgets.QMainWindow):
         # Создаем title для графика
         # title="title"
         # График для нескольких прямых
-        # self.sc_item = self.ui.plot.addPlot(title="Acsell")
+        # self.sc_item = self.ui.plot.addPlot(title="title")
         #######
 
-        self.sc_item_top1 = pg.PlotItem(title='V')
+        self.sc_item_top1 = pg.PlotItem(title='Accel ISC', labels={'left': 'accel', 'bottom': 'time'})
         self.ui.plot_top.addItem(self.sc_item_top1)
         self.graf_top1 = pg.PlotCurveItem()
         self.sc_item_top1.addItem(self.graf_top1)
 
-        self.sc_item_top2 = pg.PlotItem()
+        self.sc_item_top2 = pg.PlotItem(title='Accel RSC')
         self.ui.plot_top.addItem(self.sc_item_top2)
         self.graf_top2 = pg.PlotCurveItem()
         self.sc_item_top2.addItem(self.graf_top2)
 
-        self.sc_item_top3 = pg.PlotItem()
+        self.sc_item_top3 = pg.PlotItem(title='Velosity')
         self.ui.plot_top.addItem(self.sc_item_top3)
         self.graf_top3 = pg.PlotCurveItem()
         self.sc_item_top3.addItem(self.graf_top3)
@@ -76,17 +74,17 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.plot_middle = pg.GraphicsLayout()
         self.ui.glv_middle.addItem(self.ui.plot_middle)
 
-        self.sc_item_middle1 = pg.PlotItem()
+        self.sc_item_middle1 = pg.PlotItem(title='Angles velosity')
         self.ui.plot_middle.addItem(self.sc_item_middle1)
         self.graf_middle1 = pg.PlotCurveItem()
         self.sc_item_middle1.addItem(self.graf_middle1)
 
-        self.sc_item_middle2 = pg.PlotItem()
+        self.sc_item_middle2 = pg.PlotItem(title='Movement')
         self.ui.plot_middle.addItem(self.sc_item_middle2)
         self.graf_middle2 = pg.PlotCurveItem()
         self.sc_item_middle2.addItem(self.graf_middle2)
 
-        self.sc_item_middle3 = pg.PlotItem()
+        self.sc_item_middle3 = pg.PlotItem(title='Vector of magnetic field')
         self.ui.plot_middle.addItem(self.sc_item_middle3)
         self.graf_middle3 = pg.PlotCurveItem()
         self.sc_item_middle3.addItem(self.graf_middle3)
@@ -97,17 +95,17 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.plot_down = pg.GraphicsLayout()
         self.ui.glv_down.addItem(self.ui.plot_down)
 
-        self.sc_item_down1 = pg.PlotItem()
+        self.sc_item_down1 = pg.PlotItem(title='Temperature')
         self.ui.plot_down.addItem(self.sc_item_down1)
         self.graf_down1 = pg.PlotCurveItem()
         self.sc_item_down1.addItem(self.graf_down1)
 
-        self.sc_item_down2 = pg.PlotItem()
+        self.sc_item_down2 = pg.PlotItem(title='Pressure')
         self.ui.plot_down.addItem(self.sc_item_down2)
         self.graf_down2 = pg.PlotCurveItem()
         self.sc_item_down2.addItem(self.graf_down2)
 
-        self.sc_item_down3 = pg.PlotItem()
+        self.sc_item_down3 = pg.PlotItem(title='GPS')
         self.ui.plot_down.addItem(self.sc_item_down3)
         self.graf_down3 = pg.PlotCurveItem()
         self.sc_item_down3.addItem(self.graf_down3)
@@ -179,15 +177,11 @@ class MyWin(QtWidgets.QMainWindow):
 
 
     def Remove_graf(self):
-        # self.sc_item_top1.removeItem(self.sc_item_top1)
-        # self.sc_item_top1.clear()
-        #
-        # self.sc_item_top2.removeItem(self.sc_item_top2)
-        # self.sc_item_top2.clear()
-        #
-        # self.p_thread.terminate()
-        self.drawing_plot()
+        global now_graf, str_now_graf
 
+        self.sc_item_large.removeItem(self.sc_item_large)
+        self.sc_item_large.clear()
+    # FIXME: возможно не работает
 
     def check_now_graf(self):
         global now_graf, str_now_graf
@@ -390,9 +384,6 @@ class MyWin(QtWidgets.QMainWindow):
 
 
     def plotting(self):
-        global a_ISC_x, a_ISC_y, a_ISC_z, a_RSC_x, a_RSC_y, a_RSC_z, v_x, v_y, v_z, av_x, av_y, av_z, mov_x, mov_y, mov_z, vmf_x, vmf_y, vmf_z
-        global len, x, y, z, state, temp_atmega, temp_sensors, pressure_atmega, pressure_sensors, quat, time_atm, time_RSC, time_ISC, time_sens, GPS
-
         # if (time_sens == None) or (time_atm == None) or (time_RSC == None) or (time_ISC == None):
         #     return 1
 
@@ -409,24 +400,24 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_down3 = self.sc_item_down3.plot()
 
 
-        if len(time_RSC) == len:
-            a_RSC_x.pop()
-            a_RSC_y.pop()
-            a_RSC_z.pop()
+        if len(m.time_RSC) == lenght:
+            m.a_RSC_x.pop()
+            m.a_RSC_y.pop()
+            m.a_RSC_z.pop()
 
-            time_RSC.pop()
+            m.time_RSC.pop()
 
-            av_x.pop()
-            av_y.pop()
-            av_z.pop()
+            m.av_x.pop()
+            m.av_y.pop()
+            m.av_z.pop()
 
-        self.pl_graf_top2.setData(x=a_RSC_x, y=time_RSC, pen=('r'), width=0.5)
-        self.pl_graf_top2.setData(x=a_RSC_y, y=time_RSC, pen=('g'), width=0.5)
-        self.pl_graf_top2.setData(x=a_RSC_z, y=time_RSC, pen=('b'), width=0.5)
+        self.pl_graf_top2.setData(x=m.a_RSC_x, y=m.time_RSC, pen=('r'), width=0.5)
+        self.pl_graf_top2.setData(x=m.a_RSC_y, y=m.time_RSC, pen=('g'), width=0.5)
+        self.pl_graf_top2.setData(x=m.a_RSC_z, y=m.time_RSC, pen=('b'), width=0.5)
 
-        self.pl_graf_middle1.setData(x=av_x, y=time_RSC, pen=('r'), width=0.5)
-        self.pl_graf_middle1.setData(x=av_y, y=time_RSC, pen=('g'), width=0.5)
-        self.pl_graf_middle1.setData(x=av_z, y=time_RSC, pen=('b'), width=0.5)
+        self.pl_graf_middle1.setData(x=m.av_x, y=m.time_RSC, pen=('r'), width=0.5)
+        self.pl_graf_middle1.setData(x=m.av_y, y=m.time_RSC, pen=('g'), width=0.5)
+        self.pl_graf_middle1.setData(x=m.av_z, y=m.time_RSC, pen=('b'), width=0.5)
 
         # Вывод в лог #
         # log = '' + 'sfkslk'+ "\n"
@@ -434,66 +425,69 @@ class MyWin(QtWidgets.QMainWindow):
         #  #
 
 
-        if len(time_ISC) == len:
-            a_ISC_x.pop()
-            a_ISC_y.pop()
-            a_ISC_z.pop()
+        if len(m.time_ISC) == lenght:
+            m.a_ISC_x.pop()
+            m.a_ISC_y.pop()
+            m.a_ISC_z.pop()
 
-            time_ISC.pop()
+            m.time_ISC.pop()
 
-            vmf_x.pop()
-            vmf_y.pop()
-            vmf_z.pop()
+            m.vmf_x.pop()
+            m.vmf_y.pop()
+            m.vmf_z.pop()
 
-            v_x.pop()
-            v_y.pop()
-            v_z.pop()
+            m.v_x.pop()
+            m.v_y.pop()
+            m.v_z.pop()
 
-            mov_x.pop()
-            mov_y.pop()
-            mov_z.pop()
+            m.mov_x.pop()
+            m.mov_y.pop()
+            m.mov_z.pop()
 
-        self.pl_graf_top1.setData(x=a_ISC_x, y=time_ISC, pen=('r'))
-        self.pl_graf_top1.setData(x=a_ISC_y, y=time_ISC, pen=('g'))
-        self.pl_graf_top1.setData(x=a_ISC_z, y=time_ISC, pen=('b'))
+        self.pl_graf_top1.setData(x=m.a_ISC_x, y=m.time_ISC, pen=('r'))
+        self.pl_graf_top1.setData(x=m.a_ISC_y, y=m.time_ISC, pen=('g'))
+        self.pl_graf_top1.setData(x=m.a_ISC_z, y=m.time_ISC, pen=('b'))
 
-        self.pl_graf_middle3.setData(x=vmf_x, y=time_ISC, pen=('r'))
-        self.pl_graf_middle3.setData(x=vmf_y, y=time_ISC, pen=('g'))
-        self.pl_graf_middle3.setData(x=vmf_z, y=time_ISC, pen=('b'))
+        self.pl_graf_middle3.setData(x=m.vmf_x, y=m.time_ISC, pen=('r'))
+        self.pl_graf_middle3.setData(x=m.vmf_y, y=m.time_ISC, pen=('g'))
+        self.pl_graf_middle3.setData(x=m.vmf_z, y=m.time_ISC, pen=('b'))
 
-        self.pl_graf_top3.setData(x=v_x, y=time_ISC, pen=('r'))
-        self.pl_graf_top3.setData(x=v_y, y=time_ISC, pen=('g'))
-        self.pl_graf_top3.setData(x=v_z, y=time_ISC, pen=('b'))
+        self.pl_graf_top3.setData(x=m.v_x, y=m.time_ISC, pen=('r'))
+        self.pl_graf_top3.setData(x=m.v_y, y=m.time_ISC, pen=('g'))
+        self.pl_graf_top3.setData(x=m.v_z, y=m.time_ISC, pen=('b'))
 
-        self.pl_graf_middle2.setData(x=mov_x, y=time_ISC, pen=('r'))
-        self.pl_graf_middle2.setData(x=mov_y, y=time_ISC, pen=('g'))
-        self.pl_graf_middle2.setData(x=mov_z, y=time_ISC, pen=('b'))
+        self.pl_graf_middle2.setData(x=m.mov_x, y=m.time_ISC, pen=('r'))
+        self.pl_graf_middle2.setData(x=m.mov_y, y=m.time_ISC, pen=('g'))
+        self.pl_graf_middle2.setData(x=m.mov_z, y=m.time_ISC, pen=('b'))
 
 
-        if len(time_atm) == len:
-            time_atm.pop()
-            pressure_atmega.pop()
-            temp_atmega.pop()
+        if len(m.time_atm) == lenght:
+            m.time_atm.pop()
+            m.pressure_atmega.pop()
+            m.temp_atmega.pop()
 
-        self.pl_graf_down1.setData(x=temp_atmega, y=time_atm, pen=('r'))
-        self.pl_graf_down2.setData(x=pressure_atmega, y=time_atm, pen=('r'))
+        self.pl_graf_down1.setData(x=m.temp_atmega, y=m.time_atm, pen=('r'))
+        self.pl_graf_down2.setData(x=m.pressure_atmega, y=m.time_atm, pen=('r'))
 
         self.ui.state.clear()
-        self.ui.state.append(state)
+        self.ui.state.setText(m.state)
 
 
-        if len(time_sens) == len:
-            time_sens.pop()
-            pressure_sensors.pop()
-            temp_sensors.pop()
+        if len(m.time_sens) == lenght:
+            m.time_sens.pop()
+            m.pressure_sensors.pop()
+            m.temp_sensors.pop()
 
-        self.pl_graf_down1.setData(x=temp_sensors, y=time_sens, pen=('g'))
-        self.pl_graf_down2.setData(x=pressure_sensors, y=time_sens, pen=('g'))
+
+        self.pl_graf_down1.setData(x=m.temp_sensors, y=m.time_sens, pen=('g'))
+        self.pl_graf_down2.setData(x=m.pressure_sensors, y=m.time_sens, pen=('g'))
+
+        self.pl_graf_down3.setData(x=m.x, y=m.y, pen=('r'))
 
         # self.plt.setData(pos=GPS, color=(1.0, 1.0, 1.0, 1.0)
-        i = len(x)
+        i = len(m.x)
         if i == 0:
-            self.or_mod.translate(x, y, z)
+            self.or_mod.translate(m.x, m.y, m.z)
         else:
-            self.or_mod.translate(x[i] - x[i-1], y[i] - y[i-1], z[i] - z[i-1])
+            self.or_mod.translate(m.x[i] - m.x[i-1], m.y[i] - m.y[i-1], m.z[i] - m.z[i-1])
         # Цвета в pg.glColor

@@ -181,16 +181,16 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 
 	PROCESS_ERROR(HAL_SPI_Init(hspi));
 
-//	HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
-//	HAL_NVIC_EnableIRQ(SPI1_IRQn);
-
 	for (int i = 0; i < 10000; i++) {
 		volatile uint8_t x = 0;
 	}
 
 	sd_cs(false);
 
-	//FIXME: ПРОВЕРИТЬ ИНКРЕМЕНТАЦИЮ
+
+	/*HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(SPI1_IRQn);
+
 	__HAL_RCC_DMA2_CLK_ENABLE();
 	//	 настраиваем DMA для работы с SPI_TX
 	_sd_dma_spi_tx.Instance = SD_DMA_TX_STREAM;
@@ -209,7 +209,7 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 	PROCESS_ERROR(HAL_DMA_Init(&_sd_dma_spi_tx));
 
 	__HAL_LINKDMA(&spi_nRF24L01, hdmatx, _sd_dma_spi_tx);
-	/* DMA interrupt init */
+	 DMA interrupt init
 	HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
@@ -230,11 +230,12 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 	PROCESS_ERROR(HAL_DMA_Init(&_sd_dma_spi_rx));
 
 	__HAL_LINKDMA(&spi_nRF24L01, hdmarx, _sd_dma_spi_rx);
-	/* DMA interrupt init */
+	 DMA interrupt init
 	HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+	HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);*/
 
 end:
+	sd_cs(false);
 	return error;
 }
 
@@ -456,6 +457,7 @@ end:
 }
 
 
+/*
 void DMA2_Stream0_IRQHandler(void) {
 	HAL_DMA_IRQHandler(&_sd_dma_spi_rx);
 }
@@ -485,6 +487,7 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef* hspi) {
 		trace_printf("SD DMA ERROR");
 	}
 }
+*/
 
 
 sd_error_t sd_block_write_multi(size_t offset, void * block_start, size_t block_count)
@@ -519,13 +522,7 @@ sd_error_t sd_block_write_multi(size_t offset, void * block_start, size_t block_
       sd_cs(true);
       sd_write(&packet_token, 1);
       // сами данные
-//      _sd_dma_transfer((void*)((uint8_t*)block_start + 512*i), SD_REQUEST_WRITE);
-      _SD_DMA_READY_ = 0;
-//      HAL_SPI_Transmit_DMA(&spi_nRF24L01, (uint8_t*)block_start + 512*i, 512);
-//      while (!_SD_DMA_READY_) {}
-
-      volatile uint8_t err = HAL_SPI_Transmit(&spi_nRF24L01, (uint8_t*)block_start + 512*i, 512, 0xFF);
-
+      HAL_SPI_Transmit(&spi_nRF24L01, (uint8_t*)block_start + 512*i, 512, 0xFF);
       // контрольная сумма (она выключена)
       sd_write(&dummy, 2);
       sd_cs(false);
@@ -604,16 +601,7 @@ sd_error_t sd_block_read_multi(size_t offset, void * block, size_t block_count)
 
       // читаем сам блок
       sd_cs(true);
-      _SD_DMA_READY_ = 0;
-
-      volatile uint8_t err = HAL_SPI_TransmitReceive(&spi_nRF24L01, _dummy_, (uint8_t*)block + 512*i, 512, 0xFF);
-
-//      HAL_SPI_TransmitReceive_DMA(&spi_nRF24L01, _dummy_, (uint8_t*)block + 512*i, 512);
-//      while (!_SD_DMA_READY_) {}
-
-      volatile uint8_t dummy[30];
-      memcpy(dummy, (uint8_t*)block, 30);
-
+      HAL_SPI_TransmitReceive(&spi_nRF24L01, _dummy_, (uint8_t*)block + 512*i, 512, 0xFF);
       // читаем CRC
       uint16_t crc = 0;
       sd_read(&crc, 2);

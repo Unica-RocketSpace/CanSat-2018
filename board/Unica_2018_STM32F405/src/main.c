@@ -103,29 +103,23 @@ int main(int argc, char* argv[])
 //			"GPS",				// имя
 //			GPS_TASK_STACK_SIZE,// глубина стека
 //			NULL,				// аргумент
-//			1,					// приоритет
+//			2,					// приоритет
 //			_gpsTaskStack,		// стек
 //			&_gpsTaskObj		// объект задания
 //	);
+
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
-				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj
+				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 2, _IMUTaskStack, &_IMUTaskObj
 	);
 
 
 	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj
+				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 2, _iorfTaskStack, &_iorfTaskObj
 	);
 
 //	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
+//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 2, _MOTORSTaskStack, &_MOTORSTaskObj
 //	);
-
-
-//	IMU_Init();
-	IO_RF_Init();
-//	GPS_Init();
-//	MOTORS_Init();
-
 
 	vTaskStartScheduler();
 

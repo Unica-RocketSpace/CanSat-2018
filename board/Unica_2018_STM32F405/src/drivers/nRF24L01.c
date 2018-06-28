@@ -63,6 +63,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 
 	PROCESS_ERROR(HAL_SPI_Init(hspi));
+	vTaskDelay(100/portTICK_RATE_MS);
 
 	// Настраиваем CS
 	_cs_disable();
@@ -320,9 +321,9 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 
 		carret += portion;
 
-		uint8_t nRF_status = 0;
 		while(1)
 		{
+			uint8_t nRF_status = 0;
 			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
 			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
 			if (finished)

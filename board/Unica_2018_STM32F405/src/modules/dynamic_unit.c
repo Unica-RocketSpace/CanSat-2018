@@ -199,15 +199,13 @@ void send_servo_pos(float* servo_pos) {
 }
 
 
-void MOTORS_Init() {
+
+void MOTORS_task() {
+
 	//	Инициализация USART1 для Bluetooth (HC-05)
 	HC05_Init();
 	//	Инициализация драйвера ШД
 	step_engine_init();
-}
-
-
-void MOTORS_task() {
 
 	const TickType_t _delay = 50 / portTICK_RATE_MS;
 	vTaskDelay(40*_delay);

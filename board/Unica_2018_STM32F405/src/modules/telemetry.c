@@ -176,17 +176,16 @@ taskEXIT_CRITICAL();
 }
 
 
-void IO_RF_Init() {
-	//	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
-//		uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
-	//	state_initErrors.NRF_E = nRF24L01_initError;
-
-	//	запуск SD
-	dump_init(&stream_file, filename);
-}
-
 
 void IO_RF_task() {
+
+	//	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
+	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
+	state_initErrors.NRF_E = nRF24L01_initError;
+	vTaskDelay(100/portTICK_RATE_MS);
+
+	//	запуск SD
+//	dump_init(&stream_file, filename);
 
 	const TickType_t _delay = 100 / portTICK_RATE_MS;
 	for (;;) {

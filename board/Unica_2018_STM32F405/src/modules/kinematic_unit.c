@@ -224,37 +224,6 @@ end:
 }
 
 
-void IMU_Init() {
-	//	usart_dbg init
-	usart_dbg.Instance = USART3;
-	usart_dbg.Init.BaudRate = 256000;
-	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
-	usart_dbg.Init.StopBits = UART_STOPBITS_1;
-	usart_dbg.Init.Parity = UART_PARITY_NONE;
-	usart_dbg.Init.Mode = UART_MODE_TX_RX;
-
-	HAL_USART_Init(&usart_dbg);
-
-	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
-	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
-	state_initErrors.MPU_E = mpu9255_initError;
-//	printf("MPU9255 error: %d\n", mpu9255_initError);
-
-	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
-	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
-	rscs_bmp280_parameters_t bmp280_parameters;
-	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
-	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
-	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
-	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
-
-	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
-	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
-	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
-	state_initErrors.BMP_E = bmp280_initError;
-}
-
-
 
 void IMU_task() {
 
@@ -321,6 +290,35 @@ void IMU_task() {
 
 
 	}*/
+
+taskENTER_CRITICAL();
+	/*//	usart_dbg init
+	usart_dbg.Instance = USART3;
+	usart_dbg.Init.BaudRate = 256000;
+	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
+	usart_dbg.Init.StopBits = UART_STOPBITS_1;
+	usart_dbg.Init.Parity = UART_PARITY_NONE;
+	usart_dbg.Init.Mode = UART_MODE_TX_RX;
+
+	HAL_USART_Init(&usart_dbg);*/
+
+	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
+	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
+	state_initErrors.MPU_E = mpu9255_initError;
+
+	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
+	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
+	rscs_bmp280_parameters_t bmp280_parameters;
+	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
+	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
+	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
+	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
+
+	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
+	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
+	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
+	state_initErrors.BMP_E = bmp280_initError;
+taskEXIT_CRITICAL();
 
 	vTaskDelay(10000/portTICK_RATE_MS);
 

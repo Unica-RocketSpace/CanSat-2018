@@ -62,6 +62,7 @@ uint8_t gps_initAll() {
 	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
+	vTaskDelay(100/portTICK_RATE_MS);
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
@@ -118,14 +119,13 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 }
 
 
-void GPS_Init() {
-	uint8_t gps_initError = gps_initAll();
-	state_initErrors.GPS_E = gps_initError;
-}
 
 void GPS_task()	{
 
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
+
+	uint8_t gps_initError = gps_initAll();
+	state_initErrors.GPS_E = gps_initError;
 
 	_dma_carret = 0;
 	_msg_carret = 0;

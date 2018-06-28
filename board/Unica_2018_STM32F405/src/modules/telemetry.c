@@ -7,18 +7,18 @@
  * 	Authors: Korr237i, RaKetov
  */
 
-#include "diag/Trace.h"
+#include "stdint.h"
 
+#include "diag/Trace.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
 #include "mavlink/UNISAT/mavlink.h"
-
-#include "stdint.h"
 
 #include "state.h"
 #include "telemetry.h"
 #include "nRF24L01.h"
+#include "drivers/sd/sd.h"
+#include "drivers/sd/dump.h"
 
 #include "mavlink/UNISAT/mavlink.h"
 
@@ -29,6 +29,9 @@ uint8_t UNISAT_SENSORS = 0x03;
 uint8_t UNISAT_GPS = 0x04;
 uint8_t UNISAT_RPI = 0x05;
 uint8_t UNISAT_CAM = 0x06;
+
+static dump_state_t stream_file;
+static const char filename[] = "TM-";
 
 // FIXME: ЗАМЕНИТЬ ВРЕМЯ В ПАКЕТЕ НА ВРЕМЯ ПОЛУЧЕНИЯ ДАННЫХ
 
@@ -173,41 +176,23 @@ taskEXIT_CRITICAL();
 }
 
 
-void IO_RF_task() {
+void IO_RF_Init() {
+	//	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
+//		uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
+	//	state_initErrors.NRF_E = nRF24L01_initError;
 
-	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
-	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
-	vTaskDelay(100/portTICK_RATE_MS);
-	state_initErrors.NRF_E = nRF24L01_initError;
-//	printf("nRF24L01 error: %d\n", nRF24L01_initError);
+	//	запуск SD
+	dump_init(&stream_file, filename);
+}
+
+
+void IO_RF_task() {
 
 	const TickType_t _delay = 100 / portTICK_RATE_MS;
 	for (;;) {
 
-//		uint8_t nRF_status = 0;
-//		nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-//		printf("RX_DR = %d TX_DS = %d MAX_RT = %d RX_P_NO = %d TX_FULL = %d\n",
-//						(((nRF_status) & (1 << RX_DR)) >> RX_DR),
-//						(((nRF_status) & (1 << TX_DS)) >> TX_DS),
-//						(((nRF_status) & (1 << MAX_RT)) >> MAX_RT),
-//						(((nRF_status) & (0b111 << RX_P_NO)) >> RX_P_NO),
-//						(((nRF_status) & (1 << TX_FULL))) >> TX_FULL);
-//
-//		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
-//		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
-//		if (nRF_status & (1 << TX_FULL))
-//		nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
-//		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
-//		char buffer[32];
-//		sprintf(buffer, "UNICA's broadcasting %lu\n", i);
-//		nRF24L01_write(&spi_nRF24L01, (uint8_t*)buffer, strlen(buffer), 1);
-//		i++;
-
-//		nRF24L01_clear_status(&spi_nRF24L01, true, true, true);
-//
-//		if (nRF_status & (1 << TX_FULL))
-//			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
-
+//		char* msg = "UNISAT_SD. Trying to transmit any data\n";
+//		dump(&stream_file, msg, strlen(msg));
 
 //		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();

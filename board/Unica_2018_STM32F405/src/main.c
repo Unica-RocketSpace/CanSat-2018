@@ -39,9 +39,6 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
 
-
-SPI_HandleTypeDef	spi_nRF24L01;
-
 // глобальные структуры
 stateIMU_raw_t 		stateIMU_raw;
 stateSensors_raw_t 	stateSensors_raw;
@@ -111,35 +108,24 @@ int main(int argc, char* argv[])
 //			&_gpsTaskObj		// объект задания
 //	);
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
-				IMU_task, 			// функция
-				"IMU",				// имя
-				IMU_TASK_STACK_SIZE,// глубина стека
-				NULL,				// аргумент
-				1,					// приоритет
-				_IMUTaskStack,		// стек
-				&_IMUTaskObj		// объект задания
-		);
+				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj
+	);
 
 
 	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-				IO_RF_task,
-				"IO_RF",
-				IO_RF_TASK_STACK_SIZE,
-				NULL,
-				1,
-				_iorfTaskStack,
-				&_iorfTaskObj
+				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj
 	);
 
-	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-			MOTORS_task,
-			"MOTORS",
-			MOTORS_TASK_STACK_SIZE,
-			NULL,
-			1,
-			_MOTORSTaskStack,
-			&_MOTORSTaskObj
-	);
+//	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
+//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
+//	);
+
+
+//	IMU_Init();
+	IO_RF_Init();
+//	GPS_Init();
+//	MOTORS_Init();
+
 
 	vTaskStartScheduler();
 

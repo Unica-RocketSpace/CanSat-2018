@@ -16,7 +16,7 @@
 #include <boost/lexical_cast.hpp>
 
 //TODO вынести в что-нибудь общее
-#define NRF_CHANNEL		0x11
+#define NRF_CHANNEL		0x64
 #define ADDR_ONBOARD	0xB0AFDB0AFD
 #define ADDR_GCS 		0x57A7104313
 

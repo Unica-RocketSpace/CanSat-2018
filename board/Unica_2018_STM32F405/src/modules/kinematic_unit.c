@@ -24,6 +24,9 @@
 #include "quaternion.h"
 #include "MPU9255.h"
 
+#define BETA_0	sqrt(3/4) * M_PI * (0.2f / 180.0f)
+#define BETA_1	0.033
+
 I2C_HandleTypeDef 	i2c_mpu9255;
 USART_HandleTypeDef usart_dbg;
 
@@ -73,7 +76,7 @@ end:
 uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift) {
 	uint8_t error = 0;
 	uint16_t zero_orientCnt = 1000;
-	float time = 0, time_prev = 0;
+	float time = 0, time_prev = (float)HAL_GetTick() / 1000;
 
 	for (int i = 0; i < zero_orientCnt; i++) {
 		int16_t accelData[3] = {0, 0, 0};
@@ -87,15 +90,15 @@ uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift)
 		mpu9255_recalcGyro(gyroData, gyro);
 		mpu9255_recalcAccel(accelData, accel);
 
+		time = (float)HAL_GetTick() / 1000;
 		for (int k = 0; k < 3; k++) {
 			gyro[k] -= gyro_staticShift[k];
 		}
 
 		float quaternion[4] = {0, 0, 0, 0};
-		time = (float)HAL_GetTick() / 1000;
 		MadgwickAHRSupdateIMU(quaternion,
 				gyro[0], gyro[1], gyro[2],
-				accel[0], accel[1], accel[2], time - time_prev);
+				accel[0], accel[1], accel[2], time - time_prev, BETA_1);
 		vect_rotate(accel, quaternion, accel_ISC);
 
 		for (int m = 0; m < 3; m++) {
@@ -130,6 +133,8 @@ static int IMU_updateDataAll() {
 	mpu9255_recalcCompass(compassData, compass);
 
 taskENTER_CRITICAL();
+	float _time = (float)HAL_GetTick() / 1000;
+	state_system.time = _time;
 	//	пересчитываем их и записываем в структуры
 	for (int k = 0; k < 3; k++) {
 		stateIMU_rsc.accel[k] = accel[k];
@@ -137,7 +142,6 @@ taskENTER_CRITICAL();
 		stateIMU_rsc.gyro[k] = gyro[k];
 		stateIMU_rsc.compass[k] = compass[k];
 	}
-	state_system.time = (float)HAL_GetTick() / 1000;
 taskEXIT_CRITICAL();
 ////////////////////////////////////////////////////
 
@@ -145,12 +149,12 @@ taskEXIT_CRITICAL();
 /////////	ОБНОВЛЯЕМ КВАТЕРНИОН  //////////////////
 	float quaternion[4] = {0, 0, 0, 0};
 taskENTER_CRITICAL();
-	float dt = state_system.time - state_system_prev.time;
+	float dt = _time - state_system_prev.time;
 taskEXIT_CRITICAL();
 
 	//FIXME: ЗАМЕНИТЬ НА ФУНКЦИЮ С МАГНИТОМЕТРОМ
 //	MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt);
-	MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt);
+	MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, BETA_1);
 
 	//	копируем кватернион в глобальную структуру
 taskENTER_CRITICAL();
@@ -186,7 +190,7 @@ taskEXIT_CRITICAL();
 
 
 ///////  ОБНОВЛЯЕМ КООРДИНАТЫ И СКОРОСТИ  //////////
-	if ((float)HAL_GetTick()/1000 > 60) {
+	if ((float)HAL_GetTick()/1000 > 80) {
 
 		float delta_velo[3] = {0, 0, 0};
 		float delta_coord[3] = {0, 0, 0};
@@ -220,8 +224,7 @@ end:
 }
 
 
-void IMU_task() {
-
+void IMU_Init() {
 	//	usart_dbg init
 	usart_dbg.Instance = USART3;
 	usart_dbg.Init.BaudRate = 256000;
@@ -249,8 +252,11 @@ void IMU_task() {
 	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
 	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
 	state_initErrors.BMP_E = bmp280_initError;
-//	printf("BMP280 error: %d\n", bmp280_initError);
+}
 
+
+
+void IMU_task() {
 
 	/*for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
@@ -315,10 +321,6 @@ void IMU_task() {
 
 
 	}*/
-
-//	int mpu9255init_error = mpu9255_init(&i2c_mpu9255);
-//	printf("mpu_error = %d\n", mpu9255init_error);
-//	uint16_t num = 0;
 
 	vTaskDelay(10000/portTICK_RATE_MS);
 

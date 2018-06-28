@@ -251,16 +251,16 @@
 // System constants
 //#define deltat 0.001f // sampling period in seconds (shown as 1 ms)
 //#define gyroMeasError 3.14159265358979f * (5.0f / 180.0f) // gyroscope measurement error in rad/s (shown as 5 deg/s)
-//#define gyroMeasError	0.033
-#define gyroMeasError	M_PI * (0.1f / 180.0f)
-#define beta sqrt(3.0f / 4.0f) * gyroMeasError // compute beta
+//#define gyroMeasError	0.0015
+//#define gyroMeasError	M_PI * (0.1f / 180.0f)
+//#define beta sqrt(3.0f / 4.0f) * gyroMeasError // compute beta
 //#define gyroMeasDrift 3.14159265358979 * (0.2f / 180.0f) // gyroscope measurement error in rad/s/s (shown as 0.2f deg/s/s)
 #define gyroMeasDrift	0
 #define zeta sqrt(3.0f / 4.0f) * gyroMeasDrift // compute zeta
 
 float SEq_1 = 1.0f, SEq_2 = 0.0f, SEq_3 = 0.0f, SEq_4 = 0.0f; // estimated orientation quaternion elements with initial conditions
 
-void MadgwickAHRSupdateIMU(float* quaternion, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float dt)
+void MadgwickAHRSupdateIMU(float* quaternion, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float dt, float beta)
 {
 	float deltat = dt;
 
@@ -332,7 +332,7 @@ float b_x = 1, b_z = 0; // reference direction of flux in earth frame
 float w_bx = 0, w_by = 0, w_bz = 0; // estimate gyroscope biases error
 
 // Function to compute one filter iteration
-void MadgwickAHRSupdate(float* quaternion, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float m_x, float m_y, float m_z, float dt)
+void MadgwickAHRSupdate(float* quaternion, float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float m_x, float m_y, float m_z, float dt, float beta)
 {
 	float deltat = dt;
 //	w_bx = state_zero.gyro_staticShift[0];

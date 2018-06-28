@@ -18,27 +18,31 @@
 
 #include "nRF24L01.h"
 #include "state.h"
+#include "sd/sd.h"
 
 #define _TIMEOUT_	1000
 
+SPI_HandleTypeDef	spi_nRF24L01;
+
 static void _cs_enable(){
 //	nRF24L01_CS_PORT &= ~nRF24L01_CS_PIN;
-	HAL_GPIO_WritePin(nRF24L01_CS_PORT, nRF24L01_CS_PIN, RESET);
+//	HAL_GPIO_WritePin(nRF24L01_CS_PORT, nRF24L01_CS_PIN, RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, RESET);
 }
 
 static void _cs_disable(){
 //	nRF24L01_CS_PORT |= nRF24L01_CS_PIN;
-	HAL_GPIO_WritePin(nRF24L01_CS_PORT, nRF24L01_CS_PIN, SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, SET);
 }
 
 static void _ce_up(){
 //	nRF24L01_CE_PORT |= nRF24L01_CE_PIN;
-	HAL_GPIO_WritePin(nRF24L01_CE_PORT, nRF24L01_CE_PIN, SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, SET);
 }
 
 static void _ce_down(){
 //	nRF24L01_CE_PORT &= ~nRF24L01_CE_PIN;
-	HAL_GPIO_WritePin(nRF24L01_CE_PORT, nRF24L01_CE_PIN, RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, RESET);
 }
 
 
@@ -59,10 +63,10 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 
 	PROCESS_ERROR(HAL_SPI_Init(hspi));
-	vTaskDelay(100/portTICK_RATE_MS);
 
 	// Настраиваем CS
 	_cs_disable();
+	sd_cs(false);
 	_ce_down();
 
 	uint8_t value;
@@ -101,7 +105,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_ARC_CNT_ADDR, value));
 
 
-	value = (0x11 << RF_CH);
+	value = (0x64 << RF_CH);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RF_CH_ADDR, value));
 
 	value = (0 << RF_DR)|
@@ -132,6 +136,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RX_PW_P0_ADDR, value));
 
 end:
+	_cs_disable();
 	return error;
 }
 

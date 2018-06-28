@@ -13,6 +13,8 @@
 extern rscs_bmp280_descriptor_t * bmp280;
 extern const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
+void IMU_Init();
+
 /*
  * 	FreeRTOS задача для работы с IMU
  */

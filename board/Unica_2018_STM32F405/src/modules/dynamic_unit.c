@@ -29,8 +29,8 @@
 #define DRV8855_MODE1_PORT	GPIOC
 #define DRV8855_MODE2_PIN	GPIO_PIN_9	//A10
 #define DRV8855_MODE2_PORT	GPIOC
-#define DRV8855_nFAULT_PIN	GPIO_PIN_10	//B11
-#define DRV8855_nFAULT_PORT	GPIOB
+#define DRV8855_nFAULT_PIN	GPIO_PIN_6	//B11
+#define DRV8855_nFAULT_PORT	GPIOC
 
 #define TARGET_X			10
 #define TARGET_Y			0
@@ -199,12 +199,15 @@ void send_servo_pos(float* servo_pos) {
 }
 
 
-void MOTORS_task() {
-
+void MOTORS_Init() {
 	//	Инициализация USART1 для Bluetooth (HC-05)
 	HC05_Init();
 	//	Инициализация драйвера ШД
 	step_engine_init();
+}
+
+
+void MOTORS_task() {
 
 	const TickType_t _delay = 50 / portTICK_RATE_MS;
 	vTaskDelay(40*_delay);

@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include <stm32f4xx_hal.h>
+
 #define nRF24L01_WRITE_REGISTER(ADDR)	(ADDR | 0b00100000)
 #define nRF24L01_READ_REGISTER(ADDR)	(ADDR | 0b00000000)
 #define nRF24L01_WRITE_TX_FIFO			0b10100000
@@ -206,7 +208,7 @@ extern uint8_t nRF24L01_RX_BUFFER[nRF24L01_BUFFER_LEN];
 /*
  * Инициализация радиомодуля.
  */
-uint8_t nRF24L01_init();
+uint8_t nRF24L01_init(SPI_HandleTypeDef* hspi);
 
 /*
  * Функция для чтения данных.

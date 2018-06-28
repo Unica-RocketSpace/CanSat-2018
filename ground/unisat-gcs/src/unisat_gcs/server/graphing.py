@@ -3,13 +3,192 @@ import time
 
 import numpy as np
 import pyqtgraph as pg
-from gcs_ui import *
+from .gcs_ui import *
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import *
+
+from pymavlink.dialects.v20.UNISAT import *
+from pymavlink import mavutil
+
 import pyqtgraph.opengl as gl
 
-from . import __main__ as m
+from PyQt5.QtCore import QThread
+import logging
+import math
+
+from . import _log as _root_log
+
+
+_log = _root_log.getChild("main")
+
+class Mavlink_thread(QThread):
+    # new_record = QtCore.pyqtSignal(list)
+
+    def __init__(self):
+        QThread.__init__(self)
+
+    def MAV_INIT(self):
+        logging.basicConfig(
+            stream=sys.stdout, level=logging.INFO,
+            format="%(asctime)-15s %(message)s"
+        )
+
+        _log.info("Запускаюсь. Использую url:")
+        print('init')
+        connect1 = mavutil.mavlink_connection("udpin:172.16.164.222:12000")
+        # connect2 = mavutil.mavlink_connection("udpin:0.0.0.0:12001")
+        return connect1
+
+    def msg_parser(self, msg):
+        if isinstance(msg, MAVLink_bad_data):
+            print('bad data')
+            pass
+
+        elif isinstance(msg, MAVLink_atmega_message):
+            pressure_atmega.append(msg.pressure)
+            temp_atmega.append(msg.temp)
+            state = msg.state
+            time_atm = msg.time
+
+        elif isinstance(msg, MAVLink_imu_rsc_message):
+            av_x.append(msg.gyro[0])
+            av_y.append(msg.gyro[1])
+            av_z.append(msg.gyro[2])
+
+            a_RSC_x.append(msg.accel[0])
+            a_RSC_y.append(msg.accel[1])
+            a_RSC_z.append(msg.accel[2])
+
+            time_RSC = msg.time
+
+        elif isinstance(msg, MAVLink_imu_isc_message):
+            a_ISC_x.append(msg.accel[0])
+            a_ISC_y.append(msg.accel[1])
+            a_ISC_z.append(msg.accel[2])
+
+            vmf_x.append(msg.compass[0])
+            vmf_y.append(msg.compass[1])
+            vmf_z.append(msg.compass[2])
+
+            v_x.append(msg.velocities[0])
+            v_y.append(msg.velocities[1])
+            v_z.append(msg.velocities[2])
+
+            print('v_x', v_x)
+
+            mov_x.append(msg.coordinates[0])
+            mov_y.append(msg.coordinates[1])
+            mov_z.append(msg.coordinates[2])
+
+            quat = msg.quaternion
+
+            time_ISC = msg.time
+
+        elif isinstance(msg, MAVLink_sensors_message):
+            pressure_sensors.append(msg.pressure)
+            temp_sensors.append(msg.temp)
+
+            time_sens.append(msg.time)
+
+        elif isinstance(msg, MAVLink_gps_message):
+            x.append(msg.coordinates[0])
+            y.append(msg.coordinates[1])
+            z.append(msg.coordinates[2])
+
+            GPS.append(msg.coordinates)
+
+        elif isinstance(msg, MAVLink_camera_orientation_message):
+            print(msg)
+
+
+    def main(self, mav1):
+        while True:
+
+            print("main")
+            msg1 = mav1.recv_match(blocking=True)
+            # msg2 = mav2.recv_match(blocking=False)
+            print(msg1)
+            # if msg1 == None:
+            #     self.MAV_INIT()
+
+            if msg1:
+                print('msg1')
+                self.msg_parser(msg1)
+                # self.new_record.emit(msg1)
+
+            # if msg2:
+            #     print('msg2')
+            #     self.msg_parser(msg2)
+                # self.new_record.emit()
+
+    def run(self):
+        mav1 = self.MAV_INIT()
+        self.main(mav1)
+
+
+
+
+def process_message(msg):
+    _log.info("%s", msg)
+
+    if isinstance(msg, MAVLink_bad_data):
+       pass
+
+    elif isinstance(msg, MAVLink_atmega_message):
+        _log.info(
+            "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"
+            %
+            (msg.get_header().seq, msg.time, msg.pressure, msg.temp)
+        )
+
+    elif isinstance(msg, MAVLink_imu_rsc_message):
+        _log.info(
+            "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
+        )
+
+    elif isinstance(msg, MAVLink_imu_isc_message):
+        _log.info(
+            "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.accel, *msg.compass)
+        )
+        _log.info(
+            "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.quaternion)
+        )
+        _log.info(
+            "POS\t {n: %ld, time: %0.3f, velo: [%0.3f, %0.3f, %0.3f], pos: [%0.3f, %0.3f, %0.3f]}"
+            %
+            (msg.get_header().seq, msg.time, *msg.velocities, *msg.coordinates)
+        )
+    elif isinstance(msg, MAVLink_sensors_message):
+        _log.info(
+            "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
+            %
+            (msg.get_header().seq, msg.time, msg.temp, msg.pressure)
+        )
+    elif isinstance(msg, MAVLink_gps_message):
+        _log.info(
+            "GPS\t {n: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
+            %
+            (msg.get_header().seq, msg.time, msg.coordinates[1], msg.coordinates[0], msg.coordinates[2])
+        )
+    elif isinstance(msg, MAVLink_camera_orientation_message):
+        _log.info(
+            "CAM\t {n: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
+            %
+            (msg.get_header().seq, msg.time, 180*msg.step_engine_pos/math.pi, 180*msg.servo_pos/math.pi)
+        )
+    else:
+        _log.info(msg)
+
+
+
+
 
 log_text = ''
 global_vars={'x': 0, 'y': 0}
@@ -17,8 +196,50 @@ now_graf = None
 str_now_graf = None
 lenght = 20
 
-# glwid = gl.GLViewWidget()
+a_ISC_x = []
+a_ISC_y = []
+a_ISC_z = []
 
+a_RSC_x = []
+a_RSC_y = []
+a_RSC_z = []
+
+v_x = []
+
+v_y = []
+v_z = []
+
+av_x = []
+av_y = []
+av_z = []
+
+mov_x = []
+mov_y = []
+mov_z = []
+
+vmf_x = []
+vmf_y = []
+vmf_z = []
+
+temp_atmega = []
+temp_sensors = []
+pressure_atmega = []
+pressure_sensors = []
+
+x = []
+y = []
+z = []
+
+GPS = []
+
+quat = []
+
+time_atm = []
+time_RSC = []
+time_ISC = []
+time_sens = []
+
+state = None
 class PlotThread(QThread):
     def __init__(self):
         QThread.__init__(self)
@@ -28,7 +249,10 @@ class PlotThread(QThread):
 
     def run(self):
         myapp = MyWin()
-        m.msg_parser(myapp)
+        while True:
+            # MyWin.msg_parser(myapp, msg)
+            MyWin.update_graf(myapp)
+
 
 
 # Главный класс
@@ -142,7 +366,22 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.glwid.addItem(self.or_mod)
         self.ui.glwid.show()
 
+        self.pl_graf_top1 = self.sc_item_top1.plot()
+        self.pl_graf_top2 = self.sc_item_top2.plot()
+        self.pl_graf_top3 = self.sc_item_top3.plot()
+
+        self.pl_graf_middle1 = self.sc_item_middle1.plot()
+        self.pl_graf_middle2 = self.sc_item_middle2.plot()
+        self.pl_graf_middle3 = self.sc_item_middle3.plot()
+
+        self.pl_graf_down1 = self.sc_item_down1.plot()
+        self.pl_graf_down2 = self.sc_item_down2.plot()
+        self.pl_graf_down3 = self.sc_item_down3.plot()
+
         # self.drawing_plot()
+        # self.msg_parser()
+
+
 
         # Здесь прописываем событие нажатия на кнопку
         self.ui.pushButton_3.clicked.connect(self.Remove_graf)
@@ -377,117 +616,100 @@ class MyWin(QtWidgets.QMainWindow):
         now_graf = self.graf_down3
         str_now_graf = 'graf_down3'
 
+    def update_graf(self):
+        if (time_sens == None) or (time_atm == None) or (time_RSC == None) or (time_ISC == None):
+            return 1
 
-    def drawing_plot(self):
-        self.p_thread = PlotThread()
-        self.p_thread.start()
+        if len(time_RSC) == lenght:
+            a_RSC_x.pop()
+            a_RSC_y.pop()
+            a_RSC_z.pop()
 
+            time_RSC.pop()
 
-    def plotting(self):
-        # if (time_sens == None) or (time_atm == None) or (time_RSC == None) or (time_ISC == None):
-        #     return 1
+            av_x.pop()
+            av_y.pop()
+            av_z.pop()
 
-        self.pl_graf_top1 = self.sc_item_top1.plot()
-        self.pl_graf_top2 = self.sc_item_top2.plot()
-        self.pl_graf_top3 = self.sc_item_top3.plot()
+        self.pl_graf_top2.setData(x=a_RSC_x, y=time_RSC, pen=('r'), width=0.5)
+        self.pl_graf_top2.setData(x=a_RSC_y, y=time_RSC, pen=('g'), width=0.5)
+        self.pl_graf_top2.setData(x=a_RSC_z, y=time_RSC, pen=('b'), width=0.5)
 
-        self.pl_graf_middle1 = self.sc_item_middle1.plot()
-        self.pl_graf_middle2 = self.sc_item_middle2.plot()
-        self.pl_graf_middle3 = self.sc_item_middle3.plot()
-
-        self.pl_graf_down1 = self.sc_item_down1.plot()
-        self.pl_graf_down2 = self.sc_item_down2.plot()
-        self.pl_graf_down3 = self.sc_item_down3.plot()
-
-
-        if len(m.time_RSC) == lenght:
-            m.a_RSC_x.pop()
-            m.a_RSC_y.pop()
-            m.a_RSC_z.pop()
-
-            m.time_RSC.pop()
-
-            m.av_x.pop()
-            m.av_y.pop()
-            m.av_z.pop()
-
-        self.pl_graf_top2.setData(x=m.a_RSC_x, y=m.time_RSC, pen=('r'), width=0.5)
-        self.pl_graf_top2.setData(x=m.a_RSC_y, y=m.time_RSC, pen=('g'), width=0.5)
-        self.pl_graf_top2.setData(x=m.a_RSC_z, y=m.time_RSC, pen=('b'), width=0.5)
-
-        self.pl_graf_middle1.setData(x=m.av_x, y=m.time_RSC, pen=('r'), width=0.5)
-        self.pl_graf_middle1.setData(x=m.av_y, y=m.time_RSC, pen=('g'), width=0.5)
-        self.pl_graf_middle1.setData(x=m.av_z, y=m.time_RSC, pen=('b'), width=0.5)
+        self.pl_graf_middle1.setData(x=av_x, y=time_RSC, pen=('r'), width=0.5)
+        self.pl_graf_middle1.setData(x=av_y, y=time_RSC, pen=('g'), width=0.5)
+        self.pl_graf_middle1.setData(x=av_z, y=time_RSC, pen=('b'), width=0.5)
 
         # Вывод в лог #
         # log = '' + 'sfkslk'+ "\n"
         # self.ui.textBrowser_2.append(log)
         #  #
 
+        if len(time_ISC) == lenght:
+            a_ISC_x.pop()
+            a_ISC_y.pop()
+            a_ISC_z.pop()
 
-        if len(m.time_ISC) == lenght:
-            m.a_ISC_x.pop()
-            m.a_ISC_y.pop()
-            m.a_ISC_z.pop()
+            time_ISC.pop()
 
-            m.time_ISC.pop()
+            vmf_x.pop()
+            vmf_y.pop()
+            vmf_z.pop()
 
-            m.vmf_x.pop()
-            m.vmf_y.pop()
-            m.vmf_z.pop()
+            v_x.pop()
+            v_y.pop()
+            v_z.pop()
 
-            m.v_x.pop()
-            m.v_y.pop()
-            m.v_z.pop()
+            mov_x.pop()
+            mov_y.pop()
+            mov_z.pop()
 
-            m.mov_x.pop()
-            m.mov_y.pop()
-            m.mov_z.pop()
+        self.pl_graf_top1.setData(x=a_ISC_x, y=time_ISC, pen=('r'))
+        self.pl_graf_top1.setData(x=a_ISC_y, y=time_ISC, pen=('g'))
+        self.pl_graf_top1.setData(x=a_ISC_z, y=time_ISC, pen=('b'))
 
-        self.pl_graf_top1.setData(x=m.a_ISC_x, y=m.time_ISC, pen=('r'))
-        self.pl_graf_top1.setData(x=m.a_ISC_y, y=m.time_ISC, pen=('g'))
-        self.pl_graf_top1.setData(x=m.a_ISC_z, y=m.time_ISC, pen=('b'))
+        self.pl_graf_middle3.setData(x=vmf_x, y=time_ISC, pen=('r'))
+        self.pl_graf_middle3.setData(x=vmf_y, y=time_ISC, pen=('g'))
+        self.pl_graf_middle3.setData(x=vmf_z, y=time_ISC, pen=('b'))
 
-        self.pl_graf_middle3.setData(x=m.vmf_x, y=m.time_ISC, pen=('r'))
-        self.pl_graf_middle3.setData(x=m.vmf_y, y=m.time_ISC, pen=('g'))
-        self.pl_graf_middle3.setData(x=m.vmf_z, y=m.time_ISC, pen=('b'))
+        self.pl_graf_top3.setData(x=v_x, y=time_ISC, pen=('r'))
+        self.pl_graf_top3.setData(x=v_y, y=time_ISC, pen=('g'))
+        self.pl_graf_top3.setData(x=v_z, y=time_ISC, pen=('b'))
 
-        self.pl_graf_top3.setData(x=m.v_x, y=m.time_ISC, pen=('r'))
-        self.pl_graf_top3.setData(x=m.v_y, y=m.time_ISC, pen=('g'))
-        self.pl_graf_top3.setData(x=m.v_z, y=m.time_ISC, pen=('b'))
+        self.pl_graf_middle2.setData(x=mov_x, y=time_ISC, pen=('r'))
+        self.pl_graf_middle2.setData(x=mov_y, y=time_ISC, pen=('g'))
+        self.pl_graf_middle2.setData(x=mov_z, y=time_ISC, pen=('b'))
 
-        self.pl_graf_middle2.setData(x=m.mov_x, y=m.time_ISC, pen=('r'))
-        self.pl_graf_middle2.setData(x=m.mov_y, y=m.time_ISC, pen=('g'))
-        self.pl_graf_middle2.setData(x=m.mov_z, y=m.time_ISC, pen=('b'))
+        if len(time_atm) == lenght:
+            time_atm.pop()
+            pressure_atmega.pop()
+            temp_atmega.pop()
 
-
-        if len(m.time_atm) == lenght:
-            m.time_atm.pop()
-            m.pressure_atmega.pop()
-            m.temp_atmega.pop()
-
-        self.pl_graf_down1.setData(x=m.temp_atmega, y=m.time_atm, pen=('r'))
-        self.pl_graf_down2.setData(x=m.pressure_atmega, y=m.time_atm, pen=('r'))
+        self.pl_graf_down1.setData(x=temp_atmega, y=time_atm, pen=('r'))
+        self.pl_graf_down2.setData(x=pressure_atmega, y=time_atm, pen=('r'))
 
         self.ui.state.clear()
-        self.ui.state.setText(m.state)
+        self.ui.state.setText(state)
 
+        if len(time_sens) == lenght:
+            time_sens.pop()
+            pressure_sensors.pop()
+            temp_sensors.pop()
 
-        if len(m.time_sens) == lenght:
-            m.time_sens.pop()
-            m.pressure_sensors.pop()
-            m.temp_sensors.pop()
+        self.pl_graf_down1.setData(x=temp_sensors, y=time_sens, pen=('g'))
+        self.pl_graf_down2.setData(x=pressure_sensors, y=time_sens, pen=('g'))
 
-
-        self.pl_graf_down1.setData(x=m.temp_sensors, y=m.time_sens, pen=('g'))
-        self.pl_graf_down2.setData(x=m.pressure_sensors, y=m.time_sens, pen=('g'))
-
-        self.pl_graf_down3.setData(x=m.x, y=m.y, pen=('r'))
+        self.pl_graf_down3.setData(x=x, y=y, pen=('r'))
 
         # self.plt.setData(pos=GPS, color=(1.0, 1.0, 1.0, 1.0)
-        i = len(m.x)
-        if i == 0:
-            self.or_mod.translate(m.x, m.y, m.z)
-        else:
-            self.or_mod.translate(m.x[i] - m.x[i-1], m.y[i] - m.y[i-1], m.z[i] - m.z[i-1])
+        # i = len(x)
+        # if i == 0:
+        #     self.or_mod.translate(x, y, z)
+        # else:
+        #     self.or_mod.translate(x[i] - x[i - 1], y[i] - y[i - 1], z[i] - z[i - 1])
         # Цвета в pg.glColor
+
+    # @QtCore.pyqtSlot(list)
+
+    # def drawing_plot(self):
+    #     pass
+

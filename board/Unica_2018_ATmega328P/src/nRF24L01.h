@@ -134,7 +134,7 @@ typedef enum {
 }nRF24L01_SETUP_RETR_t;
 
 typedef enum {			//Частота канала
-	RF_CH = 0			//[6:0]
+	RF_CH = 0x11			//[6:0]
 
 }nRF24L01_RF_CH_t;
 

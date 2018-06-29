@@ -95,18 +95,17 @@ int main() {
 	nRF24L01_init();
 
 	//FIXME: УБРАТЬ
-	initial_params.zero_pressure = set_zero_pressure();
-	initial_params.zero_pressure = set_zero_pressure();
+	//initial_params.zero_pressure = set_zero_pressure();
+	//initial_params.zero_pressure = set_zero_pressure();
 
 	//Включение внешних прервыений 0
-	EICRA = (1 << ISC01) | (1 << ISC00); //Прерывание срабатывает при возрастании сигнала
+	EICRA = (1 << ISC01) | (1 << ISC00);		//Прерывание срабатывает при возрастании сигнала
 	EIMSK = (1 << INT0);						//Включение прерывания INT0
-	sei();
-	//Глобальное включение прерываний
+	sei();										//Глобальное включение прерываний
 
 	while (1) {
 
-//		printf("\n-------------------------\nSTEP = %ld\n", step);
+		printf("\n-------------------------\nSTEP = %ld\n", step);
 		step++;
 
 		//Читаем датчики
@@ -124,6 +123,8 @@ int main() {
 
 		//Отправляем телеметрию
 //		send_package();
+
+		//Отправляем телеметрию пакетами Mavlink
 		mavlink_message_t msg;
 		mavlink_msg_atmega_pack(1, 1, &msg, TM_package.time, TM_package.pressure,
 				TM_package.height, TM_package.temperature, TM_package.state);
@@ -148,13 +149,13 @@ int main() {
 		 nRF24L01_clear_status(false, true, true);
 		 nRF24L01_write(message, sizeof(message), true);
 		 data_register = nRF24L01_read_status();
-		 printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
+		 */printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
 		 (((data_register) & (1 << RX_DR)) >> RX_DR),
 		 (((data_register) & (1 << TX_DS)) >> TX_DS),
 		 (((data_register) & (1 << MAX_RT)) >> MAX_RT),
 		 (((data_register) & (0b111 << RX_P_NO)) >> RX_P_NO),
 		 (((data_register) & (1 << TX_FULL))) >> TX_FULL);
-		 */
+
 
 //		printf("time = %f s\n", TM_package.time);
 //		printf("bmp280_press = %f\n bmp280_temp = %f\n", TM_package.pressure,

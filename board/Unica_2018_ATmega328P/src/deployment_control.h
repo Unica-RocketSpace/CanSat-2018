@@ -19,8 +19,8 @@
 #define	STAGE_INITIAL_PARAM_COMMAND 2
 #define	STAGE_GOING_UP_COMMAND   	3
 
-#define ENGINE_DDR			DDRC
-#define ENGINE_PORT			PORTC
+#define ENGINE_DDR			DDRB
+#define ENGINE_PORT			PORTB
 #define ENGINE_PIN			0
 
 /*

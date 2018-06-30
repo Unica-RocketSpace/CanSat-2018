@@ -49,7 +49,16 @@ class MyWin(QtWidgets.QMainWindow):
         self.temp_atmega = []
         self.pressure_atmega = []
         self.time_atm = []
-        self.state = None
+
+        self.state_atm_motor = None
+        self.state_amt_para = None
+        self.state_mpu = None
+        self.state_bmp = None
+        self.state_sd = None
+        self.state_nrf = None
+        self.state_stm_motor = None
+        self.state_gps = None
+        self.state_fly = None
 
         self.a_RSC_x = []
         self.a_RSC_y = []
@@ -203,13 +212,29 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_top2_z = self.sc_item_top2.plot()
         self.pl_graf_top3_z = self.sc_item_top3.plot()
 
-        self.pl_graf_middle1 = self.sc_item_middle1.plot()
-        self.pl_graf_middle2 = self.sc_item_middle2.plot()
-        self.pl_graf_middle3 = self.sc_item_middle3.plot()
+        self.pl_graf_middle1_x = self.sc_item_middle1.plot()
+        self.pl_graf_middle2_x = self.sc_item_middle2.plot()
+        self.pl_graf_middle3_x = self.sc_item_middle3.plot()
 
-        self.pl_graf_down1 = self.sc_item_down1.plot()
-        self.pl_graf_down2 = self.sc_item_down2.plot()
-        self.pl_graf_down3 = self.sc_item_down3.plot()
+        self.pl_graf_middle1_y = self.sc_item_middle1.plot()
+        self.pl_graf_middle2_y = self.sc_item_middle2.plot()
+        self.pl_graf_middle3_y = self.sc_item_middle3.plot()
+
+        self.pl_graf_middle1_z = self.sc_item_middle1.plot()
+        self.pl_graf_middle2_z = self.sc_item_middle2.plot()
+        self.pl_graf_middle3_z = self.sc_item_middle3.plot()
+
+        self.pl_graf_down1_x = self.sc_item_down1.plot()
+        self.pl_graf_down2_x = self.sc_item_down2.plot()
+        self.pl_graf_down3_x = self.sc_item_down3.plot()
+
+        self.pl_graf_down1_y = self.sc_item_down1.plot()
+        self.pl_graf_down2_y = self.sc_item_down2.plot()
+        self.pl_graf_down3_y = self.sc_item_down3.plot()
+
+        self.pl_graf_down1_z = self.sc_item_down1.plot()
+        self.pl_graf_down2_z = self.sc_item_down2.plot()
+        self.pl_graf_down3_z = self.sc_item_down3.plot()
 
         # self.drawing_plot()
         # self.msg_parser()
@@ -259,66 +284,92 @@ class MyWin(QtWidgets.QMainWindow):
         global now_graf, str_now_graf
 
         if now_graf == None:
-            return 0, 0
+            return 0, 0, 0, 0
 
         if str_now_graf == 'graf_top1':
             graf_1 = self.sc_item_top1
-            graf_2 = self.pl_graf_top1
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_top1_x
+            graf_2_y = self.pl_graf_top1_y
+            graf_2_z = self.pl_graf_top1_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_top2':
             graf_1 = self.sc_item_top2
-            graf_2 = self.pl_graf_top2
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_top2_x
+            graf_2_y = self.pl_graf_top2_y
+            graf_2_z = self.pl_graf_top2_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_top3':
             graf_1 = self.sc_item_top3
-            graf_2 = self.pl_graf_top3
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_top3_x
+            graf_2_y = self.pl_graf_top3_y
+            graf_2_z = self.pl_graf_top3_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_middle1':
             graf_1 = self.sc_item_middle1
-            graf_2 = self.pl_graf_middle1
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_middle1_x
+            graf_2_y = self.pl_graf_middle1_y
+            graf_2_z = self.pl_graf_middle1_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_middle2':
             graf_1 = self.sc_item_middle2
-            graf_2 = self.pl_graf_middle2
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_middle2_x
+            graf_2_y = self.pl_graf_middle2_y
+            graf_2_z = self.pl_graf_middle2_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_middle3':
             graf_1 = self.sc_item_middle3
-            graf_2 = self.pl_graf_middle3
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_middle3_x
+            graf_2_y = self.pl_graf_middle3_y
+            graf_2_z = self.pl_graf_middle3_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_down1':
             graf_1 = self.sc_item_down1
-            graf_2 = self.pl_graf_down1
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_down1_x
+            graf_2_y = self.pl_graf_down1_y
+            graf_2_z = self.pl_graf_down1_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_down2':
             graf_1 = self.sc_item_down2
-            graf_2 = self.pl_graf_down2
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_down2_x
+            graf_2_y = self.pl_graf_down2_y
+            graf_2_z = self.pl_graf_down2_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
         if str_now_graf == 'graf_down3':
             graf_1 = self.sc_item_down3
-            graf_2 = self.pl_graf_down3
-            return graf_1, graf_2
+            graf_2_x = self.pl_graf_down3_x
+            graf_2_y = self.pl_graf_down3_y
+            graf_2_z = self.pl_graf_down3_z
+            return graf_1, graf_2_x, graf_2_y, graf_2_z
 
 
     def transfer_graf_top1(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
+
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_top1)
+        self.sc_item_large.addItem(self.pl_graf_top1_x)
+        self.sc_item_large.addItem(self.pl_graf_top1_y)
+        self.sc_item_large.addItem(self.pl_graf_top1_z)
+
+        self.sc_item_top1.clear()
+
         now_graf = self.graf_top1
         str_now_graf = 'graf_top1'
 
@@ -326,30 +377,42 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_top2(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_top2)
+        self.sc_item_large.addItem(self.pl_graf_top2_x)
+        self.sc_item_large.addItem(self.pl_graf_top2_y)
+        self.sc_item_large.addItem(self.pl_graf_top2_z)
+
+        self.sc_item_top2.clear()
         now_graf = self.graf_top2
         str_now_graf = 'graf_top2'
 
     def transfer_graf_top3(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_top3)
+        self.sc_item_large.addItem(self.pl_graf_top3_x)
+        self.sc_item_large.addItem(self.pl_graf_top3_y)
+        self.sc_item_large.addItem(self.pl_graf_top3_z)
+
+        self.sc_item_top3.clear()
         now_graf = self.graf_top3
         str_now_graf = 'graf_top3'
 
@@ -357,15 +420,21 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_middle1(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_middle1)
+        self.sc_item_large.addItem(self.pl_graf_middle1_x)
+        self.sc_item_large.addItem(self.pl_graf_middle1_y)
+        self.sc_item_large.addItem(self.pl_graf_middle1_z)
+
+        self.sc_item_middle1.clear()
         now_graf = self.graf_middle1
         str_now_graf = 'graf_middle1'
 
@@ -373,15 +442,21 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_middle2(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_middle2)
+        self.sc_item_large.addItem(self.pl_graf_middle2_x)
+        self.sc_item_large.addItem(self.pl_graf_middle2_y)
+        self.sc_item_large.addItem(self.pl_graf_middle2_z)
+
+        self.sc_item_middle2.clear()
         now_graf = self.graf_middle2
         str_now_graf = 'graf_middle2'
 
@@ -389,15 +464,21 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_middle3(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_middle3)
+        self.sc_item_large.addItem(self.pl_graf_middle3_x)
+        self.sc_item_large.addItem(self.pl_graf_middle3_y)
+        self.sc_item_large.addItem(self.pl_graf_middle3_z)
+
+        self.sc_item_middle3.clear()
         now_graf = self.graf_middle3
         str_now_graf = 'graf_middle3'
 
@@ -405,15 +486,21 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_down1(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_down1)
+        self.sc_item_large.addItem(self.pl_graf_down1_x)
+        self.sc_item_large.addItem(self.pl_graf_down1_y)
+        self.sc_item_large.addItem(self.pl_graf_down1_z)
+
+        self.sc_item_down1.clear()
         now_graf = self.graf_down1
         str_now_graf = 'graf_down1'
 
@@ -421,15 +508,21 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_down2(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_down2)
+        self.sc_item_large.addItem(self.pl_graf_down2_x)
+        self.sc_item_large.addItem(self.pl_graf_down2_y)
+        self.sc_item_large.addItem(self.pl_graf_down2_z)
+
+        self.sc_item_down2.clear()
         now_graf = self.graf_down2
         str_now_graf = 'graf_down2'
 
@@ -437,15 +530,21 @@ class MyWin(QtWidgets.QMainWindow):
     def transfer_graf_down3(self):
         global now_graf, str_now_graf
 
-        grafs_1, grafs_2 = self.check_now_graf()
+        grafs_1, grafs_2_x, grafs_2_y, grafs_2_z = self.check_now_graf()
 
         if grafs_1 != 0:
-            grafs_1.addItem(grafs_2)
+            grafs_1.addItem(grafs_2_x)
+            grafs_1.addItem(grafs_2_y)
+            grafs_1.addItem(grafs_2_z)
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
 
-        self.sc_item_large.addItem(self.pl_graf_down3)
+        self.sc_item_large.addItem(self.pl_graf_down3_x)
+        self.sc_item_large.addItem(self.pl_graf_down3_y)
+        self.sc_item_large.addItem(self.pl_graf_down3_z)
+
+        self.sc_item_down3.clear()
         now_graf = self.graf_down3
         str_now_graf = 'graf_down3'
 
@@ -457,18 +556,22 @@ class MyWin(QtWidgets.QMainWindow):
             self.time_atm.append(msgs[i].time)
             self.pressure_atmega.append(msgs[i].pressure)
             self.temp_atmega.append(msgs[i].temp)
-            self.state = msgs[i].state
+            self.state_atm_motor = msgs[i].motor_state
+            self.state_amt_para = msgs[i].para_state
 
         if len(self.time_atm) == self.lenght:
             self.time_atm = self.time_atm[4:(self.lenght-1)]
             self.pressure_atmega = self.pressure_atmega[4:(self.lenght-1)]
             self.temp_atmega = self.temp_atmega[4:(self.lenght-1)]
 
-        self.pl_graf_down1.setData(x=self.time_atm, y=self.temp_atmega, pen=('r'))
-        self.pl_graf_down2.setData(x=self.time_atm, y=self.pressure_atmega, pen=('r'))
+        self.pl_graf_down1_x.setData(x=self.time_atm, y=self.temp_atmega, pen=('r'))
+        self.pl_graf_down2_x.setData(x=self.time_atm, y=self.pressure_atmega, pen=('r'))
 
-        self.ui.state.clear()
-        self.ui.state.setText(str(self.state))
+        self.ui.state_atm_motor.clear()
+        self.ui.state_atm_motor.setText(str(self.state_atm_motor))
+
+        self.ui.state_para.clear()
+        self.ui.state_para.setText(str(self.state_amt_para))
 
 
     @QtCore.pyqtSlot(list)
@@ -498,9 +601,9 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_top2_y.setData(x=self.time_RSC, y=self.a_RSC_y, pen=('g'), width=0.5)
         self.pl_graf_top2_z.setData(x=self.time_RSC, y=self.a_RSC_z, pen=('b'), width=0.5)
 
-        self.pl_graf_middle1.setData(x=self.time_RSC, y=self.av_x, pen=('r'), width=0.5)
-        self.pl_graf_middle1.setData(x=self.time_RSC, y=self.av_y, pen=('g'), width=0.5)
-        self.pl_graf_middle1.setData(x=self.time_RSC, y=self.av_z, pen=('b'), width=0.5)
+        self.pl_graf_middle1_x.setData(x=self.time_RSC, y=self.av_x, pen=('r'), width=0.5)
+        self.pl_graf_middle1_y.setData(x=self.time_RSC, y=self.av_y, pen=('g'), width=0.5)
+        self.pl_graf_middle1_z.setData(x=self.time_RSC, y=self.av_z, pen=('b'), width=0.5)
 
         # Вывод в лог #
         # log = '' + 'sfkslk'+ "\n"
@@ -544,21 +647,21 @@ class MyWin(QtWidgets.QMainWindow):
             self.mov_y = self.mov_y[4:(self.lenght - 1)]
             self.mov_z = self.mov_z[4:(self.lenght - 1)]
 
-        self.pl_graf_top1.setData(x=self.time_ISC, y=self.a_ISC_x, pen=('r'))
-        self.pl_graf_top1.setData(x=self.time_ISC, y=self.a_ISC_y, pen=('g'))
-        self.pl_graf_top1.setData(x=self.time_ISC, y=self.a_ISC_z, pen=('b'))
+        self.pl_graf_top1_x.setData(x=self.time_ISC, y=self.a_ISC_x, pen=('r'))
+        self.pl_graf_top1_y.setData(x=self.time_ISC, y=self.a_ISC_y, pen=('g'))
+        self.pl_graf_top1_z.setData(x=self.time_ISC, y=self.a_ISC_z, pen=('b'))
 
-        self.pl_graf_middle3.setData(x=self.time_ISC, y=self.vmf_x, pen=('r'))
-        self.pl_graf_middle3.setData(x=self.time_ISC, y=self.vmf_y, pen=('g'))
-        self.pl_graf_middle3.setData(x=self.time_ISC, y=self.vmf_z, pen=('b'))
+        self.pl_graf_middle3_x.setData(x=self.time_ISC, y=self.vmf_x, pen=('r'))
+        self.pl_graf_middle3_y.setData(x=self.time_ISC, y=self.vmf_y, pen=('g'))
+        self.pl_graf_middle3_z.setData(x=self.time_ISC, y=self.vmf_z, pen=('b'))
 
-        self.pl_graf_top3.setData(x=self.time_ISC, y=self.v_x, pen=('r'))
-        self.pl_graf_top3.setData(x=self.time_ISC, y=self.v_y, pen=('g'))
-        self.pl_graf_top3.setData(x=self.time_ISC, y=self.v_z, pen=('b'))
+        self.pl_graf_top3_x.setData(x=self.time_ISC, y=self.v_x, pen=('r'))
+        self.pl_graf_top3_y.setData(x=self.time_ISC, y=self.v_y, pen=('g'))
+        self.pl_graf_top3_z.setData(x=self.time_ISC, y=self.v_z, pen=('b'))
 
-        self.pl_graf_middle2.setData(x=self.time_ISC, y=self.mov_x, pen=('r'))
-        self.pl_graf_middle2.setData(x=self.time_ISC, y=self.mov_y, pen=('g'))
-        self.pl_graf_middle2.setData(x=self.time_ISC, y=self.mov_z, pen=('b'))
+        self.pl_graf_middle2_x.setData(x=self.time_ISC, y=self.mov_x, pen=('r'))
+        self.pl_graf_middle2_y.setData(x=self.time_ISC, y=self.mov_y, pen=('g'))
+        self.pl_graf_middle2_z.setData(x=self.time_ISC, y=self.mov_z, pen=('b'))
 
 
     @QtCore.pyqtSlot(list)
@@ -574,8 +677,8 @@ class MyWin(QtWidgets.QMainWindow):
             self.pressure_sensors = self.pressure_sensors[4:(self.lenght - 1)]
             self.temp_sensors = self.temp_sensors[4:(self.lenght - 1)]
 
-        self.pl_graf_down1.setData(x=self.time_sens, y=self.temp_sensors, pen=('g'))
-        self.pl_graf_down2.setData(x=self.time_sens, y=self.pressure_sensors, pen=('g'))
+        self.pl_graf_down1_y.setData(x=self.time_sens, y=self.temp_sensors, pen=('b'))
+        self.pl_graf_down2_y.setData(x=self.time_sens, y=self.pressure_sensors, pen=('b'))
 
 
 
@@ -590,7 +693,7 @@ class MyWin(QtWidgets.QMainWindow):
             self.x = self.x[4:(self.lenght - 1)]
             self.y = self.y[4:(self.lenght - 1)]
 
-        self.pl_graf_down3.setData(x=self.x, y=self.y, pen=('r'))
+        self.pl_graf_down3_x.setData(x=self.x, y=self.y, pen=('r'))
 
         # self.plt.setData(pos=GPS, color=(1.0, 1.0, 1.0, 1.0))
         # i = len(x)
@@ -599,5 +702,34 @@ class MyWin(QtWidgets.QMainWindow):
         # else:
         #     self.or_mod.translate(x[i] - x[i - 1], y[i] - y[i - 1], z[i] - z[i - 1])
         # Цвета в pg.glColor
+
+
+    @QtCore.pyqtSlot(list)
+    def state_msg(self, msgs):
+        i = 0
+        for i in range(len(msgs)):
+            self.state_fly = msgs[i].globalStage
+            self.state_bmp = msgs[i].BMP_state
+            self.state_gps = msgs[i].GPS_state
+            self.state_mpu = msgs[i].MPU_state
+            self.state_nrf = msgs[i].NRF_state
+            self.state_sd = msgs[i].SD_state
+            self.state_stm_motor = msgs[i].MOTOR_state
+
+            self.ui.mpu_state.clear()
+            self.ui.bmp_state.clear()
+            self.ui.sd_state.clear()
+            self.ui.nrf_state.clear()
+            self.ui.morot_stm_state.clear()
+            self.ui.gps_state.clear()
+
+            self.ui.mpu_state.setText(str(self.state_mpu))
+            self.ui.bmp_state.setText(str(self.state_bmp))
+            self.ui.sd_state.setText(str(self.state_sd))
+            self.ui.nrf_state.setText(str(self.state_nrf))
+            self.ui.morot_stm_state.setText(str(self.state_stm_motor))
+            self.ui.gps_state.setText(str(self.state_gps))
+
+
 
 

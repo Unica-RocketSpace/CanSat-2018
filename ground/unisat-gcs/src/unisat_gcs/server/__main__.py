@@ -25,6 +25,7 @@ if __name__ == "__main__":
     thread.new_imu_rsc_record.connect(myapp.imu_rsc_msg)
     thread.new_sensors_record.connect(myapp.sens_msg)
     thread.new_gps_record.connect(myapp.gps_msg)
+    thread.new_state_record.connect(myapp.state_msg)
     thread.start()
 
     sys.exit(app.exec_())

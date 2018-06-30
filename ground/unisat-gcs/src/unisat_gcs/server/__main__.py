@@ -1,19 +1,16 @@
 import sys
+import logging
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread
 
-from .pymavlink_usr import *
+from .mavlink import *
 from .graphing import *
 
-
-
-
 if __name__ == "__main__":
-    # f.close()
-
-    thread = Mavlink_thread()
-    # msg = thread.new_record.connect(MyWin.msg_parser)
-    thread.start()
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO,
+        format="%(asctime)-15s %(message)s"
+    )
 
     ######################################
     app = QtWidgets.QApplication(sys.argv)
@@ -22,8 +19,15 @@ if __name__ == "__main__":
     ######################################
 
 
-    # p_thread = PlotThread()
-    # p_thread.start()
+    thread = MavlinkThread()
+    thread.new_atmega_record.connect(myapp.atm_msg)
+    thread.new_imu_isc_record.connect(myapp.imu_isc_msg)
+    thread.new_imu_rsc_record.connect(myapp.imu_rsc_msg)
+    thread.new_sensors_record.connect(myapp.sens_msg)
+    thread.new_gps_record.connect(myapp.gps_msg)
+    thread.start()
 
     sys.exit(app.exec_())
+    # thread.exit()
     # exit(main(sys.argv[1:]))
+

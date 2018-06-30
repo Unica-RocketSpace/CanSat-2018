@@ -112,6 +112,7 @@ typedef enum {
 // addresses of mpu9255 (for getting acsess to accel and gyro)
 typedef enum {
 	GYRO_AND_ACCEL = 0b11010000,
+//	GYRO_AND_ACCEL = 0b11010010,
 	COMPASS = 0b00011000
 } mpu9255_address_t;
 

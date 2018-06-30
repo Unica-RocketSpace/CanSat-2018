@@ -95,7 +95,7 @@ void step_engine_init () {
 
 	/*Pin nFAULT*/
 	DRV8825_pins.Pin = DRV8855_nFAULT_PIN;
-	DRV8825_pins.Mode = GPIO_MODE_INPUT;
+	DRV8825_pins.Mode = GPIO_MODE_OUTPUT_PP;
 	DRV8825_pins.Pull = GPIO_NOPULL;
 	DRV8825_pins.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(DRV8855_nFAULT_PORT, &DRV8825_pins);
@@ -105,6 +105,7 @@ void step_engine_init () {
 	HAL_GPIO_WritePin(DRV8855_MODE0_PORT, DRV8855_MODE0_PIN, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(DRV8855_MODE1_PORT, DRV8855_MODE1_PIN, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(DRV8855_MODE2_PORT, DRV8855_MODE2_PIN, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN, SET);
 
 }
 
@@ -203,7 +204,7 @@ void send_servo_pos(float* servo_pos) {
 void MOTORS_task() {
 
 	//	Инициализация USART1 для Bluetooth (HC-05)
-	HC05_Init();
+	//FIXME:	HC05_Init();
 	//	Инициализация драйвера ШД
 	step_engine_init();
 
@@ -221,6 +222,8 @@ void MOTORS_task() {
 
 		//	передаем углы исполняющим органам
 		send_servo_pos(&servo_pos);
+		step_engine_pos = 1;		//FIXME:!!
+		step_engine_pos_prev = 0;	//FIXME:!!
 		send_stepEngine_angle(&step_engine_pos, &step_engine_pos_prev);
 
 		//	записываем углы в state

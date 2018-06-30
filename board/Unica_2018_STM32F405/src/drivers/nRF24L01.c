@@ -175,7 +175,8 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &write_command, 1, _TIMEOUT_));
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, write_buffer, buffer_size, _TIMEOUT_));
 	_ce_up();
-	for (volatile int i = 0; i < 100; i++)
+	//FIXME:
+	for (volatile int i = 0; i < 10000; i++)
 	{}
 	_ce_down();
 end:

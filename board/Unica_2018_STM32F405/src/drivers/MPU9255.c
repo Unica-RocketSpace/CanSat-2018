@@ -26,7 +26,7 @@
 
 int mpu9255_readRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t* dataRead, uint8_t count)
 {
-	return HAL_I2C_Mem_Read(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 20000);
+	return HAL_I2C_Mem_Read(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, dataRead, count, 0xFF);
 }
 
 int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_t dataWrite)
@@ -35,7 +35,7 @@ int mpu9255_writeRegister(mpu9255_address_t address, uint8_t reg_address, uint8_
 	uint8_t regData = 0x00;
 	PROCESS_ERROR(mpu9255_readRegister(address, reg_address, &regData, 1));
 	uint8_t regData_new = (regData | dataWrite);
-	return HAL_I2C_Mem_Write(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, &regData_new, 1, 20000);
+	return HAL_I2C_Mem_Write(&i2c_mpu9255, address, reg_address, I2C_MEMADD_SIZE_8BIT, &regData_new, 1, 0xFF);
 
 end:
 	return error;
@@ -61,10 +61,10 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
 	PROCESS_ERROR(HAL_I2C_Init(hi2c));
-	vTaskDelay(100/portTICK_RATE_MS);
+	vTaskDelay(300/portTICK_RATE_MS);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
-	vTaskDelay(100/portTICK_RATE_MS);
+	vTaskDelay(200/portTICK_RATE_MS);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	25,		0b00000001));	//Sample Rate Divider
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	26,		0b00000101));	//config (DLPF = 101)
@@ -156,12 +156,12 @@ int mpu9255_readCompass(int16_t * raw_compassData)
 
 	if ((magn_state && 0x01) != 1)
 	{
-		state_system.state &= ~(1 << 1);		//магнитометр не готов
+//		state_system.state &= ~(1 << 1);		//магнитометр не готов
 		PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
 		goto end;
 	}
 
-	state_system.state |= (1 << 1);	//магнитометр готов
+//	state_system.state |= (1 << 1);	//магнитометр готов
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x03, (uint8_t*)raw_compassData, 6));
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x09, &magn_state, 1));
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off

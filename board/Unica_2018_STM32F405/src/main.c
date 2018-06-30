@@ -40,7 +40,6 @@
 
 
 // глобальные структуры
-stateIMU_raw_t 		stateIMU_raw;
 stateSensors_raw_t 	stateSensors_raw;
 stateGPS_t 			stateGPS;
 stateIMU_rsc_t 		stateIMU_rsc;
@@ -54,7 +53,6 @@ stateIMU_isc_t		stateIMU_isc_prev;
 state_system_t		state_system_prev;
 stateCamera_orient_t stateCamera_orient_prev;
 
-state_initErrors_t		state_initErrors;
 
 //	параметры IO_RF_task
 #define IO_RF_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
@@ -81,7 +79,6 @@ static StaticTask_t	_MOTORSTaskObj;
 int main(int argc, char* argv[])
 {
 	// Инициализация структур глобального состояния (в нашем случае просто заполняем их нулями)
-	memset(&stateIMU_raw, 		0x00, sizeof(stateIMU_raw));
 	memset(&stateSensors_raw, 	0x00, sizeof(stateSensors_raw));
 	memset(&stateGPS, 			0x00, sizeof(stateGPS));
 	memset(&stateIMU_rsc, 		0x00, sizeof(stateIMU_rsc));
@@ -95,31 +92,23 @@ int main(int argc, char* argv[])
 	memset(&state_system_prev, 			0x00, sizeof(state_system_prev));
 	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
-	memset(&state_initErrors,	0x00, sizeof(state_initErrors));
-
 
 //	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-//			GPS_task, 			// функция
-//			"GPS",				// имя
-//			GPS_TASK_STACK_SIZE,// глубина стека
-//			NULL,				// аргумент
-//			2,					// приоритет
-//			_gpsTaskStack,		// стек
-//			&_gpsTaskObj		// объект задания
+//			GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 2, _gpsTaskStack, &_gpsTaskObj
 //	);
 
-	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
-				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 2, _IMUTaskStack, &_IMUTaskObj
-	);
-
-
-	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 2, _iorfTaskStack, &_iorfTaskObj
-	);
-
-//	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 2, _MOTORSTaskStack, &_MOTORSTaskObj
+//	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
+//				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 2, _IMUTaskStack, &_IMUTaskObj
 //	);
+//
+//
+//	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
+//				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 2, _iorfTaskStack, &_iorfTaskObj
+//	);
+
+	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
+			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 2, _MOTORSTaskStack, &_MOTORSTaskObj
+	);
 
 	vTaskStartScheduler();
 

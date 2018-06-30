@@ -111,7 +111,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART2) {
 		uint8_t gps_initError = gps_initAll();
-		state_initErrors.GPS_E = gps_initError;
+		state_system.GPS_state = gps_initError;
 		_dma_carret = 0;
 		_msg_carret = 0;
 		HAL_UART_RxCpltCallback(&uart_GPS);
@@ -125,7 +125,7 @@ void GPS_task()	{
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
 
 	uint8_t gps_initError = gps_initAll();
-	state_initErrors.GPS_E = gps_initError;
+	state_system.GPS_state = gps_initError;
 
 	_dma_carret = 0;
 	_msg_carret = 0;

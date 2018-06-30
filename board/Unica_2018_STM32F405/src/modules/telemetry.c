@@ -40,12 +40,14 @@ static uint8_t mavlink_msg_state_send() {
 	mavlink_state_t msg_state;
 	msg_state.time = (float)HAL_GetTick() / 1000;
 taskENTER_CRITICAL();
-	msg_state.accel_state	= state_system.accel_state;
-	msg_state.gyro_state	= state_system.gyro_state;
-	msg_state.compass_state	= state_system.compass_state;
-	msg_state.baro_state	= state_system.baro_state;
+	msg_state.MPU_state		= state_system.MPU_state;
+	msg_state.BMP_state 	= state_system.BMP_state;
+	msg_state.SD_state 		= state_system.SD_state;
+	msg_state.NRF_state		= state_system.NRF_state;
+	msg_state.MOTOR_state	= state_system.MOTOR_state;
 	msg_state.GPS_state		= state_system.GPS_state;
-	msg_state.RPI_state		= state_system.RPI_state;
+
+	msg_state.globalStage	= state_system.globalStage;
 taskEXIT_CRITICAL();
 
 	mavlink_message_t msg;
@@ -53,6 +55,10 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -73,6 +79,10 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -83,7 +93,6 @@ static uint8_t mavlink_msg_imu_isc_send() {
 taskENTER_CRITICAL();
 	for (int i = 0; i < 3; i++) {
 		msg_imu_isc.accel[i] = stateIMU_isc.accel[i];
-		msg_imu_isc.gyro[i] = stateIMU_isc.gyro[i];
 		msg_imu_isc.compass[i] = stateIMU_isc.compass[i];
 		msg_imu_isc.velocities[i] = stateIMU_isc.velocities[i];
 		msg_imu_isc.coordinates[i] = stateIMU_isc.coordinates[i];
@@ -98,6 +107,10 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -116,6 +129,10 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -133,6 +150,10 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -147,6 +168,7 @@ taskENTER_CRITICAL();
 	for (int i = 0; i < 3; i++) {
 		msg_state_zero.zero_GPS[i] = state_zero.zero_GPS[i];
 		msg_state_zero.gyro_staticShift[i] = state_zero.gyro_staticShift[i];
+		msg_state_zero.accel_staticShift[i] = state_zero.accel_staticShift[i];
 	}
 taskEXIT_CRITICAL();
 
@@ -155,6 +177,10 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -172,6 +198,30 @@ taskEXIT_CRITICAL();
 	uint8_t buffer[100];
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
+	return error;
+}
+
+static uint8_t mavlink_msg_test_send() {
+
+	mavlink_camera_orientation_t msg_test;
+	msg_test.time = (float)HAL_GetTick() / 1000;
+taskENTER_CRITICAL();
+	msg_test.servo_pos = 405;
+	msg_test.step_engine_pos = 203;
+taskEXIT_CRITICAL();
+	mavlink_message_t msg;
+	uint16_t len = mavlink_msg_camera_orientation_encode(UNISAT_ID, UNISAT_CAM, &msg, &msg_test);
+	uint8_t buffer[100];
+	len = mavlink_msg_to_send_buffer(buffer, &msg);
+	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+	if (stream_file.res == FR_OK)
+		dump(&stream_file, buffer, len);
+
 	return error;
 }
 
@@ -181,7 +231,7 @@ void IO_RF_task() {
 
 	//	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
-	state_initErrors.NRF_E = nRF24L01_initError;
+	state_system.NRF_state = nRF24L01_initError;
 	vTaskDelay(100/portTICK_RATE_MS);
 
 	//	запуск SD
@@ -192,7 +242,6 @@ void IO_RF_task() {
 
 //		char* msg = "UNISAT_SD. Trying to transmit any data\n";
 //		dump(&stream_file, msg, strlen(msg));
-
 //		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();
 		mavlink_msg_imu_rsc_send();
@@ -200,6 +249,7 @@ void IO_RF_task() {
 		mavlink_msg_gps_send();
 		mavlink_msg_camera_orientation_send();
 
+//		mavlink_msg_test_send();
 
 		vTaskDelay(_delay);
 

@@ -36,14 +36,6 @@
  * 	Структуры состояний аппарата
  */
 
-//	raw IMU data
-typedef struct {
-	int16_t accel[3];
-	int16_t gyro[3];
-	int16_t compass[3];
-} stateIMU_raw_t;
-
-
 typedef struct {
 	//	temperature and pressure
 	int32_t temp;
@@ -53,7 +45,6 @@ typedef struct {
 
 typedef struct {
 	//GPS data
-	char * GPS;
 	float coordinates[3];
 } stateGPS_t;
 
@@ -70,7 +61,6 @@ typedef struct {
 typedef struct {
 	//	IMU data
 	float accel[3];
-	float gyro[3];
 	float compass[3];
 
 	//	position
@@ -100,18 +90,15 @@ typedef struct {
 
 //	system parameters
 typedef struct {
-	uint8_t accel_state;	//	state of accelerometer
-	uint8_t gyro_state;		//	state of gyroscope
-	uint8_t compass_state;	//	state of magnetometer
-	uint8_t baro_state;		//	state of barometer
-
+	uint8_t MPU_state;		//	state of MPU9255
+	uint8_t BMP_state;		//	state of barometer
+	uint8_t SD_state;		//	state of SD
+	uint8_t NRF_state;		//	state of NRF24L01
+	uint8_t MOTOR_state;	//	state of motor with parashute
 	uint8_t GPS_state;		//	state of GPS-module
-
-	uint8_t RPI_state;		//	state of RaspRi
 
 	uint8_t globalStage;	//	number of current global stage
 
-	uint16_t state;			//	special field (1st bit for saving compass' prepareness)
 	float time;				//	current time
 } state_system_t;
 
@@ -122,18 +109,8 @@ typedef struct {
 	float zero_quaternion[4];
 	float zero_GPS[3];
 	float gyro_staticShift[3];
-	//TODO: ДОБАВИТЬ В MAVLink
 	float accel_staticShift[3];
 } state_zero_t;
-
-
-//	struct for keeping flags
-typedef struct {
-	uint8_t MPU_E;
-	uint8_t BMP_E;
-	uint8_t GPS_E;
-	uint8_t NRF_E;
-} state_initErrors_t;
 
 
 typedef enum {
@@ -153,7 +130,6 @@ extern SPI_HandleTypeDef	spi_nRF24L01;
 extern I2C_HandleTypeDef 	i2c_mpu9255;
 
 // глобальные структуры
-extern stateIMU_raw_t 		stateIMU_raw;
 extern stateSensors_raw_t 	stateSensors_raw;
 extern stateGPS_t 			stateGPS;
 extern stateIMU_rsc_t 		stateIMU_rsc;
@@ -167,6 +143,5 @@ extern state_zero_t			state_zero;
 extern stateIMU_isc_t		stateIMU_isc_prev;
 extern state_system_t		state_system_prev;
 
-extern state_initErrors_t	state_initErrors;
 
 #endif /* STATE_H_ */

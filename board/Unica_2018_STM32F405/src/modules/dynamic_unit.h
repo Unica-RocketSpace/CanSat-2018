@@ -19,7 +19,6 @@ void rotate_step_engine ();
 void rotate_step_engine_by_angles (float * angles);
 
 
-void MOTORS_Init();
 void MOTORS_task();
 
 

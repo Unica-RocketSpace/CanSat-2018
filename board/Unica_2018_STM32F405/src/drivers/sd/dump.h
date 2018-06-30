@@ -14,6 +14,7 @@
 typedef struct
 {
    FIL file;
+   FRESULT res;
 } dump_state_t;
 
 

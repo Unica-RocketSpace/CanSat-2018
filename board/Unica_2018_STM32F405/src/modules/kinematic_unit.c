@@ -190,7 +190,7 @@ taskEXIT_CRITICAL();
 
 
 ///////  ОБНОВЛЯЕМ КООРДИНАТЫ И СКОРОСТИ  //////////
-	if ((float)HAL_GetTick()/1000 > 80) {
+	if (state_system.globalStage >= 3) {
 
 		float delta_velo[3] = {0, 0, 0};
 		float delta_coord[3] = {0, 0, 0};
@@ -224,51 +224,93 @@ end:
 }
 
 
+void bmp280_update() {
+	int32_t pressure = 0;
+	int32_t temp = 0;
+	float pressure_f = 0;
+	float temp_f = 0;
+	rscs_bmp280_read(bmp280, &pressure, &temp);
+	rscs_bmp280_calculate(bmp280_calibration_values, pressure, temp, &pressure_f, &temp_f);
+
+taskENTER_CRITICAL();
+	stateSensors_raw.pressure = pressure;
+	stateSensors_raw.temp = temp;
+	stateSensors.pressure = pressure_f;
+	stateSensors.temp = temp_f;
+taskEXIT_CRITICAL();
+}
+
+
+static void get_staticShifts() {
+	float gyro_staticShift[3] = {0, 0, 0};
+	float accel_staticShift[3] = {0, 0, 0};
+	get_gyro_staticShift(gyro_staticShift);
+	get_accel_staticShift(gyro_staticShift, accel_staticShift);
+taskENTER_CRITICAL();
+	for (int i = 0; i < 3; i++) {
+		state_zero.gyro_staticShift[i] = gyro_staticShift[i];
+		state_zero.accel_staticShift[i] = accel_staticShift[i];
+	}
+taskEXIT_CRITICAL();
+}
+
 
 void IMU_task() {
 
-	/*for (;;) {
+	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
+	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
+
+	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
+	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
+	rscs_bmp280_parameters_t bmp280_parameters;
+	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
+	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
+	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
+	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
+
+	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
+	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
+	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
+
+taskENTER_CRITICAL();
+	state_system.MPU_state = mpu9255_initError;
+	state_system.BMP_state = bmp280_initError;
+taskEXIT_CRITICAL();
+
+	for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
-			mpu9255_init(&i2c_mpu9255);
-			//TODO: ГДЕ ОБНОВЛЯТЬ СОСТОЯНИЕ ДАТЧИКОВ
+			//FIXME: WHAT FOR??
+		//	vTaskDelay(10000/portTICK_RATE_MS);
 		}
-//		// Этап 1. Погрузка в ракету
-//		if (state_system.globalStage == 1) {		//НИЧЕГО НЕ ДЕЛАЕМ
-//		}
+
+		// Этап 1. Погрузка в ракету
+		if (state_system.globalStage == 1) {		//НИЧЕГО НЕ ДЕЛАЕМ
+		}
+
 		// Этап 2. Определение начального состояния
 		if (state_system.globalStage == 2) {
+			static uint8_t counter = 0;
 
-			uint8_t zero_orientCnt = 10;
-			//	массив для хранения статического смещения
-			float gyro_staticShift[3] = {0, 0, 0};
+			//TODO: ОТПРАВИТЬ НАЧАЛЬНЫЙ КВАТЕРНИОН
 
-			//	находим статическое смещение гироскопа
-			for (int i = 0; i < zero_orientCnt; i++) {
-				int16_t accelData[3] = {0, 0, 0};
-				int16_t gyroData[3] = {0, 0, 0};
-
-				float accel[3]; float gyro[3];
-
-				//	собираем данные
-				mpu9255_readIMU(accelData, gyroData);
-				mpu9255_recalcGyro(gyroData, gyro);
-
-				for (int m = 0; m < 3; m++) {
-					gyro_staticShift[i] += gyro[i];
-				}
-			}
-
+			if (counter == 0) {
+				get_staticShifts();
+				bmp280_update();
 			taskENTER_CRITICAL();
-			//	записываем смещение в state
-			for (int m = 0; m < 3; m++) {
-				state_zero.gyro_staticShift[m] = gyro_staticShift[m]/zero_orientCnt;
-			}
+				state_zero.zero_pressure = stateSensors.pressure;
 			taskEXIT_CRITICAL();
-
-			for (int i = 0; i < zero_orientCnt; i++) {
-				IMU_updateDataAll();
+				counter = 1;
 			}
+
+			bmp280_update();
+			IMU_updateDataAll();
+
+		taskENTER_CRITICAL();
+			memcpy(&stateIMU_isc_prev, 			&stateIMU_isc,			sizeof(stateIMU_isc));
+			memcpy(&state_system_prev, 			&state_system,		 	sizeof(state_system));
+			memcpy(&stateCamera_orient_prev, 	&stateCamera_orient, 	sizeof(stateCamera_orient));
+		taskEXIT_CRITICAL();
 		}
 		// Этап 3. Полет в ракете
 		if (state_system.globalStage == 3) {
@@ -286,10 +328,7 @@ void IMU_task() {
 		if (state_system.globalStage == 6) {
 
 		}
-
-
-
-	}*/
+	}
 
 	/*//	usart_dbg init
 	usart_dbg.Instance = USART3;
@@ -319,7 +358,7 @@ void IMU_task() {
 	state_system.BMP_state = bmp280_initError;
 
 
-	vTaskDelay(10000/portTICK_RATE_MS);
+//	vTaskDelay(10000/portTICK_RATE_MS);
 
 	float gyro_staticShift[3] = {0, 0, 0};
 	float accel_staticShift[3] = {0, 0, 0};
@@ -336,7 +375,6 @@ taskEXIT_CRITICAL();
 	for (;;) {
 
 		//---ОПРОС BMP280---//
-		//Примечание - Запись данных в STATE производится в критических зонах
 		int32_t pressure = 0;
 		int32_t temp = 0;
 		float pressure_f = 0;

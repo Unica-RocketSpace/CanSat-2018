@@ -92,10 +92,17 @@ int main(int argc, char* argv[])
 	memset(&state_system_prev, 			0x00, sizeof(state_system_prev));
 	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
+	state_system.BMP_state = -1;
+	state_system.GPS_state = -1;
+	state_system.MOTOR_state = -1;
+	state_system.MPU_state = -1;
+	state_system.NRF_state = -1;
+	state_system.SD_state = -1;
 
-	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-			GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 2, _gpsTaskStack, &_gpsTaskObj
-	);
+
+//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
+//			GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 2, _gpsTaskStack, &_gpsTaskObj
+//	);
 
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
 				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 2, _IMUTaskStack, &_IMUTaskObj
@@ -106,9 +113,9 @@ int main(int argc, char* argv[])
 				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 2, _iorfTaskStack, &_iorfTaskObj
 	);
 
-	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 2, _MOTORSTaskStack, &_MOTORSTaskObj
-	);
+//	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
+//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 2, _MOTORSTaskStack, &_MOTORSTaskObj
+//	);
 
 	vTaskStartScheduler();
 

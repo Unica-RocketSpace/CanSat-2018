@@ -46,6 +46,7 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 {
 	int error = 0;
 
+taskENTER_CRITICAL();
 	hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
 	hi2c->Init.ClockSpeed = 50000;
 	hi2c->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -61,11 +62,15 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
 	PROCESS_ERROR(HAL_I2C_Init(hi2c));
+taskEXIT_CRITICAL();
 	vTaskDelay(300/portTICK_RATE_MS);
 
+taskENTER_CRITICAL();
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
+taskEXIT_CRITICAL();
 	vTaskDelay(200/portTICK_RATE_MS);
 
+taskENTER_CRITICAL();
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	25,		0b00000001));	//Sample Rate Divider
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	26,		0b00000101));	//config (DLPF = 101)
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	28,		(0b00000000 | (ACCEL_RANGE << 3)))); 	//accel config (rate 4g = 01)
@@ -111,6 +116,7 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000000));	//режим bypass off
 
 end:
+	taskEXIT_CRITICAL();
 	return error;
 }
 

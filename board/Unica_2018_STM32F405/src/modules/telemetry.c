@@ -230,15 +230,19 @@ uint8_t get_GCS_cmd() {
 	uint8_t cmd = 0;
 	bool isData = false;
 	nRF24L01_read(&spi_nRF24L01, &cmd, 1, &isData);
-	return (isData) ? cmd : -1;
+	return (isData) ? cmd : 255;
 }
 
 
 void IO_RF_task() {
 
 	//	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
+
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
+taskENTER_CRITICAL();
 	state_system.NRF_state = nRF24L01_initError;
+	state_system.globalStage = 2;
+taskEXIT_CRITICAL();
 	vTaskDelay(100/portTICK_RATE_MS);
 
 	stream_file.res = 1;
@@ -248,19 +252,14 @@ void IO_RF_task() {
 
 	const TickType_t _delay = 100 / portTICK_RATE_MS;
 	for (;;) {
+//		vTaskDelay(_delay);
 
-//		char* msg = "UNISAT_SD. Trying to transmit any data\n";
-//		dump(&stream_file, msg, strlen(msg));
 		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();
 		mavlink_msg_imu_rsc_send();
 		mavlink_msg_sensors_send();
 		mavlink_msg_gps_send();
 		mavlink_msg_camera_orientation_send();
-
-//		mavlink_msg_test_send();
-
-		vTaskDelay(_delay);
 
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
@@ -273,6 +272,11 @@ void IO_RF_task() {
 		}
 		// Этап 1. Погрузка в ракету
 		if (state_system.globalStage == 1) {
+			uint8_t cmd = get_GCS_cmd();
+		taskENTER_CRITICAL();
+			if (cmd != -1)
+				state_system.globalStage = cmd;
+		taskENTER_CRITICAL();
 		}
 		// Этап 2. Определение начального состояния
 		if (state_system.globalStage == 2) {
@@ -281,9 +285,10 @@ void IO_RF_task() {
 
 			uint8_t cmd = get_GCS_cmd();
 		taskENTER_CRITICAL();
-			if (cmd != -1)
+			if (cmd != 255)
 				state_system.globalStage = cmd;
 		taskENTER_CRITICAL();
+			vTaskDelay(100/portTICK_RATE_MS);
 		}
 		// Этап 3. Полет в ракете
 		if (state_system.globalStage == 3) {

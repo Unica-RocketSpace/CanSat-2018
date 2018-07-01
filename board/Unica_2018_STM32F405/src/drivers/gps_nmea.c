@@ -125,7 +125,9 @@ void GPS_task()	{
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
 
 	uint8_t gps_initError = gps_initAll();
+taskENTER_CRITICAL();
 	state_system.GPS_state = gps_initError;
+taskEXIT_CRITICAL();
 
 	_dma_carret = 0;
 	_msg_carret = 0;
@@ -179,7 +181,6 @@ void GPS_task()	{
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
 
-//		printf("x: %f, y: %f, z: %f\n", _lon, _lat, _height);
 	}
 }
 

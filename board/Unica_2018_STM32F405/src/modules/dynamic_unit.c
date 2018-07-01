@@ -167,6 +167,7 @@ void send_stepEngine_angle (float* SE_pos, float* SE_pos_prev) {
 
 }
 
+
 void rotate_step_engine_by_angles (float* angles) {
 
 	float STEP_DEGREES = *angles;
@@ -204,12 +205,12 @@ void send_servo_pos(float* servo_pos) {
 void MOTORS_task() {
 
 	//	Инициализация USART1 для Bluetooth (HC-05)
-	//FIXME:	HC05_Init();
+	HC05_Init();
 	//	Инициализация драйвера ШД
 	step_engine_init();
 
-	const TickType_t _delay = 50 / portTICK_RATE_MS;
-	vTaskDelay(40*_delay);
+//	const TickType_t _delay = 50 / portTICK_RATE_MS;
+//	vTaskDelay(40*_delay);
 
 	for(;;) {
 		//	рассчитываем углы
@@ -222,8 +223,6 @@ void MOTORS_task() {
 
 		//	передаем углы исполняющим органам
 		send_servo_pos(&servo_pos);
-		step_engine_pos = 1;		//FIXME:!!
-		step_engine_pos_prev = 0;	//FIXME:!!
 		send_stepEngine_angle(&step_engine_pos, &step_engine_pos_prev);
 
 		//	записываем углы в state
@@ -231,7 +230,40 @@ void MOTORS_task() {
 		stateCamera_orient.step_engine_pos = step_engine_pos;
 		stateCamera_orient.servo_pos = servo_pos;
 	taskEXIT_CRITICAL();
-		vTaskDelay(_delay);
+//		vTaskDelay(_delay);
 	}
+
+	for (;;) {
+		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
+		if (state_system.globalStage == 0) {
+		}
+
+		// Этап 1. Погрузка в ракету
+		if (state_system.globalStage == 1) {
+		}
+		// Этап 2. Определение начального состояния
+		if (state_system.globalStage == 2) {
+		}
+
+		// Этап 3. Полет в ракете
+		if (state_system.globalStage == 3) {
+		}
+
+		// Этап 4. Свободное падение
+		if (state_system.globalStage == 4) {
+			//TODO: РАСКРЫВАЕМ СТАБИЛИЗАТОРЫ
+		}
+
+		// Этап 5. Спуск
+		if (state_system.globalStage == 5) {
+			//TODO:	РАСКРЫВАЕМ ПАРАШЮТ
+		}
+
+		// Этап 6. Окончание полета
+		if (state_system.globalStage == 6) {
+
+		}
+	}
+
 
 }

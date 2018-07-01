@@ -12,7 +12,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
-        MainWindow.resize(943, 572)
+        MainWindow.resize(1298, 572)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -264,7 +264,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 943, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1298, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.action = QtWidgets.QAction(MainWindow)
@@ -283,7 +283,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.commandLinkButton.setText(_translate("MainWindow", "Отправить команду"))
-        self.pushButton_3.setText(_translate("MainWindow", "PushButton"))
+        self.pushButton_3.setText(_translate("MainWindow", "Очистить графики"))
         self.pushButton.setText(_translate("MainWindow", "Создать график"))
         self.Init.setText(_translate("MainWindow", "Инициализация"))
         self.keep_in_rocket.setText(_translate("MainWindow", "Погрузка в ракету"))

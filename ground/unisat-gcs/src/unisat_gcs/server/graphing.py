@@ -1,6 +1,7 @@
 import sys
 import time
 import os
+from math import *
 
 import numpy as np
 import pyqtgraph as pg
@@ -185,19 +186,23 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.dockwid.setWidget(self.ui.glwid)
         self.gx = gl.GLGridItem()
         self.gx.rotate(90, 0, 1, 0)
-        self.gx.translate(-10, 0, 0)
+        self.gx.translate(0, 10, 10)
         self.ui.glwid.addItem(self.gx)
         self.gy = gl.GLGridItem()
         self.gy.rotate(90, 1, 0, 0)
-        self.gy.translate(0, -10, 0)
+        self.gy.translate(10, 0, 10)
         self.ui.glwid.addItem(self.gy)
         self.gz = gl.GLGridItem()
-        self.gz.translate(0, 0, -10)
+        self.gz.translate(10, 10, 0)
         self.ui.glwid.addItem(self.gz)
         self.plt = gl.GLLinePlotItem()
         self.ui.glwid.addItem(self.plt)
-        self.or_mod = gl.GLAxisItem()
-        self.ui.glwid.addItem(self.or_mod)
+        self.isc_coord = gl.GLAxisItem()
+        self.isc_coord.setSize(25, 25, 25)
+        self.rsc_coord = gl.GLAxisItem()
+
+        self.ui.glwid.addItem(self.isc_coord)
+        self.ui.glwid.addItem(self.rsc_coord)
         self.ui.glwid.show()
 
         self.pl_graf_top1_x = self.sc_item_top1.plot()
@@ -236,11 +241,6 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_down2_z = self.sc_item_down2.plot()
         self.pl_graf_down3_z = self.sc_item_down3.plot()
 
-        # self.drawing_plot()
-        # self.msg_parser()
-
-
-
         # Здесь прописываем событие нажатия на кнопку
         self.ui.pushButton_3.clicked.connect(self.Remove_graf)
         self.ui.commandLinkButton.clicked.connect(self.send_command)
@@ -275,10 +275,38 @@ class MyWin(QtWidgets.QMainWindow):
 
     def Remove_graf(self):
         global now_graf, str_now_graf
+        # if self.sc_item_large == None:
+        self.sc_item_top1.removeItem(self.sc_item_top1)
+        self.sc_item_top1.clear()
+
+        self.sc_item_top2.removeItem(self.sc_item_top1)
+        self.sc_item_top2.clear()
+
+        self.sc_item_middle1.removeItem(self.sc_item_top1)
+        self.sc_item_middle1.clear()
+
+        self.sc_item_top3.removeItem(self.sc_item_top1)
+        self.sc_item_top3.clear()
+
+        self.sc_item_middle2.removeItem(self.sc_item_top1)
+        self.sc_item_middle2.clear()
+
+        self.sc_item_middle3.removeItem(self.sc_item_top1)
+        self.sc_item_middle3.clear()
+
+        self.sc_item_down1.removeItem(self.sc_item_top1)
+        self.sc_item_down1.clear()
+
+        self.sc_item_down2.removeItem(self.sc_item_top1)
+        self.sc_item_down2.clear()
+
+        self.sc_item_down3.removeItem(self.sc_item_top1)
+        self.sc_item_down3.clear()
 
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
     # FIXME: возможно не работает
+
 
     def check_now_graf(self):
         global now_graf, str_now_graf
@@ -632,6 +660,12 @@ class MyWin(QtWidgets.QMainWindow):
             self.mov_y.append(msgs[i].coordinates[1])
             self.mov_z.append(msgs[i].coordinates[2])
 
+
+            teta = 2 * acos(msgs[i].quaternion[0])
+            sin_teta = sqrt((1 - msgs[i].quaternion[0] * msgs[i].quaternion[0]))
+            self.rsc_coord.rotate(teta, msgs[i].quaternion[1] / sin_teta, msgs[i].quaternion[2] / sin_teta, msgs[i].quaternion[3] / sin_teta)
+
+
         if len(self.time_ISC) == self.lenght:
             self.a_ISC_x = self.a_ISC_x[4:(self.lenght - 1)]
             self.a_ISC_y = self.a_ISC_y[4:(self.lenght - 1)]
@@ -688,19 +722,21 @@ class MyWin(QtWidgets.QMainWindow):
         for i in range(len(msgs)):
             self.x.append(msgs[i].coordinates[0])
             self.y.append(msgs[i].coordinates[1])
+            self.z.append(msgs[i].coordinates[2])
 
         if len(self.x) == self.lenght:
             self.x = self.x[4:(self.lenght - 1)]
             self.y = self.y[4:(self.lenght - 1)]
+            self.z = self.z[4:(self.lenght - 1)]
 
         self.pl_graf_down3_x.setData(x=self.x, y=self.y, pen=('r'))
 
-        # self.plt.setData(pos=GPS, color=(1.0, 1.0, 1.0, 1.0))
-        # i = len(x)
-        # if i == 0:
-        #     self.or_mod.translate(x, y, z)
+        # self.plt.setData(pos=self.GPS, color=(1.0, 1.0, 1.0, 1.0))
+        # m = len(self.x)
+        # if m != 0:
+        #     self.rsc_coord.translate((self.x[m] - self.x[m - 1]), (self.y[m] - self.y[m - 1]), (self.z[m] - self.z[m - 1]))
         # else:
-        #     self.or_mod.translate(x[i] - x[i - 1], y[i] - y[i - 1], z[i] - z[i - 1])
+        #     self.rsc_coord.translate(self.x, self.y, self.z)
         # Цвета в pg.glColor
 
 
@@ -731,5 +767,5 @@ class MyWin(QtWidgets.QMainWindow):
             self.ui.gps_state.setText(str(self.state_gps))
 
 
-
-
+            if self.state_fly == '2':
+                self.ui.Init.actionEvent()

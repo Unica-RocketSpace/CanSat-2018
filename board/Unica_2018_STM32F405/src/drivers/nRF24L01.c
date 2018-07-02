@@ -49,7 +49,6 @@ static void _ce_down(){
 uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	uint8_t error = 0;
 
-taskENTER_CRITICAL();
 	//Иницилизация SPI
 	hspi->Instance = SPI1;
 	hspi->Init.Mode = SPI_MODE_MASTER;
@@ -64,8 +63,7 @@ taskENTER_CRITICAL();
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 
 	PROCESS_ERROR(HAL_SPI_Init(hspi));
-taskEXIT_CRITICAL();
-	vTaskDelay(100/portTICK_RATE_MS);
+	HAL_Delay(100);
 
 	// Настраиваем CS
 	_cs_disable();

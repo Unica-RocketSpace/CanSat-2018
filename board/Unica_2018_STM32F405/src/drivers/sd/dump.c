@@ -30,9 +30,7 @@ void dump_init(dump_state_t * state, const char * filename)
 			res = f_mount(&fs, "0", 1);
 			trace_printf("mount res = %d\n", res);
 			i++;
-		taskENTER_CRITICAL();
-			state_system.SD_state = (uint8_t)res;
-		taskEXIT_CRITICAL();
+			state->res = res;
 			if (i >= 3)
 			{
 				trace_printf("mount fails\n");

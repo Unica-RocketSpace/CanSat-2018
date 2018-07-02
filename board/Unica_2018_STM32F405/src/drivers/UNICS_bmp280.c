@@ -218,10 +218,8 @@ int rscs_bmp280_read(rscs_bmp280_descriptor_t * descr, int32_t * rawpress, int32
 	uint8_t tmp[6];
 
 	PROCESS_ERROR(descr->read_reg(descr, RSCS_BMP280_REG_PRESS_MSB, tmp, 6));
-	//taskENTER_CRITICAL();
 	*rawpress = ((uint32_t)tmp[0] << 12) | ((uint32_t)tmp[1] << 4) | ((uint32_t)tmp[2] >> 4);
 	*rawtemp = ((uint32_t)tmp[3] << 12) | ((uint32_t)tmp[4] << 4) | ((uint32_t)tmp[5] >> 4);
-	//taskEXIT_CRITICAL();
 
 end:
 	//RSCS_DEBUG("BMP280: READ: returning %d\n", error);
@@ -249,9 +247,7 @@ int32_t t_fine;
 		var2 = ((((float)rawtemp) / 131072.0 - ((float)calvals->T1) / 8192.0) * (((float)rawtemp) / 131072.0 - ((float)calvals->T1) / 8192.0)) * ((float)calvals->T3);
 		t_fine = (int32_t)(var1 + var2);
 
-		taskENTER_CRITICAL();
 		*temp_p = (var1 + var2) / 5120.0;
-		taskEXIT_CRITICAL();
 	}
 
 	{
@@ -272,9 +268,7 @@ int32_t t_fine;
 		var2_p = (p * ((float)calvals->P8) / 32768.0);
 		p = (p + ((var1_p + var2_p + (float)calvals->P7)) / 16.0);
 
-		taskENTER_CRITICAL();
 		*press_p = p;
-		taskEXIT_CRITICAL();
 	}
 
 	return 0;

@@ -704,6 +704,8 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
   SystemCoreClock = HAL_RCC_GetSysClockFreq() >> APBAHBPrescTable[(RCC->CFGR & RCC_CFGR_HPRE)>> POSITION_VAL(RCC_CFGR_HPRE)];
 
   /* Configure the source of time base considering new system clocks settings*/
+  //FIXME: RETURN
+  TICK_INT_PRIORITY = 1;
   HAL_InitTick (TICK_INT_PRIORITY);
   
   return HAL_OK;

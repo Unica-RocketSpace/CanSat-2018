@@ -268,7 +268,6 @@ taskEXIT_CRITICAL();
 }
 
 
-
 void IMU_Init() {
 	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
 	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
@@ -285,37 +284,15 @@ void IMU_Init() {
 	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
 	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
 
+taskENTER_CRITICAL();
 	state_system.MPU_state = mpu9255_initError;
 	state_system.BMP_state = bmp280_initError;
-
+//	state_system.globalStage = 2;
+taskEXIT_CRITICAL();
 }
 
 
 void IMU_task() {
-
-	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
-	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
-
-	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
-taskENTER_CRITICAL();
-	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
-	rscs_bmp280_parameters_t bmp280_parameters;
-	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
-	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
-	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
-	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
-
-	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
-	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
-	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
-
-//taskENTER_CRITICAL();
-	state_system.MPU_state = mpu9255_initError;
-	state_system.BMP_state = bmp280_initError;
-	state_system.globalStage = 2;
-taskEXIT_CRITICAL();
-
-
 
 	for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
@@ -325,7 +302,7 @@ taskEXIT_CRITICAL();
 		}
 
 		// Этап 1. Погрузка в ракету
-		if (state_system.globalStage == 1) {		//НИЧЕГО НЕ ДЕЛАЕМ
+		if (state_system.globalStage == 1) {
 		}
 
 		// Этап 2. Определение начального состояния

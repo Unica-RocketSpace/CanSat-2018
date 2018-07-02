@@ -227,30 +227,31 @@ taskEXIT_CRITICAL();
 
 
 uint8_t get_GCS_cmd() {
-	uint8_t cmd = 0;
+	mavlink_message_t msg;
+	uint8_t buffer[32];
 	bool isData = false;
-	nRF24L01_read(&spi_nRF24L01, &cmd, 1, &isData);
+	nRF24L01_read(&spi_nRF24L01, buffer, 32, &isData);
+
 	return (isData) ? cmd : 255;
+}
+
+
+void IO_RF_Init() {
+	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
+	state_system.NRF_state = nRF24L01_initError;
+	//	запуск SD
+	dump_init(&stream_file, filename);
+//	state_system.SD_state = (uint8_t)stream_file.res;
+	HAL_Delay(100);
 }
 
 
 void IO_RF_task() {
 
 	//	//TODO: ДОБАВИТЬ РАБОТУ С НАЗЕМКОЙ (ПРОВЕРКА ВНУТРЕННЕГО БУФЕРА РАДИО-МОДУЛЯ)
-
-	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
-taskENTER_CRITICAL();
-	state_system.NRF_state = nRF24L01_initError;
 	state_system.globalStage = 2;
-taskEXIT_CRITICAL();
-	vTaskDelay(100/portTICK_RATE_MS);
-
 	stream_file.res = 1;
 
-	//	запуск SD
-//	dump_init(&stream_file, filename);
-
-	const TickType_t _delay = 100 / portTICK_RATE_MS;
 	for (;;) {
 //		vTaskDelay(_delay);
 
@@ -266,17 +267,17 @@ taskEXIT_CRITICAL();
 
 			uint8_t cmd = get_GCS_cmd();
 		taskENTER_CRITICAL();
-			if (cmd != -1)
+			if (cmd != 255)
 				state_system.globalStage = cmd;
-		taskENTER_CRITICAL();
+		taskEXIT_CRITICAL();
 		}
 		// Этап 1. Погрузка в ракету
 		if (state_system.globalStage == 1) {
 			uint8_t cmd = get_GCS_cmd();
 		taskENTER_CRITICAL();
-			if (cmd != -1)
+			if (cmd != 255)
 				state_system.globalStage = cmd;
-		taskENTER_CRITICAL();
+		taskEXIT_CRITICAL();
 		}
 		// Этап 2. Определение начального состояния
 		if (state_system.globalStage == 2) {
@@ -287,7 +288,7 @@ taskEXIT_CRITICAL();
 		taskENTER_CRITICAL();
 			if (cmd != 255)
 				state_system.globalStage = cmd;
-		taskENTER_CRITICAL();
+		taskEXIT_CRITICAL();
 			vTaskDelay(100/portTICK_RATE_MS);
 		}
 		// Этап 3. Полет в ракете

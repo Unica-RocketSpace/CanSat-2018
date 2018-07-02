@@ -6,7 +6,7 @@
  */
 
 #include <avr/interrupt.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 #include <stdext/stdio.h>
 #include <string.h>
@@ -30,18 +30,11 @@ raw_data_t raw_data;
 const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 uint8_t data_register;
-
-char message[] = "Unica Broadcasting - ATmega328P";
 uint8_t device_address[5];
 uint32_t step = 0;
 bool RX_get = 0;
 
 uint8_t RX_buffer[nRF24L01_RX_BUFFER_LEN] = { 0 };
-
-uint8_t nRF24L01_RX_BUFFER[nRF24L01_RX_BUFFER_LEN];
-
-uint8_t RM_input_data_len;
-uint8_t RM_input_data[nRF24L01_RX_BUFFER_LEN];
 
 typedef enum {
 	STAGE_INITIAL = 0,		// Состояние, в котором инициализируем все
@@ -51,6 +44,10 @@ typedef enum {
 	STAGE_GOING_DOWN = 4, 	// Состояние, в котором мы летим вниз
 	STAGE_ALL_DONE = 5, 	// Мы все сделали, отдыхваем
 } state_t;
+
+
+mavlink_message_t msg;
+mavlink_status_t mav_uplink_status;
 
 int main() {
 
@@ -95,12 +92,15 @@ int main() {
 	//***ИНИЦИАЛИЗАЦИЯ nRF24L01***//
 	nRF24L01_init();
 
-	initial_params.zero_pressure = set_zero_pressure();
+
 
 	//Включение внешних прервыений 0
 	EICRA = (1 << ISC01) | (1 << ISC00);		//Прерывание срабатывает при возрастании сигнала
 	EIMSK = (1 << INT0);						//Включение прерывания INT0
 	sei();										//Глобальное включение прерываний
+
+
+	printf("init complete\n");
 
 	while (1) {
 
@@ -120,7 +120,6 @@ int main() {
 
 
 		//Отправляем телеметрию пакетами Mavlink
-		mavlink_message_t msg;
 		mavlink_msg_atmega_pack(1, 1, &msg, TM_package.time, TM_package.pressure,
 				TM_package.height, TM_package.temperature, TM_package.motor_state, TM_package.para_state);
 		uint8_t buffer[100];
@@ -139,25 +138,13 @@ int main() {
 
 
 		// Получаем команды с наземки
-		mavlink_message_t cmd;
 		int cmdvalue = -1;
-		mavlink_status_t status;
 		memset(RX_buffer, 0x00, nRF24L01_RX_BUFFER_LEN);
 		bool has_data = nRF24L01_read(RX_buffer, nRF24L01_RX_BUFFER_LEN);
 
 		if (has_data){
-			uint8_t res = 0;
-			uint8_t i = 0;
-			for (i = 0; i < nRF24L01_RX_BUFFER_LEN; i++)
-				res = mavlink_parse_char(0, RX_buffer[i], &cmd, &status);
-
-			if (res)
-			{
-				cmdvalue = mavlink_msg_cmd_get_cmd(&cmd);
-				break;
-			}
+			cmdvalue = RX_buffer[0];
 		}
-
 
 
 		switch (my_stage) {
@@ -180,7 +167,7 @@ int main() {
 			//Проверяем команду с земли
 			if (has_data) {
 				printf("COMMAND: %d\n", cmdvalue);
-				if (cmdvalue == (uint8_t)STAGE_INITIAL_PARAM_COMMAND)
+				if (cmdvalue == STAGE_INITIAL_PARAM_COMMAND)
 					my_stage = STAGE_INITIAL_PARAM;
 				else
 					printf("Got Wrong command\n");
@@ -197,7 +184,7 @@ int main() {
 			//Проверяем команду с Земли
 			if (has_data) {
 				printf("COMMAND: %d\n", cmdvalue);
-				if (cmdvalue == (uint8_t)STAGE_GOING_UP_COMMAND)
+				if (cmdvalue == STAGE_GOING_UP_COMMAND)
 					my_stage = STAGE_GOING_UP;
 				else
 					printf("Got Wrong command\n");
@@ -212,8 +199,8 @@ int main() {
 			//Проверяем команду с Земли
 			if (has_data) {
 				printf("COMMAND: %d\n", cmdvalue);
-				if (cmdvalue == STAGE_GOING_UP_COMMAND)
-					my_stage = STAGE_GOING_UP;
+				if (cmdvalue == STAGE_GOING_DOWN)
+					my_stage = STAGE_GOING_DOWN;
 				else
 					printf("Got Wrong command\n");
 			} else
@@ -239,7 +226,7 @@ int main() {
 
 			//if (check_height ( TM_package.height)) deploy_parashute();
 
-			//if (check_invariable_height()) my_stage = STAGE_ALL_DONE;
+//			if (check_invariable_height()) my_stage = STAGE_ALL_DONE;
 
 			break;
 

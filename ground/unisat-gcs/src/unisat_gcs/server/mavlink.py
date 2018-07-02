@@ -43,7 +43,7 @@ class MavlinkThread(QThread):
         self.uplink_msgs = []
 
 
-    @pyqtSlot([list])
+    @pyqtSlot(list)
     def post_msg_atmega(self, msg):
         self.uplink_msgs.append(msg)
 

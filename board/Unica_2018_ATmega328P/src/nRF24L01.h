@@ -202,7 +202,6 @@ typedef enum {
 
 
 //extern const uint8_t nRF24L01_RX_BUFFER_LEN;
-extern uint8_t nRF24L01_RX_BUFFER[nRF24L01_RX_BUFFER_LEN];
 
 /*
  * Инициализация радиомодуля.

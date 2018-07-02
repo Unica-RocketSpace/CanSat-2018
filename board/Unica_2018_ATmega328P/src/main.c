@@ -95,8 +95,7 @@ int main() {
 	nRF24L01_init();
 
 	//FIXME: УБРАТЬ
-	//initial_params.zero_pressure = set_zero_pressure();
-	//initial_params.zero_pressure = set_zero_pressure();
+	initial_params.zero_pressure = set_zero_pressure();
 
 	//Включение внешних прервыений 0
 	EICRA = (1 << ISC01) | (1 << ISC00);		//Прерывание срабатывает при возрастании сигнала
@@ -120,10 +119,6 @@ int main() {
 				initial_params.zero_pressure);
 
 
-
-		//Отправляем телеметрию
-//		send_package();
-
 		//Отправляем телеметрию пакетами Mavlink
 		mavlink_message_t msg;
 		mavlink_msg_atmega_pack(1, 1, &msg, TM_package.time, TM_package.pressure,
@@ -131,52 +126,23 @@ int main() {
 		uint8_t buffer[100];
 		uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
 
-//		while(1)
-//		{
-//			uint8_t status = nRF24L01_read_status();
-//			if ((status & (1 << TX_DS)) || (status & (1 << MAX_RT)))
-//				break;
-//		}
-
-		printf("here");
-
 //		nRF24L01_clear_TX_FIFO();
 		nRF24L01_clear_status(true, true, true);
 		nRF24L01_write(buffer, len, true);
 
-		//Отправляем тестовое сообщение
-		/*		nRF24L01_clear_TX_FIFO();
-		 nRF24L01_clear_status(false, true, true);
-		 nRF24L01_write(message, sizeof(message), true);
-		 data_register = nRF24L01_read_status();
-		 */printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
+		 /*printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
 		 (((data_register) & (1 << RX_DR)) >> RX_DR),
 		 (((data_register) & (1 << TX_DS)) >> TX_DS),
 		 (((data_register) & (1 << MAX_RT)) >> MAX_RT),
 		 (((data_register) & (0b111 << RX_P_NO)) >> RX_P_NO),
-		 (((data_register) & (1 << TX_FULL))) >> TX_FULL);
+		 (((data_register) & (1 << TX_FULL))) >> TX_FULL);*/
 
 
-//		printf("time = %f s\n", TM_package.time);
-//		printf("bmp280_press = %f\n bmp280_temp = %f\n", TM_package.pressure,
-//				TM_package.temperature);
-//		printf("height = %f\n", TM_package.height);
-//
-//		//Если по радиоканалу пришли данные, то читаем их
-//		memset(RM_input_data, 0x00, sizeof(RM_input_data));
-//		RM_input_data_len = get_package(RM_input_data);
-//		if (!RM_input_data_len)
-//			printf("NO INCOMING TRANSMISSION\n");
-//		else {
-//			RM_input_data[RM_input_data_len] = 0x00;
-//			printf("INCOMING TRANSMISSION: %s\n", RM_input_data);
-//		}
-//
-//		printf("state_parachute = %d\n",
-//				(bool) (TM_package.state & (1 << state_parachute)));
+		// Получаем команды с наземки
+		mavlink_message_t cmd;
+		nRF24L01_read(RX_buffer, nRF24L01_RX_BUFFER_LEN);
+		mavlink_msg_
 
-		//FIXME: TEST: Получаем команды с UART
-//		RX_get = rscs_uart_read_some(uart0, RX_buffer, 1);
 
 		switch (my_stage) {
 		case STAGE_INITIAL:
@@ -184,7 +150,7 @@ int main() {
 			//Проверяем команду с земли
 			if (RX_get) {
 				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == STAGE_LOADING_COMMAND)
+				if (RX_buffer[0] == (uint8_t)STAGE_LOADING_COMMAND)
 					my_stage = STAGE_LOADING;
 				else
 					printf("Got Wrong command\n");
@@ -198,7 +164,7 @@ int main() {
 			//Проверяем команду с земли
 			if (RX_get) {
 				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == STAGE_INITIAL_PARAM_COMMAND)
+				if (RX_buffer[0] == (uint8_t)STAGE_INITIAL_PARAM_COMMAND)
 					my_stage = STAGE_INITIAL_PARAM;
 				else
 					printf("Got Wrong command\n");
@@ -215,7 +181,7 @@ int main() {
 			//Проверяем команду с Земли
 			if (RX_get) {
 				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == STAGE_GOING_UP_COMMAND)
+				if (RX_buffer[0] == (uint8_t)STAGE_GOING_UP_COMMAND)
 					my_stage = STAGE_GOING_UP;
 				else
 					printf("Got Wrong command\n");
@@ -227,6 +193,16 @@ int main() {
 		case STAGE_GOING_UP:
 			if (check_down_height())
 				my_stage = STAGE_GOING_DOWN;
+			//Проверяем команду с Земли
+			if (RX_get) {
+				printf("COMMAND: %d\n", RX_buffer[0]);
+				if (RX_buffer[0] == STAGE_GOING_UP_COMMAND)
+					my_stage = STAGE_GOING_UP;
+				else
+					printf("Got Wrong command\n");
+			} else
+				printf("There is no data\n");
+
 
 			break;
 
@@ -255,7 +231,10 @@ int main() {
 			break;
 		}
 
-		printf("my_stage = %d", my_stage);
+		printf("my_stage = %d\n", my_stage);
+		for (int i = 0; i < sizeof(RX_buffer); i++)
+			printf("%u; ",RX_buffer[i]);
+		memset(RX_buffer, 0x00, sizeof(RX_buffer));
 		_delay_ms(500);
 	}
 	return 0;

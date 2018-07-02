@@ -167,7 +167,7 @@ void nRF24L01_write (void * write_buffer, size_t buffer_size, bool ACK){
 	rscs_spi_write(&write_command, 1);
 	rscs_spi_write(write_buffer, buffer_size);
 	_ce_enable();
-	for (volatile int i = 0; i < 100; i++) {}
+	for (volatile int i = 0; i < 1000; i++) {}
 	_ce_disable();
 	_cs_disable();
 }

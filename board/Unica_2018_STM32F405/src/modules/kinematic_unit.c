@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <sofa.h>
 
@@ -230,14 +231,21 @@ void bmp280_update() {
 	int32_t temp = 0;
 	float pressure_f = 0;
 	float temp_f = 0;
+	float height = 0;
 	rscs_bmp280_read(bmp280, &pressure, &temp);
 	rscs_bmp280_calculate(bmp280_calibration_values, pressure, temp, &pressure_f, &temp_f);
+
+taskENTER_CRITICAL();
+	float zero_pressure = state_zero.zero_pressure;
+taskEXIT_CRITICAL();
+	height = 18.4 * log(zero_pressure / pressure_f);
 
 taskENTER_CRITICAL();
 	stateSensors_raw.pressure = pressure;
 	stateSensors_raw.temp = temp;
 	stateSensors.pressure = pressure_f;
 	stateSensors.temp = temp_f;
+	stateSensors.height = height;
 taskEXIT_CRITICAL();
 }
 
@@ -257,11 +265,9 @@ taskEXIT_CRITICAL();
 
 
 void _IMUtask_updateData() {
-	bmp280_update();
-	IMU_updateDataAll();
-
 taskENTER_CRITICAL();
 	memcpy(&stateIMU_isc_prev, 			&stateIMU_isc,			sizeof(stateIMU_isc));
+	memcpy(&stateSensors_prev,			&stateSensors, 			sizeof(stateSensors));
 	memcpy(&state_system_prev, 			&state_system,		 	sizeof(state_system));
 	memcpy(&stateCamera_orient_prev, 	&stateCamera_orient, 	sizeof(stateCamera_orient));
 taskEXIT_CRITICAL();
@@ -284,11 +290,9 @@ void IMU_Init() {
 	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
 	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
 
-taskENTER_CRITICAL();
 	state_system.MPU_state = mpu9255_initError;
 	state_system.BMP_state = bmp280_initError;
 //	state_system.globalStage = 2;
-taskEXIT_CRITICAL();
 }
 
 
@@ -297,19 +301,13 @@ void IMU_task() {
 	for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
-			//FIXME: WHAT FOR??
-		//	vTaskDelay(10000/portTICK_RATE_MS);
 		}
-
 		// Этап 1. Погрузка в ракету
 		if (state_system.globalStage == 1) {
 		}
-
 		// Этап 2. Определение начального состояния
 		if (state_system.globalStage == 2) {
 			static uint8_t counter = 0;
-
-			//TODO: ОПРЕДЕЛИТЬ ВЫХОД ИЗ РАКЕТЫ
 
 			if (counter == 0) {
 				get_staticShifts();
@@ -325,23 +323,58 @@ void IMU_task() {
 				counter = 1;
 			}
 
+			bmp280_update();
+			IMU_updateDataAll();
 			_IMUtask_updateData();
+
 			vTaskDelay(50/portTICK_RATE_MS);
 		}
 		// Этап 3. Полет в ракете
 		if (state_system.globalStage == 3) {
+			bmp280_update();
+			IMU_updateDataAll();
 			_IMUtask_updateData();
+
+			// ОПРЕДЕЛЯЕМ ВЫХОД ИЗ РАКЕТЫ
+			static int exit_cnt = 0;
+			taskENTER_CRITICAL();
+			exit_cnt = (stateSensors.pressure < stateSensors_prev.pressure) ? (exit_cnt+1) : 0;
+			if (exit_cnt == 5)
+				state_system.globalStage = 4;
+			taskEXIT_CRITICAL();
 		}
 		// Этап 4. Свободное падение
 		if (state_system.globalStage == 4) {
+			bmp280_update();
+			IMU_updateDataAll();
 			_IMUtask_updateData();
+
+			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
+			static int exit_cnt = 0;
+			taskENTER_CRITICAL();
+			exit_cnt = (stateSensors.pressure > stateSensors_prev.pressure) ? (exit_cnt+1) : 0;
+			if (exit_cnt == 5)
+				state_system.globalStage = 4;
+			taskEXIT_CRITICAL();
 		}
 		// Этап 5. Спуск
 		if (state_system.globalStage == 5) {
+			bmp280_update();
+			IMU_updateDataAll();
 			_IMUtask_updateData();
+
+			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
+			static int exit_cnt = 0;
+			taskENTER_CRITICAL();
+			exit_cnt = ((stateSensors_prev.height - stateSensors.height) < 0.1) ? (exit_cnt+1) : 0;
+			if (exit_cnt == 5)
+				state_system.globalStage = 6;
+			taskEXIT_CRITICAL();
 		}
 		// Этап 6. Окончание полета
 		if (state_system.globalStage == 6) {
+			bmp280_update();
+			IMU_updateDataAll();
 			_IMUtask_updateData();
 		}
 	}
@@ -357,7 +390,6 @@ void IMU_task() {
 
 	HAL_USART_Init(&usart_dbg);
 */
-
 }
 
 

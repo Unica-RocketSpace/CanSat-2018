@@ -133,7 +133,7 @@ int rscs_bmp280_setup(rscs_bmp280_descriptor_t * descr, const rscs_bmp280_parame
 	}
 #endif*/
 
-	vTaskDelay(50 / portTICK_RATE_MS);
+	HAL_Delay(50);
 
 	//RSCS_DEBUG("BMP280: SETUP: trying to read ID reg\n");
 	PROCESS_ERROR(descr->read_reg(descr, RSCS_BMP280_REG_ID, tmp, 1));
@@ -146,7 +146,7 @@ int rscs_bmp280_setup(rscs_bmp280_descriptor_t * descr, const rscs_bmp280_parame
 	tmp[0] = 0xb6;  // специальное значение, которое сбрасывает датчик
 	PROCESS_ERROR(descr->write_reg(descr, RSCS_BMP280_REG_RESET, tmp, 1));
 
-	vTaskDelay(50 / portTICK_RATE_MS);;
+	HAL_Delay(50);
 
 	PROCESS_ERROR(descr->read_reg(descr, RSCS_BMP280_REG_CALVAL_START, &(descr->calibration_values), sizeof(descr->calibration_values)));
 /*#ifdef RSCS_DEBUGMODE

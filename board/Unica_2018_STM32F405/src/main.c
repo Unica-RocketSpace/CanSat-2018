@@ -50,6 +50,7 @@ state_system_t 		state_system;
 state_zero_t		state_zero;
 
 stateIMU_isc_t		stateIMU_isc_prev;
+stateSensors_t		stateSensors_prev;
 state_system_t		state_system_prev;
 stateCamera_orient_t stateCamera_orient_prev;
 
@@ -89,6 +90,7 @@ int main(int argc, char* argv[])
 	memset(&state_zero, 		0x00, sizeof(state_zero));
 
 	memset(&stateIMU_isc_prev, 			0x00, sizeof(stateIMU_isc_prev));
+	memset(&stateSensors_prev,			0x00, sizeof(stateSensors_prev));
 	memset(&state_system_prev, 			0x00, sizeof(state_system_prev));
 	memset(&stateCamera_orient_prev, 	0x00, sizeof(stateCamera_orient_prev));
 
@@ -119,6 +121,7 @@ int main(int argc, char* argv[])
 
 	IMU_Init();
 	IO_RF_Init();
+//	GPS_Init(0);
 
 	HAL_InitTick(15);
 

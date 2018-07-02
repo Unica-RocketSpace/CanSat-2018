@@ -20,7 +20,7 @@
 
 extern uint8_t dma_usartBuffer[100];
 
-void GPS_Init();
+void GPS_Init(bool RTOS);
 void GPS_task();
 
 

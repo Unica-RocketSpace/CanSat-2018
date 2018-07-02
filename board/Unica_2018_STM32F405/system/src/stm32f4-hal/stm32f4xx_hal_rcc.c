@@ -705,8 +705,8 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
 
   /* Configure the source of time base considering new system clocks settings*/
   //FIXME: RETURN
-  TICK_INT_PRIORITY = 1;
-  HAL_InitTick (TICK_INT_PRIORITY);
+//  HAL_InitTick (TICK_INT_PRIORITY);
+  HAL_InitTick(1);
   
   return HAL_OK;
 }

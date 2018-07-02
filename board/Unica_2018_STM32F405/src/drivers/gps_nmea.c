@@ -44,7 +44,7 @@ inline static char _read_dma_buffer(void)
 	return retval;
 }
 
-uint8_t gps_initAll() {
+void GPS_Init(bool RTOS) {
 	uint8_t error = 0;
 
 	//	Инициализация USART2 для работы с GPS
@@ -62,7 +62,10 @@ uint8_t gps_initAll() {
 	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
-	vTaskDelay(100/portTICK_RATE_MS);
+	if (RTOS)
+		vTaskDelay(100/portTICK_RATE_MS);
+	else
+		HAL_Delay(100);
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
@@ -87,7 +90,7 @@ uint8_t gps_initAll() {
 	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
 end:
-	return error;
+	state_system.GPS_state = error;
 }
 
 /* This function handles DMA1 stream6 global interrupt. */
@@ -110,8 +113,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART2) {
-		uint8_t gps_initError = gps_initAll();
-		state_system.GPS_state = gps_initError;
+		GPS_Init(1);
 		_dma_carret = 0;
 		_msg_carret = 0;
 		HAL_UART_RxCpltCallback(&uart_GPS);
@@ -123,11 +125,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 void GPS_task()	{
 
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
-
-	uint8_t gps_initError = gps_initAll();
-taskENTER_CRITICAL();
-	state_system.GPS_state = gps_initError;
-taskEXIT_CRITICAL();
 
 	_dma_carret = 0;
 	_msg_carret = 0;

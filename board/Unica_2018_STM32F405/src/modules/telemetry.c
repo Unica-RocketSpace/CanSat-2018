@@ -230,36 +230,35 @@ static mavlink_message_t uplink_msg;
 static mavlink_status_t uplink_status;
 
 
-void get_GCS_cmd() {
+int get_GCS_cmd() {
 	uint8_t buffer[32] = {0};
 	bool isData = false;
-	uint8_t cmd = 0;
 	nRF24L01_read(&spi_nRF24L01, buffer, 32, &isData);
 	if (isData) {
+//		printf("isData: %d\r", 1);
+		return (int)buffer[0];
+	}
+	/*if (isData) {
 		for (size_t i = 0 ; i < sizeof(buffer); i++)
 		{
 			bool mavres = mavlink_frame_char_buffer(&uplink_msg, &uplink_status, buffer[i], &uplink_msg, &uplink_status);
 			if (mavres)
-				cmd = mavlink_msg_cmd_get_cmd(&uplink_msg);
-				break;
+				return mavlink_msg_cmd_get_cmd(&uplink_msg);
 		}
-	}
-	if (cmd != 0)
-	taskENTER_CRITICAL();
-		state_system.globalStage = cmd;
-	taskEXIT_CRITICAL();
+	}*/
+	return -1;
 }
 
 
 void IO_RF_Init() {
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
 	state_system.NRF_state = nRF24L01_initError;
+	HAL_Delay(100);
 	// TODO: УБРАТЬ!!!
-	state_system.globalStage = 2;
 	stream_file.res = 1;
 	//	запуск SD
-//	dump_init(&stream_file, filename);
-//	state_system.SD_state = (uint8_t)stream_file.res;
+	dump_init(&stream_file, filename);
+	state_system.SD_state = (uint8_t)stream_file.res;
 	HAL_Delay(100);
 }
 
@@ -267,6 +266,8 @@ void IO_RF_Init() {
 void IO_RF_task() {
 
 	for (;;) {
+
+		vTaskDelay(100/portTICK_RATE_MS);
 
 		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();
@@ -277,34 +278,48 @@ void IO_RF_task() {
 
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
-			get_GCS_cmd();
+			int cmd = get_GCS_cmd();
+		taskENTER_CRITICAL();
+			if (cmd == 1)
+				state_system.globalStage = 1;
+		taskEXIT_CRITICAL();
 		}
 		// Этап 1. Погрузка в ракету
 		if (state_system.globalStage == 1) {
-			get_GCS_cmd();
+			int cmd = get_GCS_cmd();
+		taskENTER_CRITICAL();
+			if (cmd == 2)
+				state_system.globalStage = 2;
+		taskEXIT_CRITICAL();
 		}
 		// Этап 2. Определение начального состояния
 		if (state_system.globalStage == 2) {
 			mavlink_msg_state_zero_send();
-			vTaskDelay(100/portTICK_RATE_MS);
+
+
+			int cmd = get_GCS_cmd();
+		taskENTER_CRITICAL();
+			if (cmd == 3)
+				state_system.globalStage = 3;
+		taskEXIT_CRITICAL();
 		}
 		// Этап 3. Полет в ракете
 		if (state_system.globalStage == 3) {
-			//FIXME: УБРАТЬ
-			get_GCS_cmd();
+			int cmd = get_GCS_cmd();
+		taskENTER_CRITICAL();
+			if (cmd == 4)
+				state_system.globalStage = 4;
+		taskEXIT_CRITICAL();
 		}
-		// Этап 4. Свободное падение
+		/*// Этап 4. Свободное падение
 		if (state_system.globalStage == 4) {
-
 		}
 		// Этап 5. Спуск
 		if (state_system.globalStage == 5) {
-
 		}
 		// Этап 6. Окончание полета
 		if (state_system.globalStage == 6) {
-
-		}
+		}*/
 	}
 }
 

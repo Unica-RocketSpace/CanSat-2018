@@ -138,6 +138,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 
 end:
 	_cs_disable();
+	HAL_Delay(100);
 	return error;
 }
 

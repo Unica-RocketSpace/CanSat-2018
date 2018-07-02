@@ -292,13 +292,13 @@ void IMU_Init() {
 
 	state_system.MPU_state = mpu9255_initError;
 	state_system.BMP_state = bmp280_initError;
-//	state_system.globalStage = 2;
 }
 
 
 void IMU_task() {
 
 	for (;;) {
+		vTaskDelay(50/portTICK_RATE_MS);
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
 		}
@@ -327,7 +327,7 @@ void IMU_task() {
 			IMU_updateDataAll();
 			_IMUtask_updateData();
 
-			vTaskDelay(50/portTICK_RATE_MS);
+
 		}
 		// Этап 3. Полет в ракете
 		if (state_system.globalStage == 3) {

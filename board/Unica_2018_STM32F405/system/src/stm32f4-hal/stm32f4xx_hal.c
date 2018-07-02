@@ -342,7 +342,6 @@ __weak void HAL_Delay(__IO uint32_t Delay)
   tickstart = HAL_GetTick();
   while((HAL_GetTick() - tickstart) < Delay)
   {
-	  printf("tick_cnt: %lu\r\n", uwTick);
   }
 }
 

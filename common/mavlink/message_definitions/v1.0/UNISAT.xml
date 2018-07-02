@@ -85,5 +85,10 @@
             <field type="uint8_t" name="motor_state">state of motor</field>
             <field type="uint8_t" name="para_state">state of parashute</field>
         </message>
+
+        <message id="158" name="CMD">
+            <description>Msg to send commands from GSC to UNISAT</description>
+            <field type="uint8_t" name="cmd"> </field>
+        </message>
     </messages>
 </mavlink>

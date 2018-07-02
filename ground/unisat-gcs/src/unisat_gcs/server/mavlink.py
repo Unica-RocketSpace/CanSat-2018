@@ -1,6 +1,9 @@
 from PyQt5.QtCore import QThread, pyqtSignal
-from pymavlink.dialects.v20.UNISAT import *
+from pymavlink.dialects.v20.UNISAT import MAVLink_cmd_message
 from pymavlink import mavutil
+
+from PyQt5.QtCore import pyqtSlot
+
 
 from . import _log as _root_log
 
@@ -37,10 +40,14 @@ class MavlinkThread(QThread):
         self.sensors_accum = MsgAccumulator(10, self.new_sensors_record)
         self.gps_accum = MsgAccumulator(10, self.new_gps_record)
         self.state_accum = MsgAccumulator(10, self.new_state_record)
+        self.uplink_msgs = []
 
+
+    @pyqtSlot([list])
+    def post_msg_atmega(self, msg):
+        self.uplink_msgs.append(msg)
 
     def process_message(self, msg):
-
         _log.debug(msg)
         _log.info(msg)
 

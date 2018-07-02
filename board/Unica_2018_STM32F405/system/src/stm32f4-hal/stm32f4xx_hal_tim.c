@@ -4290,15 +4290,16 @@ uint32_t HAL_TIM_ReadCapturedValue(TIM_HandleTypeDef *htim, uint32_t Channel)
   * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
   *                the configuration information for TIM module.
   * @retval None
-  */
-__weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+  *
+  *FIXME: RETURN/
+/*__weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  /* Prevent unused argument(s) compilation warning */
+   Prevent unused argument(s) compilation warning
   UNUSED(htim);
-  /* NOTE : This function Should not be modified, when the callback is needed,
+   NOTE : This function Should not be modified, when the callback is needed,
             the __HAL_TIM_PeriodElapsedCallback could be implemented in the user file
-   */
-}
+
+}*/
 
 /**
   * @brief  Output Compare callback in non blocking mode 

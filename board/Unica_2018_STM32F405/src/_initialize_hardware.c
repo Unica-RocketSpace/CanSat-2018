@@ -90,6 +90,7 @@ __initialize_hardware(void)
 }
 
 // Disable when using RTOSes, since they have their own handler.
+/* FIXME: RERURN BACK
 #if 0
 
 // This is a sample SysTick handler, use it if you need HAL timings.
@@ -102,6 +103,7 @@ SysTick_Handler(void)
 }
 
 #endif
+*/
 
 // ----------------------------------------------------------------------------
 

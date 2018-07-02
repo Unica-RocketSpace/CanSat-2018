@@ -103,7 +103,7 @@
 /** @addtogroup HAL_Private_Variables
   * @{
   */
-__IO uint32_t uwTick;
+__IO uint32_t uwTick=0;
 /**
   * @}
   */
@@ -342,6 +342,7 @@ __weak void HAL_Delay(__IO uint32_t Delay)
   tickstart = HAL_GetTick();
   while((HAL_GetTick() - tickstart) < Delay)
   {
+	  printf("tick_cnt: %lu\r\n", uwTick);
   }
 }
 

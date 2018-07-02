@@ -46,7 +46,6 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 {
 	int error = 0;
 
-taskENTER_CRITICAL();
 	hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
 	hi2c->Init.ClockSpeed = 50000;
 	hi2c->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -62,15 +61,11 @@ taskENTER_CRITICAL();
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
 	PROCESS_ERROR(HAL_I2C_Init(hi2c));
-taskEXIT_CRITICAL();
 	vTaskDelay(300/portTICK_RATE_MS);
 
-taskENTER_CRITICAL();
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
-taskEXIT_CRITICAL();
 	vTaskDelay(200/portTICK_RATE_MS);
 
-taskENTER_CRITICAL();
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	25,		0b00000001));	//Sample Rate Divider
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	26,		0b00000101));	//config (DLPF = 101)
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	28,		(0b00000000 | (ACCEL_RANGE << 3)))); 	//accel config (rate 4g = 01)
@@ -82,41 +77,12 @@ taskENTER_CRITICAL();
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	108,	0b00000000));	//power managment 2
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	27,		(0b00000000 | (GYRO_RANGE << 4)) ));	//gyro config (rate 500dps = 01, Fch_b = 00)
 
-//	/*Установка OFFSET-ов*/
-//	uint8_t x_offset_l, x_offset_h, y_offset_l, y_offset_h, z_offset_l, z_offset_h;
-//	int16_t x_offset, y_offset, z_offset;
-//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 120, &x_offset_l, 1));
-//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 119, &x_offset_h, 1));
-//	x_offset = (x_offset_h << 7) + (x_offset_l >> 1) - 17;
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	120,	(uint8_t)(x_offset << 1)));
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	119,	(uint8_t)(x_offset >> 7)));
-//
-//
-//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 123, &y_offset_l, 1));
-//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 122, &y_offset_h, 1));
-//	y_offset = (y_offset_h << 7) + (y_offset_l >> 1) - 16;
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(y_offset << 1)));
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(y_offset >> 7)));
-//
-//
-//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 126, &z_offset_l, 1));
-//	PROCESS_ERROR(mpu9255_readRegister(GYRO_AND_ACCEL, 125, &z_offset_h, 1));
-//	z_offset = (z_offset_h << 7) + (z_offset_l >> 1) - 20;
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(z_offset << 1)));
-//	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(z_offset >> 7)));
-//
-//	mpu9255_writeRegister(GYRO_AND_ACCEL,	123,	(uint8_t)(Y_ACCEL_OFFSET << 1));
-//	mpu9255_writeRegister(GYRO_AND_ACCEL,	122,	(uint8_t)(Y_ACCEL_OFFSET << 7));
-//	mpu9255_writeRegister(GYRO_AND_ACCEL,	126,	(uint8_t)(Z_ACCEL_OFFSET << 1));
-//	mpu9255_writeRegister(GYRO_AND_ACCEL,	125,	(uint8_t)(Z_ACCEL_OFFSET << 7));
-
 	//compass init
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000010));	//режим bypass on
 	PROCESS_ERROR(mpu9255_writeRegister(COMPASS,		0x0A,	0b00010110));	//control 1
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	55,		0b00000000));	//режим bypass off
 
 end:
-	taskEXIT_CRITICAL();
 	return error;
 }
 

@@ -19,6 +19,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "diag/Trace.h"
 #include "state.h"
 #include "MadgwickAHRS.h"
 #include "quaternion.h"
@@ -267,6 +268,29 @@ taskEXIT_CRITICAL();
 }
 
 
+
+void IMU_Init() {
+	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
+	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
+
+	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
+	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
+	rscs_bmp280_parameters_t bmp280_parameters;
+	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
+	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
+	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
+	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
+
+	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
+	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
+	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
+
+	state_system.MPU_state = mpu9255_initError;
+	state_system.BMP_state = bmp280_initError;
+
+}
+
+
 void IMU_task() {
 
 	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
@@ -288,7 +312,10 @@ taskENTER_CRITICAL();
 //taskENTER_CRITICAL();
 	state_system.MPU_state = mpu9255_initError;
 	state_system.BMP_state = bmp280_initError;
+	state_system.globalStage = 2;
 taskEXIT_CRITICAL();
+
+
 
 	for (;;) {
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
@@ -342,7 +369,8 @@ taskEXIT_CRITICAL();
 		}
 	}
 
-	/*//	usart_dbg init
+/*
+	//	usart_dbg init
 	usart_dbg.Instance = USART3;
 	usart_dbg.Init.BaudRate = 256000;
 	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
@@ -350,68 +378,9 @@ taskEXIT_CRITICAL();
 	usart_dbg.Init.Parity = UART_PARITY_NONE;
 	usart_dbg.Init.Mode = UART_MODE_TX_RX;
 
-	HAL_USART_Init(&usart_dbg);*/
+	HAL_USART_Init(&usart_dbg);
+*/
 
-//	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
-//	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
-//	state_system.MPU_state = mpu9255_initError;
-//
-//	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
-//	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора
-//	rscs_bmp280_parameters_t bmp280_parameters;
-//	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;		//4		16		измерения на один результат
-//	bmp280_parameters.temperature_oversampling = RSCS_BMP280_OVERSAMPLING_X2;	//1		2		измерение на один результат
-//	bmp280_parameters.standbytyme = RSCS_BMP280_STANDBYTIME_500US;				//0.5ms	62.5ms	время между 2 измерениями
-//	bmp280_parameters.filter = RSCS_BMP280_FILTER_X16;							//x16	x16		фильтр
-//
-//	int8_t bmp280_initError = rscs_bmp280_setup(bmp280, &bmp280_parameters);								//запись параметров
-//	rscs_bmp280_changemode(bmp280, RSCS_BMP280_MODE_NORMAL);					//установка режима NORMAL, постоянные измерения
-//	bmp280_calibration_values = rscs_bmp280_get_calibration_values(bmp280);
-//	state_system.BMP_state = bmp280_initError;
-//
-//
-////	vTaskDelay(10000/portTICK_RATE_MS);
-//
-//	float gyro_staticShift[3] = {0, 0, 0};
-//	float accel_staticShift[3] = {0, 0, 0};
-//	get_gyro_staticShift(gyro_staticShift);
-//	get_accel_staticShift(gyro_staticShift, accel_staticShift);
-//taskENTER_CRITICAL();
-//	for (int i = 0; i < 3; i++) {
-//		state_zero.gyro_staticShift[i] = gyro_staticShift[i];
-//		state_zero.accel_staticShift[i] = accel_staticShift[i];
-//	}
-//taskEXIT_CRITICAL();
-//
-//
-//	for (;;) {
-//
-//		//---ОПРОС BMP280---//
-//		int32_t pressure = 0;
-//		int32_t temp = 0;
-//		float pressure_f = 0;
-//		float temp_f = 0;
-//		rscs_bmp280_read(bmp280, &pressure, &temp);
-//		rscs_bmp280_calculate(bmp280_calibration_values, pressure, temp, &pressure_f, &temp_f);
-//
-//	taskENTER_CRITICAL();
-//		stateSensors_raw.pressure = pressure;
-//		stateSensors_raw.temp = temp;
-//		stateSensors.pressure = pressure_f;
-//		stateSensors.temp = temp_f;
-//	taskEXIT_CRITICAL();
-//
-//		const TickType_t _delay = 10 / portTICK_RATE_MS;
-//		IMU_updateDataAll();
-//
-//	taskENTER_CRITICAL();
-//		memcpy(&stateIMU_isc_prev, 			&stateIMU_isc,			sizeof(stateIMU_isc));
-//		memcpy(&state_system_prev, 			&state_system,		 	sizeof(state_system));
-//		memcpy(&stateCamera_orient_prev, 	&stateCamera_orient, 	sizeof(stateCamera_orient));
-//	taskEXIT_CRITICAL();
-//
-//		vTaskDelay(_delay);
-//	}
 }
 
 

@@ -167,14 +167,14 @@ void HAL_USART_MspInit(USART_HandleTypeDef* husart) {
 		gpioc.Mode = GPIO_MODE_AF_PP;
 		gpioc.Pin = GPIO_PIN_10;
 		gpioc.Pull = GPIO_NOPULL;
-		gpioc.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
 		HAL_GPIO_Init(GPIOC, &gpioc);
 
 		gpioc.Alternate = GPIO_AF7_USART3;
 		gpioc.Mode = GPIO_MODE_AF_OD;
 		gpioc.Pin = GPIO_PIN_11;
 		gpioc.Pull = GPIO_NOPULL;
-		gpioc.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
 		HAL_GPIO_Init(GPIOC, &gpioc);
 	} else abort();
 }

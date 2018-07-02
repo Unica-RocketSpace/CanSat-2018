@@ -10,11 +10,6 @@
 
 #include "bmp280.h"
 
-typedef enum{
-	state_parachute = 0,
-	state_motor = 1
-}state;
-
 
 typedef struct {
 	uint32_t package_number;
@@ -22,7 +17,8 @@ typedef struct {
 	float pressure;
 	float temperature;
 	float height;
-	uint8_t state;
+	uint8_t motor_state;
+	uint8_t para_state;
 }TM_package_t;
 
 typedef struct {

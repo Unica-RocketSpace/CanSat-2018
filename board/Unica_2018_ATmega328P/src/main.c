@@ -54,7 +54,8 @@ typedef enum {
 
 int main() {
 
-	TM_package.state = 0;
+	TM_package.para_state = 0;
+	TM_package.motor_state = 0;
 
 	state_t my_stage = STAGE_INITIAL;
 
@@ -94,7 +95,6 @@ int main() {
 	//***ИНИЦИАЛИЗАЦИЯ nRF24L01***//
 	nRF24L01_init();
 
-	//FIXME: УБРАТЬ
 	initial_params.zero_pressure = set_zero_pressure();
 
 	//Включение внешних прервыений 0
@@ -122,7 +122,7 @@ int main() {
 		//Отправляем телеметрию пакетами Mavlink
 		mavlink_message_t msg;
 		mavlink_msg_atmega_pack(1, 1, &msg, TM_package.time, TM_package.pressure,
-				TM_package.height, TM_package.temperature, TM_package.state);
+				TM_package.height, TM_package.temperature, TM_package.motor_state, TM_package.para_state);
 		uint8_t buffer[100];
 		uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
 
@@ -140,17 +140,33 @@ int main() {
 
 		// Получаем команды с наземки
 		mavlink_message_t cmd;
-		nRF24L01_read(RX_buffer, nRF24L01_RX_BUFFER_LEN);
-		mavlink_msg_
+		int cmdvalue = -1;
+		mavlink_status_t status;
+		memset(RX_buffer, 0x00, nRF24L01_RX_BUFFER_LEN);
+		bool has_data = nRF24L01_read(RX_buffer, nRF24L01_RX_BUFFER_LEN);
+
+		if (has_data){
+			uint8_t res = 0;
+			uint8_t i = 0;
+			for (i = 0; i < nRF24L01_RX_BUFFER_LEN; i++)
+				res = mavlink_parse_char(0, RX_buffer[i], &cmd, &status);
+
+			if (res)
+			{
+				cmdvalue = mavlink_msg_cmd_get_cmd(&cmd);
+				break;
+			}
+		}
+
 
 
 		switch (my_stage) {
 		case STAGE_INITIAL:
 
 			//Проверяем команду с земли
-			if (RX_get) {
-				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == (uint8_t)STAGE_LOADING_COMMAND)
+			if (has_data) {
+				printf("COMMAND: %d\n", cmdvalue);
+				if (cmdvalue == STAGE_LOADING_COMMAND)
 					my_stage = STAGE_LOADING;
 				else
 					printf("Got Wrong command\n");
@@ -162,9 +178,9 @@ int main() {
 		case STAGE_LOADING:
 
 			//Проверяем команду с земли
-			if (RX_get) {
-				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == (uint8_t)STAGE_INITIAL_PARAM_COMMAND)
+			if (has_data) {
+				printf("COMMAND: %d\n", cmdvalue);
+				if (cmdvalue == (uint8_t)STAGE_INITIAL_PARAM_COMMAND)
 					my_stage = STAGE_INITIAL_PARAM;
 				else
 					printf("Got Wrong command\n");
@@ -179,9 +195,9 @@ int main() {
 				initial_params.zero_pressure = set_zero_pressure();
 
 			//Проверяем команду с Земли
-			if (RX_get) {
-				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == (uint8_t)STAGE_GOING_UP_COMMAND)
+			if (has_data) {
+				printf("COMMAND: %d\n", cmdvalue);
+				if (cmdvalue == (uint8_t)STAGE_GOING_UP_COMMAND)
 					my_stage = STAGE_GOING_UP;
 				else
 					printf("Got Wrong command\n");
@@ -194,9 +210,9 @@ int main() {
 			if (check_down_height())
 				my_stage = STAGE_GOING_DOWN;
 			//Проверяем команду с Земли
-			if (RX_get) {
-				printf("COMMAND: %d\n", RX_buffer[0]);
-				if (RX_buffer[0] == STAGE_GOING_UP_COMMAND)
+			if (has_data) {
+				printf("COMMAND: %d\n", cmdvalue);
+				if (cmdvalue == STAGE_GOING_UP_COMMAND)
 					my_stage = STAGE_GOING_UP;
 				else
 					printf("Got Wrong command\n");
@@ -209,10 +225,10 @@ int main() {
 		case STAGE_GOING_DOWN:
 
 			//Проверяем команду с земли
-			if (RX_get) {
-				printf("COMMAND: %d\n", RX_buffer[0]);
+			if (has_data) {
+				printf("COMMAND: %d\n", cmdvalue);
 				printf("DEPLOYMENT_COMMAND: %d\n", DEPLOYMENT_COMMAND);
-				if (RX_buffer[0] == DEPLOYMENT_COMMAND)
+				if (cmdvalue == DEPLOYMENT_COMMAND)
 					deploy_parashute();
 				else
 					printf("Got Wrong command\n");

@@ -82,6 +82,6 @@ bool check_invariable_height(){
 
 ISR(INT0_vect)
 {
-	TM_package.state |= (1 << state_parachute);
+	TM_package.para_state = 1;
 }
 

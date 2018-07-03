@@ -49,21 +49,21 @@ void deploy_parashute (){
 }
 
 uint8_t new_h = 0;
+uint8_t count = 0;
 
-bool check_down_height(){
-	float height[5];
-	height[new_h] = TM_package.height;
-	if (new_h == 4) new_h = 0;
-	else new_h++;
-
-	int8_t med_h = new_h - 2;
-	if (med_h < 0) med_h += 5;
-	int8_t old_h = new_h - 4;
-	if (old_h < 0) old_h += 5;
-
-	if (((height[old_h] - height[med_h]) > FALLING_DELTA_HEIGHT) && (((height[med_h] - height[new_h]) > FALLING_DELTA_HEIGHT))) return true;
-	return false;
-}
+//bool check_down_height(){
+//	float height[2];
+//	height[new_h] = TM_package.height;
+//	if (new_h == 0) new_h ++;
+//	if (new_h == 1){
+//		if (height[new_h] > height[new_h - 1]) count ++;
+//		new_h ++;
+//	}
+//
+//	if(new_h == 2) new_h = 0;
+//	if(count == 5)	return true;
+//	return false;
+//}
 
 bool check_invariable_height(){
 	float height[5];

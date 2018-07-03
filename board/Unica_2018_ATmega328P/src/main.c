@@ -20,6 +20,7 @@
 #include "deployment_control.h"
 #include "radio-module.h"
 #include "timeservice.h"
+#include "math.h"
 
 #include "mavlink-messages/mavlink/UNISAT/mavlink.h"
 
@@ -99,6 +100,10 @@ int main() {
 	EIMSK = (1 << INT0);						//Включение прерывания INT0
 	sei();										//Глобальное включение прерываний
 
+
+	float old_height;
+	uint8_t count = 0;
+	uint8_t count_end = 0;
 
 	printf("init complete\n");
 
@@ -194,23 +199,25 @@ int main() {
 			break;
 
 		case STAGE_GOING_UP:
-			if (check_down_height())
-				my_stage = STAGE_GOING_DOWN;
+			float now_height = TM_package.height;
+			if (now_height < old_height) count ++;
+			if (count == 5) my_stage = STAGE_GOING_DOWN;
 			//Проверяем команду с Земли
 			if (has_data) {
 				printf("COMMAND: %d\n", cmdvalue);
-				if (cmdvalue == STAGE_GOING_DOWN)
+				if (cmdvalue == STAGE_GOING_DOWN_COMMAND)
 					my_stage = STAGE_GOING_DOWN;
 				else
 					printf("Got Wrong command\n");
 			} else
 				printf("There is no data\n");
-
+			old_height = now_height;
 
 			break;
 
 		case STAGE_GOING_DOWN:
 
+			float now_height = TM_package.height;
 			//Проверяем команду с земли
 			if (has_data) {
 				printf("COMMAND: %d\n", cmdvalue);
@@ -222,11 +229,12 @@ int main() {
 			} else
 				printf("There is no data\n");
 
-			//if (check_command (RX_buffer, nRF24L01_RX_BUFFER_LEN)) deploy_parashute ();
+			if (check_height ( TM_package.height)) deploy_parashute();
 
-			//if (check_height ( TM_package.height)) deploy_parashute();
+			if (fabsf(now_height - old_height) < 0.01) count ++;
+			if (count == 5) my_stage = STAGE_ALL_DONE;
 
-//			if (check_invariable_height()) my_stage = STAGE_ALL_DONE;
+			old_height = now_height;
 
 			break;
 

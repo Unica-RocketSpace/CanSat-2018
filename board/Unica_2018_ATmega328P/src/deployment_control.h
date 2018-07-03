@@ -10,7 +10,7 @@
 
 #include <stdbool.h>
 
-#define MIN_HEIGHT 					0.0f
+#define MIN_HEIGHT 					250.0f
 #define DEPLOYMENT_COMMAND			13
 #define INVARIABLE_DELTA_HEIGHT		0.01f
 #define FALLING_DELTA_HEIGHT		0.01f
@@ -18,6 +18,7 @@
 #define	STAGE_LOADING_COMMAND   	1
 #define	STAGE_INITIAL_PARAM_COMMAND 2
 #define	STAGE_GOING_UP_COMMAND   	3
+#define	STAGE_GOING_DOWN_COMMAND   	4
 
 #define ENGINE_DDR			DDRB
 #define ENGINE_PORT			PORTB

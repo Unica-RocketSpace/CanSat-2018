@@ -79,9 +79,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <item>
-             <widget class="QRadioButton" name="Init">
+             <widget class="QLabel" name="label_6">
               <property name="text">
                <string>Инициализация</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="init">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -90,20 +97,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
-             <widget class="QRadioButton" name="keep_in_rocket">
+             <widget class="QLabel" name="label_8">
               <property name="text">
-               <string>Погрузка в ракету</string>
+               <string>Определение начального состояния</string>
               </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
-             <widget class="QRadioButton" name="zero_states">
+             <widget class="QLabel" name="init_param">
               <property name="text">
-               <string>Определение начального состояния</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -112,9 +115,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
-             <widget class="QRadioButton" name="fly">
+             <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>Полет в ракете</string>
+               <string>Погрузка в ракету</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="load_in_rocket">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -123,9 +133,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <item>
-             <widget class="QRadioButton" name="fall">
+             <widget class="QLabel" name="label_15">
               <property name="text">
-               <string>Свободное падение</string>
+               <string>Полет в ракете</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="in_rocket">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -134,9 +151,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item>
-             <widget class="QRadioButton" name="slow_falling">
+             <widget class="QLabel" name="label_16">
               <property name="text">
                <string>Спуск</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="falling">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -145,9 +169,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
-             <widget class="QRadioButton" name="the_end">
+             <widget class="QLabel" name="label_17">
               <property name="text">
                <string>Окончание полета</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="end">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>

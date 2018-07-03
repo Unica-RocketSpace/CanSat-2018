@@ -15,6 +15,7 @@ if __name__ == "__main__":
     ######################################
     app = QtWidgets.QApplication(sys.argv)
     myapp = MyWin()
+
     myapp.show()
     ######################################
 
@@ -27,6 +28,8 @@ if __name__ == "__main__":
     thread.new_gps_record.connect(myapp.gps_msg)
     thread.new_state_record.connect(myapp.state_msg)
     thread.start()
+
+    myapp.new_send_command.connect(thread.post_msg)
 
     sys.exit(app.exec_())
     # thread.exit()

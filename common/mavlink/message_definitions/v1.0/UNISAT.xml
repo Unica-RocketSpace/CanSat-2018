@@ -82,8 +82,10 @@
             <field type="float" name="pressure">pressure</field>
             <field type="float" name="height">height</field>
             <field type="float" name="temp">temp</field>
+            <field type="uint8_t" name="baro_state">state of baro</field>
             <field type="uint8_t" name="motor_state">state of motor</field>
             <field type="uint8_t" name="para_state">state of parashute</field>
+            <field type="uint8_t" name="globalStage">stage</field>
         </message>
 
         <message id="158" name="CMD">

@@ -35,6 +35,8 @@ str_now_graf = None
 
 # Главный класс
 class MyWin(QtWidgets.QMainWindow):
+    new_send_command = pyqtSignal(int)
+
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow()
@@ -42,10 +44,12 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle('Unica gcs')
 
+
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
 
-        self.lenght = 200
+        self.lenght = 40
+        self.cut = 10
 
         self.temp_atmega = []
         self.pressure_atmega = []
@@ -269,8 +273,13 @@ class MyWin(QtWidgets.QMainWindow):
 
     def send_command(self):
         com = self.ui.textBrowser.toPlainText()
+
+        try:
+            com = int(com)
+            self.new_send_command.emit(com)
+        except BaseException:
+            com = None
         self.ui.textBrowser.clear()
-        print(com)
 
 
     def Remove_graf(self):
@@ -576,6 +585,66 @@ class MyWin(QtWidgets.QMainWindow):
         now_graf = self.graf_down3
         str_now_graf = 'graf_down3'
 
+    #
+    #
+    # def process_message(msg):
+    #     _log.info("%s", msg)
+    #
+    #     if isinstance(msg, MAVLink_bad_data):
+    #        pass
+    #
+    #     elif isinstance(msg, MAVLink_atmega_message):
+    #         _log.info(
+    #             "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"
+    #             %
+    #             (msg.get_header().seq, msg.time, msg.pressure, msg.temp)
+    #         )
+    #
+    #     elif isinstance(msg, MAVLink_imu_rsc_message):
+    #         _log.info(
+    #             "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
+    #             %
+    #             (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
+    #         )
+    #
+    #     elif isinstance(msg, MAVLink_imu_isc_message):
+    #         _log.info(
+    #             "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
+    #             %
+    #             (msg.get_header().seq, msg.time, *msg.accel, *msg.compass)
+    #         )
+    #         _log.info(
+    #             "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
+    #             %
+    #             (msg.get_header().seq, msg.time, *msg.quaternion)
+    #         )
+    #         _log.info(
+    #             "POS\t {n: %ld, time: %0.3f, velo: [%0.3f, %0.3f, %0.3f], pos: [%0.3f, %0.3f, %0.3f]}"
+    #             %
+    #             (msg.get_header().seq, msg.time, *msg.velocities, *msg.coordinates)
+    #         )
+    #     elif isinstance(msg, MAVLink_sensors_message):
+    #         _log.info(
+    #             "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
+    #             %
+    #             (msg.get_header().seq, msg.time, msg.temp, msg.pressure)
+    #         )
+    #     elif isinstance(msg, MAVLink_gps_message):
+    #         _log.info(
+    #             "GPS\t {n: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
+    #             %
+    #             (msg.get_header().seq, msg.time, msg.coordinates[1], msg.coordinates[0], msg.coordinates[2])
+    #         )
+    #     elif isinstance(msg, MAVLink_camera_orientation_message):
+    #         _log.info(
+    #             "CAM\t {n: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
+    #             %
+    #             (msg.get_header().seq, msg.time, 180*msg.step_engine_pos/math.pi, 180*msg.servo_pos/math.pi)
+    #         )
+    #     else:
+    #         _log.info(msg)
+    #
+    #
 
     @QtCore.pyqtSlot(list)
     def atm_msg(self, msgs):
@@ -587,10 +656,16 @@ class MyWin(QtWidgets.QMainWindow):
             self.state_atm_motor = msgs[i].motor_state
             self.state_amt_para = msgs[i].para_state
 
+            self.ui.textBrowser_2.append(
+                "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f, baro: %ld, stage: %ld}"
+                %
+                (msgs[i].get_header().seq, msgs[i].time, msgs[i].pressure, msgs[i].temp, msgs[i].baro_state, msgs[i].globalStage)
+            )
+
         if len(self.time_atm) == self.lenght:
-            self.time_atm = self.time_atm[4:(self.lenght-1)]
-            self.pressure_atmega = self.pressure_atmega[4:(self.lenght-1)]
-            self.temp_atmega = self.temp_atmega[4:(self.lenght-1)]
+            self.time_atm = self.time_atm[self.cut:(self.lenght-1)]
+            self.pressure_atmega = self.pressure_atmega[self.cut:(self.lenght-1)]
+            self.temp_atmega = self.temp_atmega[self.cut:(self.lenght-1)]
 
         self.pl_graf_down1_x.setData(x=self.time_atm, y=self.temp_atmega, pen=('r'))
         self.pl_graf_down2_x.setData(x=self.time_atm, y=self.pressure_atmega, pen=('r'))
@@ -616,14 +691,20 @@ class MyWin(QtWidgets.QMainWindow):
             self.av_y.append(msgs[i].gyro[1])
             self.av_z.append(msgs[i].gyro[2])
 
+            self.ui.textBrowser_2.append(
+                "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
+                    %
+                    (msgs[i].get_header().seq, msgs[i].time, *msgs[i].accel, *msgs[i].gyro, *msgs[i].compass)
+                )
+
         if len(self.time_RSC) == self.lenght:
-            self.a_RSC_x = self.a_RSC_x[4:(self.lenght - 1)]
-            self.a_RSC_y = self.a_RSC_y[4:(self.lenght - 1)]
-            self.a_RSC_z = self.a_RSC_z[4:(self.lenght - 1)]
-            self.time_RSC = self.time_RSC[4:(self.lenght - 1)]
-            self.av_x = self.av_x[4:(self.lenght - 1)]
-            self.av_y = self.av_y[4:(self.lenght - 1)]
-            self.av_z = self.av_z[4:(self.lenght - 1)]
+            self.a_RSC_x = self.a_RSC_x[self.cut:(self.lenght - 1)]
+            self.a_RSC_y = self.a_RSC_y[self.cut:(self.lenght - 1)]
+            self.a_RSC_z = self.a_RSC_z[self.cut:(self.lenght - 1)]
+            self.time_RSC = self.time_RSC[self.cut:(self.lenght - 1)]
+            self.av_x = self.av_x[self.cut:(self.lenght - 1)]
+            self.av_y = self.av_y[self.cut:(self.lenght - 1)]
+            self.av_z = self.av_z[self.cut:(self.lenght - 1)]
 
         self.pl_graf_top2_x.setData(x=self.time_RSC, y=self.a_RSC_x, pen=('r'), width=0.5)
         self.pl_graf_top2_y.setData(x=self.time_RSC, y=self.a_RSC_y, pen=('g'), width=0.5)
@@ -632,6 +713,9 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_middle1_x.setData(x=self.time_RSC, y=self.av_x, pen=('r'), width=0.5)
         self.pl_graf_middle1_y.setData(x=self.time_RSC, y=self.av_y, pen=('g'), width=0.5)
         self.pl_graf_middle1_z.setData(x=self.time_RSC, y=self.av_z, pen=('b'), width=0.5)
+
+
+
 
         # Вывод в лог #
         # log = '' + 'sfkslk'+ "\n"
@@ -665,21 +749,36 @@ class MyWin(QtWidgets.QMainWindow):
             sin_teta = sqrt((1 - msgs[i].quaternion[0] * msgs[i].quaternion[0]))
             self.rsc_coord.rotate(teta, msgs[i].quaternion[1] / sin_teta, msgs[i].quaternion[2] / sin_teta, msgs[i].quaternion[3] / sin_teta)
 
+            self.ui.textBrowser_2.append(
+                "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
+                %
+                (msgs[i].get_header().seq, msgs[i].time, *msgs[i].accel, *msgs[i].compass)
+            )
+            self.ui.textBrowser_2.append(
+                "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
+                %
+                (msgs[i].get_header().seq, msgs[i].time, *msgs[i].quaternion)
+            )
+            self.ui.textBrowser_2.append(
+                "POS\t {n: %ld, time: %0.3f, velo: [%0.3f, %0.3f, %0.3f], pos: [%0.3f, %0.3f, %0.3f]}"
+                %
+                (msgs[i].get_header().seq, msgs[i].time, *msgs[i].velocities, *msgs[i].coordinates)
+            )
 
         if len(self.time_ISC) == self.lenght:
-            self.a_ISC_x = self.a_ISC_x[4:(self.lenght - 1)]
-            self.a_ISC_y = self.a_ISC_y[4:(self.lenght - 1)]
-            self.a_ISC_z = self.a_ISC_z[4:(self.lenght - 1)]
-            self.time_ISC = self.time_ISC[4:(self.lenght - 1)]
-            self.vmf_x = self.vmf_x[4:(self.lenght - 1)]
-            self.vmf_y = self.vmf_y[4:(self.lenght - 1)]
-            self.vmf_z = self.vmf_z[4:(self.lenght - 1)]
-            self.v_x = self.v_x[4:(self.lenght - 1)]
-            self.v_y = self.v_y[4:(self.lenght - 1)]
-            self.v_z = self.v_z[4:(self.lenght - 1)]
-            self.mov_x = self.mov_x[4:(self.lenght - 1)]
-            self.mov_y = self.mov_y[4:(self.lenght - 1)]
-            self.mov_z = self.mov_z[4:(self.lenght - 1)]
+            self.a_ISC_x = self.a_ISC_x[self.cut:(self.lenght - 1)]
+            self.a_ISC_y = self.a_ISC_y[self.cut:(self.lenght - 1)]
+            self.a_ISC_z = self.a_ISC_z[self.cut:(self.lenght - 1)]
+            self.time_ISC = self.time_ISC[self.cut:(self.lenght - 1)]
+            self.vmf_x = self.vmf_x[self.cut:(self.lenght - 1)]
+            self.vmf_y = self.vmf_y[self.cut:(self.lenght - 1)]
+            self.vmf_z = self.vmf_z[self.cut:(self.lenght - 1)]
+            self.v_x = self.v_x[self.cut:(self.lenght - 1)]
+            self.v_y = self.v_y[self.cut:(self.lenght - 1)]
+            self.v_z = self.v_z[self.cut:(self.lenght - 1)]
+            self.mov_x = self.mov_x[self.cut:(self.lenght - 1)]
+            self.mov_y = self.mov_y[self.cut:(self.lenght - 1)]
+            self.mov_z = self.mov_z[self.cut:(self.lenght - 1)]
 
         self.pl_graf_top1_x.setData(x=self.time_ISC, y=self.a_ISC_x, pen=('r'))
         self.pl_graf_top1_y.setData(x=self.time_ISC, y=self.a_ISC_y, pen=('g'))
@@ -706,6 +805,12 @@ class MyWin(QtWidgets.QMainWindow):
             self.pressure_sensors.append(msgs[i].pressure)
             self.temp_sensors.append(msgs[i].temp)
 
+            self.ui.textBrowser_2.append(
+                "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
+                %
+                (msgs[i].get_header().seq, msgs[i].time, msgs[i].temp, msgs[i].pressure)
+            )
+
         if len(self.time_sens) == self.lenght:
             self.time_sens = self.time_sens[4:(self.lenght - 1)]
             self.pressure_sensors = self.pressure_sensors[4:(self.lenght - 1)]
@@ -724,21 +829,40 @@ class MyWin(QtWidgets.QMainWindow):
             self.y.append(msgs[i].coordinates[1])
             self.z.append(msgs[i].coordinates[2])
 
+            self.ui.textBrowser_2.append(
+                "GPS\t {n: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
+                %
+                (msgs[i].get_header().seq, msgs[i].time, msgs[i].coordinates[1], msgs[i].coordinates[0], msgs[i].coordinates[2])
+            )
+
+
         if len(self.x) == self.lenght:
-            self.x = self.x[4:(self.lenght - 1)]
-            self.y = self.y[4:(self.lenght - 1)]
-            self.z = self.z[4:(self.lenght - 1)]
+            self.x = self.x[self.cut:(self.lenght - 1)]
+            self.y = self.y[self.cut:(self.lenght - 1)]
+            self.z = self.z[self.cut:(self.lenght - 1)]
+
 
         self.pl_graf_down3_x.setData(x=self.x, y=self.y, pen=('r'))
 
         # self.plt.setData(pos=self.GPS, color=(1.0, 1.0, 1.0, 1.0))
         # m = len(self.x)
         # if m != 0:
-        #     self.rsc_coord.translate((self.x[m] - self.x[m - 1]), (self.y[m] - self.y[m - 1]), (self.z[m] - self.z[m - 1]))
+        #     delta_x = self.x[m] - self.x[m - 1]
+        #     delta_y = self.y[m] - self.y[m - 1]
+        #     delta_z = self.z[m] - self.z[m - 1]
+        #     self.rsc_coord.translate(delta_x, delta_y, delta_z)
         # else:
         #     self.rsc_coord.translate(self.x, self.y, self.z)
         # Цвета в pg.glColor
 
+
+    def clear_stage(self):
+        self.ui.init.clear()
+        self.ui.init_param.clear()
+        self.ui.load_in_rocket.clear()
+        self.ui.in_rocket.clear()
+        self.ui.falling.clear()
+        self.ui.end.clear()
 
     @QtCore.pyqtSlot(list)
     def state_msg(self, msgs):
@@ -751,6 +875,8 @@ class MyWin(QtWidgets.QMainWindow):
             self.state_nrf = msgs[i].NRF_state
             self.state_sd = msgs[i].SD_state
             self.state_stm_motor = msgs[i].MOTOR_state
+
+            print(self.state_fly)
 
             self.ui.mpu_state.clear()
             self.ui.bmp_state.clear()
@@ -766,6 +892,28 @@ class MyWin(QtWidgets.QMainWindow):
             self.ui.morot_stm_state.setText(str(self.state_stm_motor))
             self.ui.gps_state.setText(str(self.state_gps))
 
+            print(str(self.state_fly) + "\n")
+
+            if self.state_fly == '0':
+                self.clear_stage()
+                self.ui.init.setText(str('1'))
+
+            if self.state_fly == '1':
+                self.clear_stage()
+                self.ui.init_param.setText(str('1'))
 
             if self.state_fly == '2':
-                self.ui.Init.actionEvent()
+                self.clear_stage()
+                self.ui.load_in_rocket.setText(str('1'))
+
+            if self.state_fly == '4':
+                self.clear_stage()
+                self.ui.in_rocket.setText(str('1'))
+
+            if self.state_fly == '5':
+                self.clear_stage()
+                self.ui.falling.setText(str('1'))
+
+            if self.state_fly == '6':
+                self.clear_stage()
+                self.ui.end.setText(str('1'))

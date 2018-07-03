@@ -1,9 +1,6 @@
-from PyQt5.QtCore import QThread, pyqtSignal
-from pymavlink.dialects.v20.UNISAT import MAVLink_cmd_message
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from pymavlink.dialects.v20.UNISAT import *
 from pymavlink import mavutil
-
-from PyQt5.QtCore import pyqtSlot
-
 
 from . import _log as _root_log
 
@@ -43,13 +40,15 @@ class MavlinkThread(QThread):
         self.uplink_msgs = []
 
 
-    @pyqtSlot(list)
-    def post_msg_atmega(self, msg):
+    @pyqtSlot(int)
+    def post_msg(self, msg):
+        # msg = bytes(msg)
         self.uplink_msgs.append(msg)
+        self.uplink_msgs = bytes(self.uplink_msgs)
 
     def process_message(self, msg):
-        _log.debug(msg)
-        _log.info(msg)
+        # _log.debug(msg)
+        # _log.info(msg)
 
         if isinstance(msg, MAVLink_atmega_message):
             self.atmega_accum.push_message(msg)
@@ -79,8 +78,8 @@ class MavlinkThread(QThread):
 
     def run(self):
         _log.info("Запускаюсь. Использую url:")
-        mav1 = mavutil.mavlink_connection("udpin:0.0.0.0:12000")
-        mav2 = mavutil.mavlink_connection("udpin:0.0.0.0:12001")
+        mav1 = mavutil.mavlink_connection("udpin:0.0.0.0:22466")
+        mav2 = mavutil.mavlink_connection("udpin:0.0.0.0:22467")
 
         while True:
             msg1 = mav1.recv_match(blocking=False)
@@ -88,7 +87,15 @@ class MavlinkThread(QThread):
 
             if msg1:
                 self.process_message(msg1)
+                if self.uplink_msgs:
+                    print(self.uplink_msgs)
+                    mav1.write(self.uplink_msgs)
+                    self.uplink_msgs = []
 
             if msg2:
                 self.process_message(msg2)
+                if self.uplink_msgs:
+                    mav2.write(self.uplink_msgs)
+                    self.uplink_msgs = []
+
 

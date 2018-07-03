@@ -60,13 +60,13 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi->Init.NSS = SPI_NSS_SOFT;
-	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
 	hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi->Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 
 	PROCESS_ERROR(HAL_SPI_Init(hspi));
-	HAL_Delay(100);
+	HAL_Delay(300);
 
 	// Настраиваем CS
 	_cs_disable();
@@ -157,7 +157,7 @@ end:
 	return error;
 }
 
-//FIXME: void* or uint8_t*
+
 uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t buffer_size, bool* isData){
 	uint8_t error = 0;
 	PROCESS_ERROR(nRF24L01_RX_mode_on(hspi, true));
@@ -196,6 +196,7 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	else write_command = nRF24L01_WRITE_TX_FIFO_NO_ACK;
 	_cs_enable();
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &write_command, 1, _TIMEOUT_));
+	for (int i = 0; i < 5000; i++) {}
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, write_buffer, buffer_size, _TIMEOUT_));
 	_cs_disable();
 	_ce_up();
@@ -205,7 +206,7 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	_ce_down();
 	uint8_t status = 0;
 	nRF24L01_read_status(&spi_nRF24L01, &status);
-	uint8_t read_buffer[32];
+	uint8_t read_buffer[32] = {0};
 	if ((status & (1 << RX_DR)))// && (cmd != NULL))
 	{
 		uint8_t read_command = nRF24L01_READ_RX_FIFO;
@@ -372,7 +373,6 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 		{
 			uint8_t nRF_status = 0;
 			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-//			printf("%u", nRF_status);
 			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
 			if (finished)
 				break;

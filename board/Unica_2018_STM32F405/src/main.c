@@ -105,9 +105,9 @@ int main(int argc, char* argv[])
 //			GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj
 //	);
 
-//	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
-//				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj
-//	);
+	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
+				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj
+	);
 
 
 	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(

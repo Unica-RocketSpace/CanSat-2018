@@ -285,8 +285,8 @@ void IO_RF_task() {
 		// Этап 3. Полет в ракете
 		if (state_system.globalStage == 3) {
 		taskENTER_CRITICAL();
-			if (state_system.globalCommand == 1)
-				state_system.globalStage = 1;
+			if (state_system.globalCommand == 4)
+				state_system.globalStage = 4;
 		taskEXIT_CRITICAL();
 		}
 		/*// Этап 4. Свободное падение

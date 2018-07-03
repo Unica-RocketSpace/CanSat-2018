@@ -56,7 +56,7 @@ stateCamera_orient_t stateCamera_orient_prev;
 
 
 //	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
+#define IO_RF_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
@@ -101,7 +101,6 @@ int main(int argc, char* argv[])
 	state_system.NRF_state = 255;
 	state_system.SD_state = 255;
 
-
 //	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
 //			GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj
 //	);
@@ -119,15 +118,15 @@ int main(int argc, char* argv[])
 //			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
 //	);
 
-//	//	usart_dbg init
-//	usart_dbg.Instance = USART3;
-//	usart_dbg.Init.BaudRate = 256000;
-//	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
-//	usart_dbg.Init.StopBits = UART_STOPBITS_1;
-//	usart_dbg.Init.Parity = UART_PARITY_NONE;
-//	usart_dbg.Init.Mode = UART_MODE_TX_RX;
-//
-//	HAL_USART_Init(&usart_dbg);
+	//	usart_dbg init
+	usart_dbg.Instance = USART3;
+	usart_dbg.Init.BaudRate = 256000;
+	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
+	usart_dbg.Init.StopBits = UART_STOPBITS_1;
+	usart_dbg.Init.Parity = UART_PARITY_NONE;
+	usart_dbg.Init.Mode = UART_MODE_TX_RX;
+
+	HAL_USART_Init(&usart_dbg);
 
 	IMU_Init();
 	IO_RF_Init();

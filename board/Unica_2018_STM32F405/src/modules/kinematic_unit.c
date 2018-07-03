@@ -335,10 +335,10 @@ void IMU_task() {
 			IMU_updateDataAll();
 			_IMUtask_updateData();
 
-			// ОПРЕДЕЛЯЕМ ВЫХОД ИЗ РАКЕТЫ
+			// ОПРЕДЕЛЯЕМ НАЧАЛО ПАДЕНИЯ
 			static int exit_cnt = 0;
 			taskENTER_CRITICAL();
-			exit_cnt = (stateSensors.pressure < stateSensors_prev.pressure) ? (exit_cnt+1) : 0;
+			exit_cnt = (stateSensors.pressure > stateSensors_prev.pressure) ? (exit_cnt+1) : 0;
 			if (exit_cnt == 5)
 				state_system.globalStage = 4;
 			taskEXIT_CRITICAL();
@@ -350,11 +350,9 @@ void IMU_task() {
 			_IMUtask_updateData();
 
 			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
-			static int exit_cnt = 0;
 			taskENTER_CRITICAL();
-			exit_cnt = (stateSensors.pressure > stateSensors_prev.pressure) ? (exit_cnt+1) : 0;
-			if (exit_cnt == 5)
-				state_system.globalStage = 4;
+			if (stateSensors.height <= 270)
+				state_system.globalStage = 5;
 			taskEXIT_CRITICAL();
 		}
 		// Этап 5. Спуск
@@ -366,7 +364,7 @@ void IMU_task() {
 			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
 			static int exit_cnt = 0;
 			taskENTER_CRITICAL();
-			exit_cnt = ((stateSensors_prev.height - stateSensors.height) < 0.1) ? (exit_cnt+1) : 0;
+			exit_cnt = (fabs(stateSensors_prev.height - stateSensors.height) < 0.05) ? (exit_cnt+1) : 0;
 			if (exit_cnt == 5)
 				state_system.globalStage = 6;
 			taskEXIT_CRITICAL();

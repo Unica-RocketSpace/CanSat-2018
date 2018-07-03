@@ -221,7 +221,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
  * Функция для записи данных.
  * Параметры: write_buffer - буффер для записи данных, buffer_size - размер буффера, ACK - ответ (1 если нужен, 0 если нет).
  */
-uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buffer_size, bool ACK);
+uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buffer_size, bool ACK, uint8_t* cmd);
 
 /*
  * Позволяет записать адрес регистра (размер до 5 байт)

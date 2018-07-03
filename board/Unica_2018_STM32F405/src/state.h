@@ -98,6 +98,7 @@ typedef struct {
 	uint8_t GPS_state;		//	state of GPS-module
 
 	uint8_t globalStage;	//	number of current global stage
+	uint8_t globalCommand;
 
 	float time;				//	current time
 } state_system_t;

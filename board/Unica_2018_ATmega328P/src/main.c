@@ -101,7 +101,7 @@ int main() {
 	sei();										//Глобальное включение прерываний
 
 
-	float old_height;
+	float old_height = 0.0f;
 	uint8_t count = 0;
 	uint8_t count_end = 0;
 
@@ -134,12 +134,12 @@ int main() {
 		nRF24L01_clear_status(true, true, true);
 		nRF24L01_write(buffer, len, true);
 
-		 /*printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
+		 printf("***\nSTATUS_RX_DR = %d\nSTATUS_TX_DS = %d\nSTATUS_MAX_RT = %d\nSTATUS_RX_P_NO = %d\nSTATUS_TX_FULL = %d\n",
 		 (((data_register) & (1 << RX_DR)) >> RX_DR),
 		 (((data_register) & (1 << TX_DS)) >> TX_DS),
 		 (((data_register) & (1 << MAX_RT)) >> MAX_RT),
 		 (((data_register) & (0b111 << RX_P_NO)) >> RX_P_NO),
-		 (((data_register) & (1 << TX_FULL))) >> TX_FULL);*/
+		 (((data_register) & (1 << TX_FULL))) >> TX_FULL);
 
 
 		// Получаем команды с наземки
@@ -199,8 +199,8 @@ int main() {
 			break;
 
 		case STAGE_GOING_UP:
-			float now_height = TM_package.height;
-			if (now_height < old_height) count ++;
+
+			if (TM_package.height < old_height) count ++;
 			if (count == 5) my_stage = STAGE_GOING_DOWN;
 			//Проверяем команду с Земли
 			if (has_data) {
@@ -211,13 +211,12 @@ int main() {
 					printf("Got Wrong command\n");
 			} else
 				printf("There is no data\n");
-			old_height = now_height;
+			old_height = TM_package.height;
 
 			break;
 
 		case STAGE_GOING_DOWN:
 
-			float now_height = TM_package.height;
 			//Проверяем команду с земли
 			if (has_data) {
 				printf("COMMAND: %d\n", cmdvalue);
@@ -231,10 +230,10 @@ int main() {
 
 			if (check_height ( TM_package.height)) deploy_parashute();
 
-			if (fabsf(now_height - old_height) < 0.01) count ++;
-			if (count == 5) my_stage = STAGE_ALL_DONE;
+			if (fabsf(TM_package.height - old_height) < 0.01) count_end ++;
+			if (count_end == 5) my_stage = STAGE_ALL_DONE;
 
-			old_height = now_height;
+			old_height = TM_package.height;
 
 			break;
 

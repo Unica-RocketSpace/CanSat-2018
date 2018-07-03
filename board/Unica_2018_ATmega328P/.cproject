@@ -45,7 +45,7 @@
 								<option id="de.innot.avreclipse.compiler.option.def.1023172593" name="Define Syms (-D)" superClass="de.innot.avreclipse.compiler.option.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAVLINK_COMM_NUM_BUFFERS=1"/>
 								</option>
-								<option id="de.innot.avreclipse.compiler.option.otherflags.1781739096" superClass="de.innot.avreclipse.compiler.option.otherflags" value="-ffunction-sections -fdata-sections" valueType="string"/>
+								<option id="de.innot.avreclipse.compiler.option.otherflags.1781739096" name="Other flags" superClass="de.innot.avreclipse.compiler.option.otherflags" value="-ffunction-sections -fdata-sections" valueType="string"/>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.1713091403" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
 							</tool>
 							<tool id="de.innot.avreclipse.tool.cppcompiler.app.release.1094071957" name="AVR C++ Compiler" superClass="de.innot.avreclipse.tool.cppcompiler.app.release">

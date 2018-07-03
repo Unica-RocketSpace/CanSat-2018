@@ -17,8 +17,10 @@ typedef struct {
 	float pressure;
 	float temperature;
 	float height;
+	uint8_t baro_state;
 	uint8_t motor_state;
 	uint8_t para_state;
+	uint8_t globalStage;
 }TM_package_t;
 
 typedef struct {

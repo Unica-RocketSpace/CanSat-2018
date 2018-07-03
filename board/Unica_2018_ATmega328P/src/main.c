@@ -126,7 +126,8 @@ int main() {
 
 		//Отправляем телеметрию пакетами Mavlink
 		mavlink_msg_atmega_pack(1, 1, &msg, TM_package.time, TM_package.pressure,
-				TM_package.height, TM_package.temperature, TM_package.motor_state, TM_package.para_state);
+				TM_package.height, TM_package.temperature, TM_package.baro_state,
+				TM_package.motor_state, TM_package.para_state, TM_package.globalStage);
 		uint8_t buffer[100];
 		uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
 

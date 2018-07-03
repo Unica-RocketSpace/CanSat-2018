@@ -30,8 +30,7 @@ uint8_t UNISAT_GPS = 0x04;
 uint8_t UNISAT_RPI = 0x05;
 uint8_t UNISAT_CAM = 0x06;
 
-static dump_state_t stream_file;
-static const char filename[] = "TM-";
+static dump_channel_state_t stream_file;
 
 // FIXME: ЗАМЕНИТЬ ВРЕМЯ В ПАКЕТЕ НА ВРЕМЯ ПОЛУЧЕНИЯ ДАННЫХ
 
@@ -56,8 +55,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -80,8 +82,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -108,8 +113,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -130,8 +138,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -151,8 +162,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -178,8 +192,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -199,8 +216,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -219,8 +239,11 @@ taskEXIT_CRITICAL();
 	len = mavlink_msg_to_send_buffer(buffer, &msg);
 	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
 
+	taskENTER_CRITICAL();
+	state_system.SD_state = stream_file.res;
 	if (stream_file.res == FR_OK)
-		dump(&stream_file, buffer, len);
+		dump(buffer, len);
+	taskEXIT_CRITICAL();
 
 	return error;
 }
@@ -238,7 +261,10 @@ void IO_RF_Init() {
 	stream_file.res = 1;
 	sd_cs(false);
 	//	запуск SD
-//	dump_init(&stream_file, filename);
+	_state.file_opened = false;
+	_state.file_prefix = "U";
+	_state.sync_counter = 0;
+	dump_init(&stream_file);
 	state_system.SD_state = (uint8_t)stream_file.res;
 	HAL_Delay(100);
 }
@@ -256,6 +282,7 @@ void IO_RF_task() {
 		mavlink_msg_sensors_send();
 		mavlink_msg_gps_send();
 		mavlink_msg_camera_orientation_send();
+
 
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {

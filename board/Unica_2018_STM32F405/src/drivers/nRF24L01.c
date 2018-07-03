@@ -212,7 +212,7 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 		uint8_t read_command = nRF24L01_READ_RX_FIFO;
 		_cs_enable();
 		PROCESS_ERROR(HAL_SPI_Transmit(hspi, &read_command, 1, _TIMEOUT_));
-		for (int i = 0; i < 1000; i++) {}
+		for (int i = 0; i < 2000; i++) {}
 		PROCESS_ERROR(HAL_SPI_Receive(hspi, read_buffer, 32, _TIMEOUT_));
 		_cs_disable();
 		*cmd = read_buffer[0];

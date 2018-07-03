@@ -33,7 +33,7 @@
 #define SD_DMA_TX_STREAM	DMA2_Stream3
 
 #define SD_BAUD_RATE_PRESCALER_SLOW SPI_BAUDRATEPRESCALER_256	//!< для первичной прокачки и инициализации SD карты
-#define SD_BAUD_RATE_PRESCALER_FAST SPI_BAUDRATEPRESCALER_64	//!< для основной работы. Быстрее не может :c
+#define SD_BAUD_RATE_PRESCALER_FAST SPI_BAUDRATEPRESCALER_128	//!< для основной работы. Быстрее не может :c
 
 // =========================================================
 // Вспомогательные сущности
@@ -589,7 +589,7 @@ sd_error_t sd_block_read_multi(size_t offset, void * block, size_t block_count)
       {
     	  sd_cs(true);
          sd_read(&token, 1);
-         sd_cs(false);
+//         sd_cs(false);
       } while (token == 0xFF);
 
       // проверяем токен
@@ -600,7 +600,7 @@ sd_error_t sd_block_read_multi(size_t offset, void * block, size_t block_count)
       }
 
       // читаем сам блок
-      sd_cs(true);
+//      sd_cs(true);
       HAL_SPI_TransmitReceive(&spi_nRF24L01, _dummy_, (uint8_t*)block + 512*i, 512, 0xFF);
       // читаем CRC
       uint16_t crc = 0;

@@ -274,7 +274,7 @@ void IO_RF_task() {
 
 	for (;;) {
 
-		vTaskDelay(100/portTICK_RATE_MS);
+		vTaskDelay(50/portTICK_RATE_MS);
 
 		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();
@@ -291,40 +291,38 @@ void IO_RF_task() {
 				state_system.globalStage = 1;
 		taskEXIT_CRITICAL();
 		}
-		// Этап 1. Погрузка в ракету
+
+		// Этап 1. Определение начального состояния
 		if (state_system.globalStage == 1) {
-		taskENTER_CRITICAL();
-			if (state_system.globalCommand == 2)
-				state_system.globalStage = 2;
-		taskEXIT_CRITICAL();
-		}
-		// Этап 2. Определение начального состояния
-		if (state_system.globalStage == 2) {
 			mavlink_msg_state_zero_send();
 
 
 		taskENTER_CRITICAL();
-			if (state_system.globalCommand == 3)
-				state_system.globalStage = 3;
+			if (state_system.globalCommand == 2)
+				state_system.globalStage = 2;
 		taskEXIT_CRITICAL();
 
 		}
-		// Этап 3. Полет в ракете
-		if (state_system.globalStage == 3) {
+		// Этап 2. Полет в ракете
+		if (state_system.globalStage == 2) {
 		taskENTER_CRITICAL();
-			if (state_system.globalCommand == 4)
-				state_system.globalStage = 4;
+			if (state_system.globalCommand == 3)
+				state_system.globalStage = 3;
 		taskEXIT_CRITICAL();
 		}
-		/*// Этап 4. Свободное падение
+		// Этап 3. Свободное падение
+		if (state_system.globalStage == 3) {
+		taskENTER_CRITICAL();
+			if (state_system.globalCommand == 3)
+				state_system.globalStage = 3;
+		taskEXIT_CRITICAL();
+		}
+		// Этап 4. Спуск
 		if (state_system.globalStage == 4) {
 		}
-		// Этап 5. Спуск
+		// Этап 5. Окончание полета
 		if (state_system.globalStage == 5) {
 		}
-		// Этап 6. Окончание полета
-		if (state_system.globalStage == 6) {
-		}*/
 	}
 }
 

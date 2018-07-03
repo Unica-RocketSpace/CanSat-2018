@@ -201,6 +201,27 @@ void send_servo_pos(float* servo_pos) {
 }
 
 
+static void motors_rotateAll() {
+	//	рассчитываем углы
+	float step_engine_pos = 0;
+	float servo_pos = 0;
+taskENTER_CRITICAL();
+	float step_engine_pos_prev = stateCamera_orient_prev.step_engine_pos;
+taskEXIT_CRITICAL();
+	calculate_angles(&step_engine_pos, &servo_pos);
+
+	//	передаем углы исполняющим органам
+	send_servo_pos(&servo_pos);
+	send_stepEngine_angle(&step_engine_pos, &step_engine_pos_prev);
+
+	//	записываем углы в state
+taskENTER_CRITICAL();
+	stateCamera_orient.step_engine_pos = step_engine_pos;
+	stateCamera_orient.servo_pos = servo_pos;
+taskEXIT_CRITICAL();
+}
+
+
 
 void MOTORS_task() {
 
@@ -209,59 +230,58 @@ void MOTORS_task() {
 	//	Инициализация драйвера ШД
 	step_engine_init();
 
-//	const TickType_t _delay = 50 / portTICK_RATE_MS;
-//	vTaskDelay(40*_delay);
-
-	for(;;) {
-		//	рассчитываем углы
-		float step_engine_pos = 0;
-		float servo_pos = 0;
-	taskENTER_CRITICAL();
-		float step_engine_pos_prev = stateCamera_orient_prev.step_engine_pos;
-	taskEXIT_CRITICAL();
-		calculate_angles(&step_engine_pos, &servo_pos);
-
-		//	передаем углы исполняющим органам
-		send_servo_pos(&servo_pos);
-		send_stepEngine_angle(&step_engine_pos, &step_engine_pos_prev);
-
-		//	записываем углы в state
-	taskENTER_CRITICAL();
-		stateCamera_orient.step_engine_pos = step_engine_pos;
-		stateCamera_orient.servo_pos = servo_pos;
-	taskEXIT_CRITICAL();
-//		vTaskDelay(_delay);
-	}
 
 	for (;;) {
+		vTaskDelay(50/portTICK_RATE_MS);
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
 		}
-
-		// Этап 1. Погрузка в ракету
+		// Этап 1. Определение начального состояния
 		if (state_system.globalStage == 1) {
 		}
-		// Этап 2. Определение начального состояния
+
+		// Этап 2. Полет в ракете
 		if (state_system.globalStage == 2) {
 		}
 
-		// Этап 3. Полет в ракете
+		// Этап 3. Свободное падение
 		if (state_system.globalStage == 3) {
+			static int counter = 0;
+
+			if (counter == 0) {
+				float step_engine_pos = 14;
+				float step_engine_pos_prev = 0;
+				send_stepEngine_angle(&step_engine_pos, &step_engine_pos_prev);
+				counter = 1;
+			}
+
+			motors_rotateAll();
 		}
 
-		// Этап 4. Свободное падение
+		// Этап 4. Спуск
 		if (state_system.globalStage == 4) {
-			//TODO: РАСКРЫВАЕМ СТАБИЛИЗАТОРЫ
-		}
-
-		// Этап 5. Спуск
-		if (state_system.globalStage == 5) {
 			//TODO:	РАСКРЫВАЕМ ПАРАШЮТ
+			static int counter = 0;
+
+			if (counter == 0) {
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, SET);
+				counter = 1;
+			}
+
+			motors_rotateAll();
 		}
 
-		// Этап 6. Окончание полета
-		if (state_system.globalStage == 6) {
+		// Этап 5. Окончание полета
+		if (state_system.globalStage == 5) {
+			static int counter = 0;
 
+			if (counter == 0) {
+				float servo_pos = M_PI / 2;
+				send_servo_pos(&servo_pos);
+				counter = 1;
+			}
+
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, RESET);
 		}
 	}
 

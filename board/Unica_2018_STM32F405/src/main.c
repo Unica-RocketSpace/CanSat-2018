@@ -72,7 +72,7 @@ static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
 //	параметры MOTORS_task
-#define MOTORS_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
+#define MOTORS_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
 static StackType_t	_MOTORSTaskStack[MOTORS_TASK_STACK_SIZE];
 static StaticTask_t	_MOTORSTaskObj;
 
@@ -114,11 +114,11 @@ int main(int argc, char* argv[])
 				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj
 	);
 
-//	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
-//	);
+	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
+			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
+	);
 
-	//	usart_dbg init
+/*	//	usart_dbg init
 	usart_dbg.Instance = USART3;
 	usart_dbg.Init.BaudRate = 256000;
 	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 	usart_dbg.Init.Parity = UART_PARITY_NONE;
 	usart_dbg.Init.Mode = UART_MODE_TX_RX;
 
-	HAL_USART_Init(&usart_dbg);
+	HAL_USART_Init(&usart_dbg);*/
 
 	IMU_Init();
 	IO_RF_Init();

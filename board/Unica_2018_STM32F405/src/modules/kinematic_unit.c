@@ -298,15 +298,13 @@ void IMU_Init() {
 void IMU_task() {
 
 	for (;;) {
-		vTaskDelay(50/portTICK_RATE_MS);
+		vTaskDelay(10/portTICK_RATE_MS);
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
 		}
-		// Этап 1. Погрузка в ракету
+
+		// Этап 1. Определение начального состояния
 		if (state_system.globalStage == 1) {
-		}
-		// Этап 2. Определение начального состояния
-		if (state_system.globalStage == 2) {
 			static uint8_t counter = 0;
 
 			if (counter == 0) {
@@ -329,8 +327,8 @@ void IMU_task() {
 
 
 		}
-		// Этап 3. Полет в ракете
-		if (state_system.globalStage == 3) {
+		// Этап 2. Полет в ракете
+		if (state_system.globalStage == 2) {
 			bmp280_update();
 			IMU_updateDataAll();
 			_IMUtask_updateData();
@@ -340,37 +338,38 @@ void IMU_task() {
 			taskENTER_CRITICAL();
 			exit_cnt = (stateSensors.pressure > stateSensors_prev.pressure) ? (exit_cnt+1) : 0;
 			if (exit_cnt == 5)
-				state_system.globalStage = 4;
+				state_system.globalStage = 3;
 			taskEXIT_CRITICAL();
 		}
-		// Этап 4. Свободное падение
+		// Этап 3. Свободное падение
+		if (state_system.globalStage == 3) {
+			bmp280_update();
+			IMU_updateDataAll();
+			_IMUtask_updateData();
+
+//			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
+//			taskENTER_CRITICAL();
+//			if (stateSensors.height <= 270)
+//				state_system.globalStage = 4;
+//			taskEXIT_CRITICAL();
+		}
+		// Этап 4. Спуск
 		if (state_system.globalStage == 4) {
 			bmp280_update();
 			IMU_updateDataAll();
 			_IMUtask_updateData();
 
-			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
-			taskENTER_CRITICAL();
-			if (stateSensors.height <= 270)
-				state_system.globalStage = 5;
-			taskEXIT_CRITICAL();
+			//	FIXME: RETURN
+//			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
+//			static int exit_cnt = 0;
+//			taskENTER_CRITICAL();
+//			exit_cnt = (fabs(stateSensors_prev.height - stateSensors.height) < 0.005) ? (exit_cnt+1) : 0;
+//			if (exit_cnt == 5)
+//				state_system.globalStage = 5;
+//			taskEXIT_CRITICAL();
 		}
-		// Этап 5. Спуск
+		// Этап 5. Окончание полета
 		if (state_system.globalStage == 5) {
-			bmp280_update();
-			IMU_updateDataAll();
-			_IMUtask_updateData();
-
-			// ОПРЕДЕЛЯЕМ НАЧАЛО СПУСКА
-			static int exit_cnt = 0;
-			taskENTER_CRITICAL();
-			exit_cnt = (fabs(stateSensors_prev.height - stateSensors.height) < 0.05) ? (exit_cnt+1) : 0;
-			if (exit_cnt == 5)
-				state_system.globalStage = 6;
-			taskEXIT_CRITICAL();
-		}
-		// Этап 6. Окончание полета
-		if (state_system.globalStage == 6) {
 			bmp280_update();
 			IMU_updateDataAll();
 			_IMUtask_updateData();

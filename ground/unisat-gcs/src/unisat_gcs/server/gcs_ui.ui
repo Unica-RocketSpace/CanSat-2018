@@ -72,7 +72,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Создать график</string>
+             <string>Очистить телеметрию</string>
             </property>
            </widget>
           </item>
@@ -113,24 +113,6 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_11">
-            <item>
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Погрузка в ракету</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="load_in_rocket">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <item>
              <widget class="QLabel" name="label_15">
@@ -151,9 +133,9 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item>
-             <widget class="QLabel" name="label_16">
+             <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>Спуск</string>
+               <string>Падение</string>
               </property>
              </widget>
             </item>
@@ -168,6 +150,24 @@
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <item>
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Спуск</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lowering">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
              <widget class="QLabel" name="label_17">
               <property name="text">

@@ -48,8 +48,8 @@ class MyWin(QtWidgets.QMainWindow):
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
 
-        self.lenght = 40
-        self.cut = 10
+        self.lenght = 150
+        self.cut = 11
 
         self.temp_atmega = []
         self.pressure_atmega = []
@@ -169,6 +169,8 @@ class MyWin(QtWidgets.QMainWindow):
         self.sc_item_down2.addItem(self.graf_down2)
 
         self.sc_item_down3 = pg.PlotItem(title='GPS')
+
+        self.point = pg.PlotItem()
         self.ui.plot_down.addItem(self.sc_item_down3)
         self.graf_down3 = pg.PlotCurveItem()
         self.sc_item_down3.addItem(self.graf_down3)
@@ -245,9 +247,11 @@ class MyWin(QtWidgets.QMainWindow):
         self.pl_graf_down2_z = self.sc_item_down2.plot()
         self.pl_graf_down3_z = self.sc_item_down3.plot()
 
+
         # Здесь прописываем событие нажатия на кнопку
         self.ui.pushButton_3.clicked.connect(self.Remove_graf)
         self.ui.commandLinkButton.clicked.connect(self.send_command)
+        self.ui.pushButton.clicked.connect(self.clear_telem)
         self.ui.pushButton_13.clicked.connect(self.transfer_graf_top1)
         self.ui.pushButton_14.clicked.connect(self.transfer_graf_top2)
         self.ui.pushButton_12.clicked.connect(self.transfer_graf_top3)
@@ -315,6 +319,9 @@ class MyWin(QtWidgets.QMainWindow):
         self.sc_item_large.removeItem(self.sc_item_large)
         self.sc_item_large.clear()
     # FIXME: возможно не работает
+
+    def clear_telem(self):
+        self.ui.textBrowser_2.clear()
 
 
     def check_now_graf(self):
@@ -585,66 +592,6 @@ class MyWin(QtWidgets.QMainWindow):
         now_graf = self.graf_down3
         str_now_graf = 'graf_down3'
 
-    #
-    #
-    # def process_message(msg):
-    #     _log.info("%s", msg)
-    #
-    #     if isinstance(msg, MAVLink_bad_data):
-    #        pass
-    #
-    #     elif isinstance(msg, MAVLink_atmega_message):
-    #         _log.info(
-    #             "ATmega {n: %ld, time : %0.3f, pressure : %0.3f, temp : %0.1f}"
-    #             %
-    #             (msg.get_header().seq, msg.time, msg.pressure, msg.temp)
-    #         )
-    #
-    #     elif isinstance(msg, MAVLink_imu_rsc_message):
-    #         _log.info(
-    #             "IMU_RSC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] G: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
-    #             %
-    #             (msg.get_header().seq, msg.time, *msg.accel, *msg.gyro, *msg.compass)
-    #         )
-    #
-    #     elif isinstance(msg, MAVLink_imu_isc_message):
-    #         _log.info(
-    #             "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
-    #             %
-    #             (msg.get_header().seq, msg.time, *msg.accel, *msg.compass)
-    #         )
-    #         _log.info(
-    #             "QUAT\t {n: %ld, time: %0.3f, quat: [%0.4f, %0.4f, %0.4f, %0.4f]}"
-    #             %
-    #             (msg.get_header().seq, msg.time, *msg.quaternion)
-    #         )
-    #         _log.info(
-    #             "POS\t {n: %ld, time: %0.3f, velo: [%0.3f, %0.3f, %0.3f], pos: [%0.3f, %0.3f, %0.3f]}"
-    #             %
-    #             (msg.get_header().seq, msg.time, *msg.velocities, *msg.coordinates)
-    #         )
-    #     elif isinstance(msg, MAVLink_sensors_message):
-    #         _log.info(
-    #             "SENSORS  {n: %ld, time: %0.3f, temp: %0.3f, pressure: %0.3f}"
-    #             %
-    #             (msg.get_header().seq, msg.time, msg.temp, msg.pressure)
-    #         )
-    #     elif isinstance(msg, MAVLink_gps_message):
-    #         _log.info(
-    #             "GPS\t {n: %ld, time: %0.3f, coordinates: [%0.5f, %0.5f, %0.5f]}"
-    #             %
-    #             (msg.get_header().seq, msg.time, msg.coordinates[1], msg.coordinates[0], msg.coordinates[2])
-    #         )
-    #     elif isinstance(msg, MAVLink_camera_orientation_message):
-    #         _log.info(
-    #             "CAM\t {n: %ld, time: %0.3f, SE: %0.3f, SERVO: %0.3f}"
-    #             %
-    #             (msg.get_header().seq, msg.time, 180*msg.step_engine_pos/math.pi, 180*msg.servo_pos/math.pi)
-    #         )
-    #     else:
-    #         _log.info(msg)
-    #
-    #
 
     @QtCore.pyqtSlot(list)
     def atm_msg(self, msgs):
@@ -662,7 +609,7 @@ class MyWin(QtWidgets.QMainWindow):
                 (msgs[i].get_header().seq, msgs[i].time, msgs[i].pressure, msgs[i].temp, msgs[i].baro_state, msgs[i].globalStage)
             )
 
-        if len(self.time_atm) == self.lenght:
+        if len(self.time_atm) > self.lenght:
             self.time_atm = self.time_atm[self.cut:(self.lenght-1)]
             self.pressure_atmega = self.pressure_atmega[self.cut:(self.lenght-1)]
             self.temp_atmega = self.temp_atmega[self.cut:(self.lenght-1)]
@@ -697,7 +644,7 @@ class MyWin(QtWidgets.QMainWindow):
                     (msgs[i].get_header().seq, msgs[i].time, *msgs[i].accel, *msgs[i].gyro, *msgs[i].compass)
                 )
 
-        if len(self.time_RSC) == self.lenght:
+        if len(self.time_RSC) > self.lenght:
             self.a_RSC_x = self.a_RSC_x[self.cut:(self.lenght - 1)]
             self.a_RSC_y = self.a_RSC_y[self.cut:(self.lenght - 1)]
             self.a_RSC_z = self.a_RSC_z[self.cut:(self.lenght - 1)]
@@ -747,10 +694,10 @@ class MyWin(QtWidgets.QMainWindow):
 
             teta = 2 * acos(msgs[i].quaternion[0])
             sin_teta = sqrt((1 - msgs[i].quaternion[0] * msgs[i].quaternion[0]))
-            self.rsc_coord.rotate(teta, msgs[i].quaternion[1] / sin_teta, msgs[i].quaternion[2] / sin_teta, msgs[i].quaternion[3] / sin_teta)
+            self.rsc_coord.rotate(180*teta/math.pi, - msgs[i].quaternion[1] / sin_teta, - msgs[i].quaternion[2] / sin_teta, - msgs[i].quaternion[3] / sin_teta)
 
             self.ui.textBrowser_2.append(
-                "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.7f] M: [%0.3f, %0.3f, %0.3f]}"
+                "IMU_ISC\t {n: %ld, time: %0.3f, A: [%0.4f, %0.4f, %0.4f] M: [%0.3f, %0.3f, %0.3f]}"
                 %
                 (msgs[i].get_header().seq, msgs[i].time, *msgs[i].accel, *msgs[i].compass)
             )
@@ -765,7 +712,7 @@ class MyWin(QtWidgets.QMainWindow):
                 (msgs[i].get_header().seq, msgs[i].time, *msgs[i].velocities, *msgs[i].coordinates)
             )
 
-        if len(self.time_ISC) == self.lenght:
+        if len(self.time_ISC) > self.lenght:
             self.a_ISC_x = self.a_ISC_x[self.cut:(self.lenght - 1)]
             self.a_ISC_y = self.a_ISC_y[self.cut:(self.lenght - 1)]
             self.a_ISC_z = self.a_ISC_z[self.cut:(self.lenght - 1)]
@@ -779,6 +726,17 @@ class MyWin(QtWidgets.QMainWindow):
             self.mov_x = self.mov_x[self.cut:(self.lenght - 1)]
             self.mov_y = self.mov_y[self.cut:(self.lenght - 1)]
             self.mov_z = self.mov_z[self.cut:(self.lenght - 1)]
+
+        # self.plt.setData(pos=self.GPS, color=(1.0, 1.0, 1.0, 1.0))
+        # m = len(self.mov_x)
+        # if m != 0:
+        #     delta_x = self.mov_x[m - 1] - self.mov_x[m - self.cut]
+        #     delta_y = self.mov_y[m - 1] - self.mov_y[m - self.cut]
+        #     delta_z = self.mov_z[m - 1] - self.mov_z[m - self.cut]
+        #     self.rsc_coord.translate(delta_x, delta_y, delta_z)
+        # else:
+        #     self.rsc_coord.translate(self.mov_x, self.mov_y, self.mov_z)
+        # Цвета в pg.glColor
 
         self.pl_graf_top1_x.setData(x=self.time_ISC, y=self.a_ISC_x, pen=('r'))
         self.pl_graf_top1_y.setData(x=self.time_ISC, y=self.a_ISC_y, pen=('g'))
@@ -811,10 +769,10 @@ class MyWin(QtWidgets.QMainWindow):
                 (msgs[i].get_header().seq, msgs[i].time, msgs[i].temp, msgs[i].pressure)
             )
 
-        if len(self.time_sens) == self.lenght:
-            self.time_sens = self.time_sens[4:(self.lenght - 1)]
-            self.pressure_sensors = self.pressure_sensors[4:(self.lenght - 1)]
-            self.temp_sensors = self.temp_sensors[4:(self.lenght - 1)]
+        if len(self.time_sens) > self.lenght:
+            self.time_sens = self.time_sens[self.cut:(self.lenght - 1)]
+            self.pressure_sensors = self.pressure_sensors[self.cut:(self.lenght - 1)]
+            self.temp_sensors = self.temp_sensors[self.cut:(self.lenght - 1)]
 
         self.pl_graf_down1_y.setData(x=self.time_sens, y=self.temp_sensors, pen=('b'))
         self.pl_graf_down2_y.setData(x=self.time_sens, y=self.pressure_sensors, pen=('b'))
@@ -835,34 +793,21 @@ class MyWin(QtWidgets.QMainWindow):
                 (msgs[i].get_header().seq, msgs[i].time, msgs[i].coordinates[1], msgs[i].coordinates[0], msgs[i].coordinates[2])
             )
 
+            y0 = []
+            x0 = []
+            x0.append(self.x[0])
+            y0.append(self.y[0])
 
-        if len(self.x) == self.lenght:
-            self.x = self.x[self.cut:(self.lenght - 1)]
-            self.y = self.y[self.cut:(self.lenght - 1)]
-            self.z = self.z[self.cut:(self.lenght - 1)]
+        self.pl_graf_down3_y.setData(x=x0, y=y0, pen=('b'), width=10)
 
+        # if len(self.x) > self.lenght:
+        #     self.x = self.x[self.cut:(self.lenght - 1)]
+        #     self.y = self.y[self.cut:(self.lenght - 1)]
+        #     self.z = self.z[self.cut:(self.lenght - 1)]
+        #
 
         self.pl_graf_down3_x.setData(x=self.x, y=self.y, pen=('r'))
 
-        # self.plt.setData(pos=self.GPS, color=(1.0, 1.0, 1.0, 1.0))
-        # m = len(self.x)
-        # if m != 0:
-        #     delta_x = self.x[m] - self.x[m - 1]
-        #     delta_y = self.y[m] - self.y[m - 1]
-        #     delta_z = self.z[m] - self.z[m - 1]
-        #     self.rsc_coord.translate(delta_x, delta_y, delta_z)
-        # else:
-        #     self.rsc_coord.translate(self.x, self.y, self.z)
-        # Цвета в pg.glColor
-
-
-    def clear_stage(self):
-        self.ui.init.clear()
-        self.ui.init_param.clear()
-        self.ui.load_in_rocket.clear()
-        self.ui.in_rocket.clear()
-        self.ui.falling.clear()
-        self.ui.end.clear()
 
     @QtCore.pyqtSlot(list)
     def state_msg(self, msgs):
@@ -876,7 +821,6 @@ class MyWin(QtWidgets.QMainWindow):
             self.state_sd = msgs[i].SD_state
             self.state_stm_motor = msgs[i].MOTOR_state
 
-            print(self.state_fly)
 
             self.ui.mpu_state.clear()
             self.ui.bmp_state.clear()
@@ -885,6 +829,14 @@ class MyWin(QtWidgets.QMainWindow):
             self.ui.morot_stm_state.clear()
             self.ui.gps_state.clear()
 
+
+            self.ui.init.clear()
+            self.ui.init_param.clear()
+            self.ui.in_rocket.clear()
+            self.ui.lowering.clear()
+            self.ui.falling.clear()
+            self.ui.end.clear()
+
             self.ui.mpu_state.setText(str(self.state_mpu))
             self.ui.bmp_state.setText(str(self.state_bmp))
             self.ui.sd_state.setText(str(self.state_sd))
@@ -892,28 +844,20 @@ class MyWin(QtWidgets.QMainWindow):
             self.ui.morot_stm_state.setText(str(self.state_stm_motor))
             self.ui.gps_state.setText(str(self.state_gps))
 
-            print(str(self.state_fly) + "\n")
+        if self.state_fly == 0:
+            self.ui.init.setText(str('1'))
 
-            if self.state_fly == '0':
-                self.clear_stage()
-                self.ui.init.setText(str('1'))
+        if self.state_fly == 1:
+            self.ui.init_param.setText(str('1'))
 
-            if self.state_fly == '1':
-                self.clear_stage()
-                self.ui.init_param.setText(str('1'))
+        if self.state_fly == 2:
+            self.ui.in_rocket.setText(str('1'))
 
-            if self.state_fly == '2':
-                self.clear_stage()
-                self.ui.load_in_rocket.setText(str('1'))
+        if self.state_fly == 3:
+            self.ui.falling.setText(str('1'))
 
-            if self.state_fly == '4':
-                self.clear_stage()
-                self.ui.in_rocket.setText(str('1'))
+        if self.state_fly == 4:
+            self.ui.lowering.setText(str('1'))
 
-            if self.state_fly == '5':
-                self.clear_stage()
-                self.ui.falling.setText(str('1'))
-
-            if self.state_fly == '6':
-                self.clear_stage()
-                self.ui.end.setText(str('1'))
+        if self.state_fly == 5:
+            self.ui.end.setText(str('1'))

@@ -72,7 +72,7 @@ static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
 //	параметры MOTORS_task
-#define MOTORS_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
+#define MOTORS_TASK_STACK_SIZE (40*configMINIMAL_STACK_SIZE)
 static StackType_t	_MOTORSTaskStack[MOTORS_TASK_STACK_SIZE];
 static StaticTask_t	_MOTORSTaskObj;
 
@@ -114,9 +114,9 @@ int main(int argc, char* argv[])
 				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj
 	);
 
-	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
-	);
+//	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
+//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
+//	);
 
 /*	//	usart_dbg init
 	usart_dbg.Instance = USART3;

@@ -57,9 +57,8 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
@@ -84,9 +83,8 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
@@ -115,9 +113,8 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
@@ -140,9 +137,8 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
@@ -164,9 +160,8 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
@@ -194,9 +189,8 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
@@ -218,35 +212,12 @@ taskEXIT_CRITICAL();
 
 	taskENTER_CRITICAL();
 	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
 	taskEXIT_CRITICAL();
+	dump(&stream_file, buffer, len);
 
 	return error;
 }
 
-static uint8_t mavlink_msg_test_send() {
-
-	mavlink_camera_orientation_t msg_test;
-	msg_test.time = (float)HAL_GetTick() / 1000;
-taskENTER_CRITICAL();
-	msg_test.servo_pos = 405;
-	msg_test.step_engine_pos = 203;
-taskEXIT_CRITICAL();
-	mavlink_message_t msg;
-	uint16_t len = mavlink_msg_camera_orientation_encode(UNISAT_ID, UNISAT_CAM, &msg, &msg_test);
-	uint8_t buffer[100];
-	len = mavlink_msg_to_send_buffer(buffer, &msg);
-	uint8_t error = nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
-
-	taskENTER_CRITICAL();
-	state_system.SD_state = stream_file.res;
-	if (stream_file.res == FR_OK)
-		dump(buffer, len);
-	taskEXIT_CRITICAL();
-
-	return error;
-}
 
 
 static mavlink_message_t uplink_msg;
@@ -261,9 +232,7 @@ void IO_RF_Init() {
 	stream_file.res = 1;
 	sd_cs(false);
 	//	запуск SD
-	_state.file_opened = false;
-	_state.file_prefix = "U";
-	_state.sync_counter = 0;
+	stream_file.file_opened = false;
 	dump_init(&stream_file);
 	state_system.SD_state = (uint8_t)stream_file.res;
 	HAL_Delay(100);

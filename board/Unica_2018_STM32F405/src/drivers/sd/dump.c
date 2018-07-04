@@ -110,14 +110,10 @@ static FATFS _fs;
 static bool _fs_mounted = false;
 
 
-
-dump_channel_state_t _state;	// DUMP
-
-
-static void _reset(void)
+static void _reset(dump_channel_state_t* state)
 {
 	_fs_mounted = false;
-	_state.file_opened = false;
+	state->file_opened = false;
 }
 
 
@@ -135,7 +131,7 @@ bool dump_init(dump_channel_state_t* state)
 	if (_fs_mounted)
 	{
 		bool files_is_fine = true;
-		if (!_state.file_opened)
+		if (!state->file_opened)
 			files_is_fine = false;
 
 		if (files_is_fine)
@@ -153,7 +149,7 @@ bool dump_init(dump_channel_state_t* state)
 			if (i >= 3)
 			{
 				trace_printf("mount fails\n");
-				_reset();
+				_reset(state);
 				return false;
 			}
 		} while (res != FR_OK);
@@ -170,20 +166,25 @@ bool dump_init(dump_channel_state_t* state)
 		res = f_open(&fp, fname, FA_OPEN_EXISTING);
 		if (res == FR_NO_FILE)
 		{
+			state->file_opened = true;
 			// отлично - такого файла нет!
 			trace_printf("dump file name '%s' ok\n", fname);
 		}
 		else if (res == FR_OK)
 		{
+			state->file_opened = false;
+			state->file_prefix = "U";
+			state->sync_counter = 0;
 			//trace_printf("dump file name '%s' already exists\n", fname);
 			//f_close(&fp); пока попробуем без этого
 			goto again;
 		}
 		else
 		{
+			state->file_opened = false;
 			trace_printf("dump fname error '%s': err: %d\n", fname, res);
 			// сдаемся на этой итерации
-			_reset();
+			_reset(state);
 			return false;
 		}
 
@@ -201,7 +202,7 @@ bool dump_init(dump_channel_state_t* state)
 	{
 		trace_printf("open error = %d\n", res);
 		// снова сдаемся
-		_reset();
+		_reset(state);
 		return false;
 	}
 
@@ -213,40 +214,41 @@ bool dump_init(dump_channel_state_t* state)
 }
 
 
-bool dump(const void * data, size_t datasize)
+bool dump(dump_channel_state_t* state, const void * data, size_t datasize)
 {
 //	dump_channel_state_t * state = &_state;
 
 	//	FIXME:
 	// на случай, если что-то не так
-	if (!dump_init(&_state))
+	if (!dump_init(state))
 		return false;
 
 	UINT dummy;
 	FRESULT res;
 
 	// пишем на флешку
-	if ((res = f_write(&_state.file, data, datasize, &dummy)) != FR_OK)
+	for (int i = 0; i < 100000; i++) {volatile int x = 0;}
+	if ((res = f_write(&state->file, data, datasize, &dummy)) != FR_OK)
 	{
-		_state.res = res;
+		state->res = res;
 		trace_printf("write error %d\n", res);
-		_reset();
+		_reset(state);
 		return false;
 	}
 
-	if (_state.sync_counter >= 10)
+	if (state->sync_counter >= 10)
 	{
-		if ((res = f_sync(&_state.file)) != FR_OK)
+		if ((res = f_sync(&state->file)) != FR_OK)
 		{
-			_state.res = res;
+			state->res = res;
 			trace_printf("sync error %d\n", res);
-			_reset();
+			_reset(state);
 			return false;
 		}
 
-		_state.sync_counter = 0;
+		state->sync_counter = 0;
 	}
-	_state.sync_counter++;
+	state->sync_counter++;
 	return true;
 }
 

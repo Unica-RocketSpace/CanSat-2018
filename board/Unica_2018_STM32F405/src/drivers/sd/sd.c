@@ -181,7 +181,7 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 
 	PROCESS_ERROR(HAL_SPI_Init(hspi));
 
-	for (int i = 0; i < 10000; i++) {
+	for (int i = 0; i < 600000; i++) {
 		volatile uint8_t x = 0;
 	}
 
@@ -602,6 +602,7 @@ sd_error_t sd_block_read_multi(size_t offset, void * block, size_t block_count)
       // читаем сам блок
 //      sd_cs(true);
       HAL_SPI_TransmitReceive(&spi_nRF24L01, _dummy_, (uint8_t*)block + 512*i, 512, 0xFF);
+      for (int i = 0; i < 10000; i++) {volatile int x = 0;}
       // читаем CRC
       uint16_t crc = 0;
       sd_read(&crc, 2);

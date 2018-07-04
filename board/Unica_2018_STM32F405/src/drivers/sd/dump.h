@@ -28,7 +28,7 @@ extern dump_channel_state_t _state;	// DUMP
 
 
 bool dump_init(dump_channel_state_t* state);
-bool dump(const void * data, size_t datasize);
+bool dump(dump_channel_state_t* state, const void * data, size_t datasize);
 
 
 #endif /* DUMP_H_ */

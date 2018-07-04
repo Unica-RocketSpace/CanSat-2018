@@ -165,7 +165,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	PROCESS_ERROR(nRF24L01_read_status(hspi, &status));
 
 	_ce_up();
-	for (int i = 0; i < 1000; i++) {}
+	for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 	_ce_down();
 
 	uint8_t read_command = nRF24L01_READ_RX_FIFO;
@@ -173,7 +173,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	{
 		_cs_enable();
 		PROCESS_ERROR(HAL_SPI_Transmit(hspi, &read_command, 1, _TIMEOUT_));
-		for (int i = 0; i < 1000; i++) {}
+		for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 		PROCESS_ERROR(HAL_SPI_Receive(hspi, read_buffer, buffer_size, _TIMEOUT_));
 		_cs_disable();
 //		PROCESS_ERROR(nRF24L01_clear_status(hspi, true, false, false));
@@ -183,7 +183,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	PROCESS_ERROR(nRF24L01_RX_mode_on(hspi, false));
 	*isData = 0;
 end:
-	for (int i = 0; i < 1000; i++) {}
+	for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 	_cs_disable();
 	return error;
 }
@@ -196,13 +196,12 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	else write_command = nRF24L01_WRITE_TX_FIFO_NO_ACK;
 	_cs_enable();
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &write_command, 1, _TIMEOUT_));
-	for (int i = 0; i < 5000; i++) {}
+	for (int i = 0; i < 3000; i++) {volatile int x = 0;}
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, write_buffer, buffer_size, _TIMEOUT_));
 	_cs_disable();
 	_ce_up();
 	//FIXME:
-	for (volatile int i = 0; i < 10000; i++)
-	{}
+	for (int i = 0; i < 20000; i++) {volatile int x = 0;}
 	_ce_down();
 	uint8_t status = 0;
 	nRF24L01_read_status(&spi_nRF24L01, &status);
@@ -212,7 +211,7 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 		uint8_t read_command = nRF24L01_READ_RX_FIFO;
 		_cs_enable();
 		PROCESS_ERROR(HAL_SPI_Transmit(hspi, &read_command, 1, _TIMEOUT_));
-		for (int i = 0; i < 2000; i++) {}
+		for (int i = 0; i < 500; i++) {volatile int x = 0;}
 		PROCESS_ERROR(HAL_SPI_Receive(hspi, read_buffer, 32, _TIMEOUT_));
 		_cs_disable();
 		*cmd = read_buffer[0];
@@ -255,6 +254,7 @@ uint8_t nRF24L01_read_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t
 	_cs_enable();
 	uint8_t command = nRF24L01_READ_REGISTER(address);
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
+	for (int i = 0; i < 500; i++) {volatile int x = 0;}
 	PROCESS_ERROR(HAL_SPI_Receive(hspi, data, sizeof(*data), _TIMEOUT_));
 end:
 	_cs_disable();
@@ -266,6 +266,7 @@ uint8_t nRF24L01_read_register_address (SPI_HandleTypeDef* hspi, nRF24L01_regist
 	_cs_enable();
 	uint8_t command = nRF24L01_READ_REGISTER(address);
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
+	for (int i = 0; i < 500; i++) {volatile int x = 0;}
 	PROCESS_ERROR(HAL_SPI_Receive(hspi, data_register, data_len, _TIMEOUT_));
 end:
 	_cs_disable();
@@ -275,7 +276,6 @@ end:
 uint8_t nRF24L01_read_status(SPI_HandleTypeDef* hspi, uint8_t* status){
 	uint8_t error = 0;
 	_cs_enable();
-//	status = 0x00;
 	uint8_t dummy = 0xFF;
 	PROCESS_ERROR(HAL_SPI_TransmitReceive(hspi, &dummy, status, 1, _TIMEOUT_));
 end:
@@ -312,7 +312,7 @@ uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool fl
 	if (flag_MAX_RT) status |= (1 << MAX_RT);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_STATUS_ADDR, status));
 	_ce_up();
-	for (int i = 0; i < 1000; i++) {}
+	for (int i = 0; i < 500; i++) {}
 	_ce_down();
 	//_ce_enable();	//Не факт, что это нужно
 end:
@@ -362,6 +362,7 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 //			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 		uint8_t command = 0;
 		PROCESS_ERROR(nRF24L01_write(hspi, carret, portion, ACK, &command));
+		for (int i = 0; i < 500; i++) {volatile int x = 0;}
 	taskENTER_CRITICAL();
 		if (command != 0)
 			state_system.globalCommand = command;
@@ -371,11 +372,22 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 
 		while(1)
 		{
+			static int counter = 0;
 			uint8_t nRF_status = 0;
 			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
 			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
+
+			counter++;
+
 			if (finished)
 				break;
+
+//			if (counter == 10) {
+//				nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
+//				nRF24L01_clear_status(&spi_nRF24L01, false, true, true);
+//				counter = 0;
+//				break;
+//			}
 		}
 	}
 

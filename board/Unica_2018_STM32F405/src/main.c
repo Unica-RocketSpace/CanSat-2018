@@ -62,7 +62,7 @@ static StaticTask_t	_iorfTaskObj;
 
 
 //	параметры GPS_task
-#define GPS_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
+#define GPS_TASK_STACK_SIZE (60*configMINIMAL_STACK_SIZE)
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
@@ -101,9 +101,6 @@ int main(int argc, char* argv[])
 	state_system.NRF_state = 255;
 	state_system.SD_state = 255;
 
-//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-//			GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj
-//	);
 
 	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
 				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj
@@ -114,9 +111,14 @@ int main(int argc, char* argv[])
 				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj
 	);
 
-//	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-//			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
+	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
+			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
+	);
+
+//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
+//				GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj
 //	);
+
 
 /*	//	usart_dbg init
 	usart_dbg.Instance = USART3;
@@ -129,8 +131,9 @@ int main(int argc, char* argv[])
 	HAL_USART_Init(&usart_dbg);*/
 
 	IMU_Init();
+	GPS_Init(0);
 	IO_RF_Init();
-//	GPS_Init(0);
+	MOTORS_Init();
 
 	HAL_InitTick(15);
 

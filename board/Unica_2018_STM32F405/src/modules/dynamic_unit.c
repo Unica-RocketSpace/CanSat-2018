@@ -48,6 +48,7 @@ void HC05_Init() {
 	usart_HC05.Init.Mode = UART_MODE_TX_RX;
 
 	HAL_USART_Init(&usart_HC05);
+	HAL_Delay(200);
 }
 
 
@@ -99,6 +100,8 @@ void step_engine_init () {
 	DRV8825_pins.Pull = GPIO_NOPULL;
 	DRV8825_pins.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(DRV8855_nFAULT_PORT, &DRV8825_pins);
+
+	HAL_Delay(200);
 
 	//TODO:Написать определение MODE-ов с учетом STEP_DIVIDER
 	//DRV8855_MODE0_PORT->BSRR = 0xFF;
@@ -197,7 +200,6 @@ void send_servo_pos(float* servo_pos) {
 	sprintf(msg, "%0.7f\n", data);
 
 	HAL_USART_Transmit(&usart_HC05, (uint8_t*)msg, strlen(msg), 0xFF);
-	vTaskDelay(10/portTICK_RATE_MS);
 }
 
 
@@ -222,17 +224,18 @@ taskEXIT_CRITICAL();
 }
 
 
-
-void MOTORS_task() {
-
+void MOTORS_Init() {
 	//	Инициализация USART1 для Bluetooth (HC-05)
 	HC05_Init();
 	//	Инициализация драйвера ШД
 	step_engine_init();
+}
 
+
+void MOTORS_task() {
 
 	for (;;) {
-		vTaskDelay(50/portTICK_RATE_MS);
+		vTaskDelay(10/portTICK_RATE_MS);
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
 		}

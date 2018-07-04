@@ -28,6 +28,8 @@
 
 #define BETA_0	sqrt(3/4) * M_PI * (0.2f / 180.0f)
 #define BETA_1	0.033
+#define BETA_2	0.3
+#define BETA_3	0.25
 
 I2C_HandleTypeDef 	i2c_mpu9255;
 USART_HandleTypeDef usart_dbg;
@@ -51,7 +53,7 @@ void apply_NoiseFilter(float * sensor_data, float noise, int data_array_size) {
 
 uint8_t get_gyro_staticShift(float* gyro_staticShift) {
 	uint8_t error = 0;
-	uint16_t zero_orientCnt = 200;
+	uint16_t zero_orientCnt = 1000;
 
 	//	находим статическое смещение гироскопа
 	for (int i = 0; i < zero_orientCnt; i++) {
@@ -66,7 +68,7 @@ uint8_t get_gyro_staticShift(float* gyro_staticShift) {
 		for (int m = 0; m < 3; m++) {
 			gyro_staticShift[m] += gyro[m];
 		}
-		vTaskDelay(10/portTICK_RATE_MS);
+//		vTaskDelay(10/portTICK_RATE_MS);
 	}
 	for (int m = 0; m < 3; m++) {
 		gyro_staticShift[m] /= zero_orientCnt;
@@ -100,7 +102,7 @@ uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift)
 		float quaternion[4] = {0, 0, 0, 0};
 		MadgwickAHRSupdateIMU(quaternion,
 				gyro[0], gyro[1], gyro[2],
-				accel[0], accel[1], accel[2], time - time_prev, BETA_1);
+				accel[0], accel[1], accel[2], time - time_prev, 0.5);
 		vect_rotate(accel, quaternion, accel_ISC);
 
 		for (int m = 0; m < 3; m++) {
@@ -154,9 +156,12 @@ taskENTER_CRITICAL();
 	float dt = _time - state_system_prev.time;
 taskEXIT_CRITICAL();
 
-	//FIXME: ЗАМЕНИТЬ НА ФУНКЦИЮ С МАГНИТОМЕТРОМ
-//	MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt);
-	MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, BETA_1);
+	if (state_system.globalStage <=2)
+		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 5);
+	if (state_system.globalStage >= 3)
+		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 4);
+//	if (state_system.globalStage > 3)
+//		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 0.3);
 
 	//	копируем кватернион в глобальную структуру
 taskENTER_CRITICAL();
@@ -192,7 +197,7 @@ taskEXIT_CRITICAL();
 
 
 ///////  ОБНОВЛЯЕМ КООРДИНАТЫ И СКОРОСТИ  //////////
-	if (state_system.globalStage >= 3) {
+	if (state_system.globalStage >= 2) {
 
 		float delta_velo[3] = {0, 0, 0};
 		float delta_coord[3] = {0, 0, 0};
@@ -298,7 +303,7 @@ void IMU_Init() {
 void IMU_task() {
 
 	for (;;) {
-		vTaskDelay(10/portTICK_RATE_MS);
+//		vTaskDelay(10/portTICK_RATE_MS);
 		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
 		if (state_system.globalStage == 0) {
 		}

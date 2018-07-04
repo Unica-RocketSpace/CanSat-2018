@@ -167,14 +167,14 @@ bool dump_init(dump_channel_state_t* state)
 		if (res == FR_NO_FILE)
 		{
 			state->file_opened = true;
+			state->file_prefix = "U";
+			state->sync_counter = 0;
 			// отлично - такого файла нет!
 			trace_printf("dump file name '%s' ok\n", fname);
 		}
 		else if (res == FR_OK)
 		{
 			state->file_opened = false;
-			state->file_prefix = "U";
-			state->sync_counter = 0;
 			//trace_printf("dump file name '%s' already exists\n", fname);
 			//f_close(&fp); пока попробуем без этого
 			goto again;
@@ -227,7 +227,7 @@ bool dump(dump_channel_state_t* state, const void * data, size_t datasize)
 	FRESULT res;
 
 	// пишем на флешку
-	for (int i = 0; i < 100000; i++) {volatile int x = 0;}
+	for (int i = 0; i < 50000; i++) {volatile int x = 0;}
 	if ((res = f_write(&state->file, data, datasize, &dummy)) != FR_OK)
 	{
 		state->res = res;

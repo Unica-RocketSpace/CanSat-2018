@@ -58,14 +58,15 @@ void GPS_Init(bool RTOS) {
 	uart_GPS.Init.OverSampling = UART_OVERSAMPLING_16;
 
 	PROCESS_ERROR(HAL_UART_Init(&uart_GPS));
+	if (RTOS)
+		for (int i = 0; i < 1000000; i++) {volatile int x = 0;}
+	else
+		HAL_Delay(100);
+
 	/* Peripheral interrupt init*/
 	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
-	if (RTOS)
-		vTaskDelay(100/portTICK_RATE_MS);
-	else
-		HAL_Delay(100);
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//	Инициализация DMA1_Stream5 для работы c GPS через USART
@@ -88,6 +89,11 @@ void GPS_Init(bool RTOS) {
 	/* DMA interrupt init */
 	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+
+	if (RTOS)
+		for (int i = 0; i < 1000000; i++) {volatile int x = 0;}
+	else
+		HAL_Delay(100);
 
 end:
 	state_system.GPS_state = error;
@@ -114,6 +120,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART2) {
 		GPS_Init(1);
+		trace_printf("gps_error");
 		_dma_carret = 0;
 		_msg_carret = 0;
 		HAL_UART_RxCpltCallback(&uart_GPS);

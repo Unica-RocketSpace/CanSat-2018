@@ -148,9 +148,9 @@ void mpu9255_recalcAccel(const int16_t * raw_accelData, float * accelData)
 {
 	float _accelData[3] = {0, 0, 0};
 
-	_accelData[0] = (float)(raw_accelData[0]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* X_ACCEL_KOEFF;
-	_accelData[1] = (float)(raw_accelData[1]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* Y_ACCEL_KOEFF;
-	_accelData[2] = (float)(raw_accelData[2]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); // * Z_ACCEL_KOEFF;
+	_accelData[0] = - (float)(raw_accelData[0]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* X_ACCEL_KOEFF;
+	_accelData[1] =   (float)(raw_accelData[2]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* Y_ACCEL_KOEFF;
+	_accelData[2] =   (float)(raw_accelData[1]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); // * Z_ACCEL_KOEFF;
 
 	float offset_vector[3] = {X_ACCEL_OFFSET, Y_ACCEL_OFFSET, Z_ACCEL_OFFSET};
 	float transform_matrix[3][3] =	{{XX_ACCEL_TRANSFORM_MATIX, XY_ACCEL_TRANSFORM_MATIX, XZ_ACCEL_TRANSFORM_MATIX},
@@ -182,7 +182,7 @@ void mpu9255_recalcCompass(const int16_t * raw_compassData, float * compassData)
 //	iauPmp(raw_data, offset_vector, compassData);
 //	iauRxp(transform_matrix, compassData, compassData);
 
-	for (int i = 0; i < 3; i++) {
-		compassData[i] = (float)raw_compassData[i];
-	}
+	compassData[0] = - (float)raw_compassData[1];
+	compassData[1] =   (float)raw_compassData[2];
+	compassData[2] = - (float)raw_compassData[0];
 }

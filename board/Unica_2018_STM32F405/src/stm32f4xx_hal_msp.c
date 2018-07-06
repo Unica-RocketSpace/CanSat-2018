@@ -92,6 +92,12 @@ void HAL_MspDeInit(void)
 }
 
 
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim) {
+
+
+
+}
+
 void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 
 	if(hi2c->Instance == I2C2) {

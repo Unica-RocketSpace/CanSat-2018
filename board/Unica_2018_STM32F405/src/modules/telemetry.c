@@ -225,6 +225,17 @@ static mavlink_status_t uplink_status;
 
 
 void IO_RF_Init() {
+
+	//	SD
+	GPIO_InitTypeDef gpioc;
+	gpioc.Mode = GPIO_MODE_OUTPUT_PP;
+	gpioc.Pin = GPIO_PIN_3;
+	gpioc.Pull = GPIO_NOPULL;
+	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(GPIOC, &gpioc);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, SET);
+
+
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
 	state_system.NRF_state = nRF24L01_initError;
 	HAL_Delay(100);
@@ -233,9 +244,9 @@ void IO_RF_Init() {
 	sd_cs(false);
 	//	запуск SD
 	stream_file.file_opened = false;
-	dump_init(&stream_file);
+//	dump_init(&stream_file);
 	state_system.SD_state = (uint8_t)stream_file.res;
-	HAL_Delay(100);
+	HAL_Delay(200);
 }
 
 

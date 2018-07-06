@@ -61,10 +61,10 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
 	PROCESS_ERROR(HAL_I2C_Init(hi2c));
-	HAL_Delay(300);
+	HAL_Delay(400);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	107,	0b10000000));	//RESET
-	HAL_Delay(300);
+	HAL_Delay(400);
 
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	25,		0b00000001));	//Sample Rate Divider
 	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL,	26,		0b00000101));	//config (DLPF = 101)

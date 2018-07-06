@@ -90,6 +90,7 @@ void GPS_Init(bool RTOS) {
 	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
+	// FIXME:
 	if (RTOS)
 		for (int i = 0; i < 1000000; i++) {volatile int x = 0;}
 	else

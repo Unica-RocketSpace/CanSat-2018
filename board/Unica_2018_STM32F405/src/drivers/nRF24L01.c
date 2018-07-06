@@ -60,7 +60,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi->Init.NSS = SPI_NSS_SOFT;
-	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
 	hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi->Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -73,18 +73,25 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	sd_cs(false);
 	_ce_down();
 
-	uint8_t value;
+	uint8_t value = 0;
+	uint8_t _read_value = 0;
 
-	//Запись типа (0 << PRIM_RX) не работает, но написана для ясности наших намерений
+
 	value = (0 << MASK_RX_DR) |
 			(0 << MASK_TX_DS) |
 			(0 << MASK_MAX_RT) |
 			(1 << EN_CRC) |
 			(1 << CRCO) |
-			(1 << PWR_UP) |
+			(0 << PWR_UP) |
 			(0 << PRIM_RX);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_CONFIG_ADDR, value));
-	HAL_Delay(10);
+	HAL_Delay(100);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_CONFIG_ADDR, &_read_value))
+//	if (_read_value != value) {
+//		error = 10;
+//		goto end;
+//	}
+
 
 	value = (1 << ENAA_P5)|
 			(1 << ENAA_P4)|
@@ -94,6 +101,11 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << ENAA_P0);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_EN_AA_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_EN_AA_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	value = (1 << ERX_P5)|
 			(1 << ERX_P4)|
@@ -103,26 +115,51 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << ERX_P0);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_EN_RXADDR_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_EN_RXADDR_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	value = (0b11 << AW);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_SETUP_AW_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_SETUP_AW_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	value = (0b0011 << ARD)|
 			(0b1111 << ARC);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_ARC_CNT_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_ARC_CNT_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 
 	value = (0x64 << RF_CH);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RF_CH_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_RF_CH_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	value = (0 << RF_DR)|
 			(0b11 << RF_PWR)|
 			(0 << LNA_HCURR);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RF_SETUP_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_RF_SETUP_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	value = (1 << DPL_P5)|
 			(1 << DPL_P4)|
@@ -132,24 +169,69 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 			(1 << DPL_P0);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_DYNPD_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_DYNPD_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	value = (1 << EN_DPL)|
 			(1 << EN_ACK_PAY)|
 			(1 << EN_DYN_ACK);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_FEATURE_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_FEATURE_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 	uint8_t device_address_P0[5] = nRF24L01_RX_ADDR_P0;
+	uint8_t _read_device_address[5] = {0};
 	PROCESS_ERROR(nRF24L01_write_register_address(hspi, nRF24L01_RX_ADDR_P0_ADDR, device_address_P0, 5));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register_address(hspi, nRF24L01_RX_ADDR_P0_ADDR, _read_device_address, 5));
+/*
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
+*/
 
 	uint8_t device_address_TX[5] = nRF24L01_TX_ADDR;
+	memset(_read_device_address, 0x00, 5);
 	PROCESS_ERROR(nRF24L01_write_register_address(hspi, nRF24L01_TX_ADDR_ADDR, device_address_TX, 5));
 	HAL_Delay(10);
-
+	PROCESS_ERROR(nRF24L01_read_register_address(hspi, nRF24L01_TX_ADDR_ADDR, _read_device_address, 5));
+	/*if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
+*/
 	value = nRF24L01_RX_PW_P0;
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RX_PW_P0_ADDR, value));
 	HAL_Delay(10);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_RX_PW_P0_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
+
+
+	value = (0 << MASK_RX_DR) |
+			(0 << MASK_TX_DS) |
+			(0 << MASK_MAX_RT) |
+			(1 << EN_CRC) |
+			(1 << CRCO) |
+			(1 << PWR_UP) |
+			(0 << PRIM_RX);
+	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_CONFIG_ADDR, value));
+	HAL_Delay(100);
+	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_CONFIG_ADDR, &_read_value))
+	if (_read_value != value) {
+		error = 10;
+		goto end;
+	}
 
 end:
 	_cs_disable();
@@ -182,8 +264,8 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	}
 	PROCESS_ERROR(nRF24L01_RX_mode_on(hspi, false));
 	*isData = 0;
+
 end:
-	for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 	_cs_disable();
 	return error;
 }
@@ -196,13 +278,22 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	else write_command = nRF24L01_WRITE_TX_FIFO_NO_ACK;
 	_cs_enable();
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &write_command, 1, _TIMEOUT_));
-	for (int i = 0; i < 2500; i++) {volatile int x = 0;}
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, write_buffer, buffer_size, _TIMEOUT_));
 	_cs_disable();
+
 	_ce_up();
-	//FIXME:
-	for (int i = 0; i < 25000; i++) {volatile int x = 0;}
+	uint32_t tickstart = HAL_GetTick();
+	uint32_t tick = tickstart;
+	do {
+		uint8_t status = 0;
+		nRF24L01_read_status(&spi_nRF24L01, &status);
+		bool finished = ((status) & (1 << TX_DS)) || ((status) & (1 << MAX_RT));
+		if (finished)
+			break;
+		tick = HAL_GetTick();
+	} while (tick - tickstart <= 2);
 	_ce_down();
+
 	uint8_t status = 0;
 	nRF24L01_read_status(&spi_nRF24L01, &status);
 	uint8_t read_buffer[32] = {0};
@@ -211,7 +302,6 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 		uint8_t read_command = nRF24L01_READ_RX_FIFO;
 		_cs_enable();
 		PROCESS_ERROR(HAL_SPI_Transmit(hspi, &read_command, 1, _TIMEOUT_));
-		for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 		PROCESS_ERROR(HAL_SPI_Receive(hspi, read_buffer, 32, _TIMEOUT_));
 		_cs_disable();
 		*cmd = read_buffer[0];
@@ -254,7 +344,6 @@ uint8_t nRF24L01_read_register (SPI_HandleTypeDef* hspi, nRF24L01_registr_addr_t
 	_cs_enable();
 	uint8_t command = nRF24L01_READ_REGISTER(address);
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
-	for (int i = 0; i < 500; i++) {volatile int x = 0;}
 	PROCESS_ERROR(HAL_SPI_Receive(hspi, data, sizeof(*data), _TIMEOUT_));
 end:
 	_cs_disable();
@@ -266,7 +355,6 @@ uint8_t nRF24L01_read_register_address (SPI_HandleTypeDef* hspi, nRF24L01_regist
 	_cs_enable();
 	uint8_t command = nRF24L01_READ_REGISTER(address);
 	PROCESS_ERROR(HAL_SPI_Transmit(hspi, &command, 1, _TIMEOUT_));
-	for (int i = 0; i < 500; i++) {volatile int x = 0;}
 	PROCESS_ERROR(HAL_SPI_Receive(hspi, data_register, data_len, _TIMEOUT_));
 end:
 	_cs_disable();
@@ -298,7 +386,6 @@ end:
 
 uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool flag_TX_DS,bool flag_MAX_RT) {
 	uint8_t error = 0;
-	//_ce_down();	//Не факт, что это нужно
 
 	_cs_enable();
 	uint8_t NOP = 0xFF;
@@ -311,10 +398,6 @@ uint8_t nRF24L01_clear_status (SPI_HandleTypeDef* hspi, bool flag_RX_DR, bool fl
 	if (flag_TX_DS) status |= (1 << TX_DS);
 	if (flag_MAX_RT) status |= (1 << MAX_RT);
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_STATUS_ADDR, status));
-	_ce_up();
-	for (int i = 0; i < 500; i++) {}
-	_ce_down();
-	//_ce_enable();	//Не факт, что это нужно
 end:
 	_cs_disable();
 	return error;
@@ -362,7 +445,7 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 //			nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
 		uint8_t command = 0;
 		PROCESS_ERROR(nRF24L01_write(hspi, carret, portion, ACK, &command));
-		for (int i = 0; i < 500; i++) {volatile int x = 0;}
+
 	taskENTER_CRITICAL();
 		if (command != 0)
 			state_system.globalCommand = command;
@@ -370,25 +453,27 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 
 		carret += portion;
 
-		while(1)
-		{
-			static int counter = 0;
-			uint8_t nRF_status = 0;
-			nRF24L01_read_status(&spi_nRF24L01, &nRF_status);
-			bool finished = ((nRF_status) & (1 << TX_DS)) || ((nRF_status) & (1 << MAX_RT));
-
-			counter++;
-
+		uint32_t tickstart = HAL_GetTick();
+		uint32_t tick = tickstart;
+		int counter = 0;
+		for (;;) {
+			uint8_t status = 0;
+			nRF24L01_read_status(&spi_nRF24L01, &status);
+			bool finished = ((status) & (1 << TX_DS)) || ((status) & (1 << MAX_RT));
 			if (finished)
 				break;
 
-			if (counter == 10) {
-				nRF24L01_clear_TX_FIFO(&spi_nRF24L01);
-				nRF24L01_clear_status(&spi_nRF24L01, false, true, true);
-				counter = 0;
+			if (counter > 4)
+				trace_printf("nRF TE  %d\n", counter);
+			counter++;
+
+			tick = HAL_GetTick();
+			if (tick - tickstart >= 10) {
+				trace_printf("exit by timeout");
 				break;
 			}
 		}
+		counter = 0;
 	}
 
 end:

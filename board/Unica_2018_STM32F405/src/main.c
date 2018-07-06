@@ -118,24 +118,24 @@ int main(int argc, char* argv[])
 //	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
 //				GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj
 //	);
-
-
-/*	//	usart_dbg init
-	usart_dbg.Instance = USART3;
-	usart_dbg.Init.BaudRate = 256000;
-	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
-	usart_dbg.Init.StopBits = UART_STOPBITS_1;
-	usart_dbg.Init.Parity = UART_PARITY_NONE;
-	usart_dbg.Init.Mode = UART_MODE_TX_RX;
-
-	HAL_USART_Init(&usart_dbg);*/
-
-	IMU_Init();
-	GPS_Init(0);
+//
+//
+//	//	usart_dbg init
+//	usart_dbg.Instance = USART3;
+//	usart_dbg.Init.BaudRate = 256000;
+//	usart_dbg.Init.WordLength = UART_WORDLENGTH_8B;
+//	usart_dbg.Init.StopBits = UART_STOPBITS_1;
+//	usart_dbg.Init.Parity = UART_PARITY_NONE;
+//	usart_dbg.Init.Mode = UART_MODE_TX_RX;
+//
+//	HAL_USART_Init(&usart_dbg);
+//
 	IO_RF_Init();
+	IMU_Init();
+//	GPS_Init(0);
 	MOTORS_Init();
 
-	HAL_InitTick(15);
+//	HAL_InitTick(15);
 
 	vTaskStartScheduler();
 

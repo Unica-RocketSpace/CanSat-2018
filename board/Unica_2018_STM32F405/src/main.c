@@ -62,17 +62,17 @@ static StaticTask_t	_iorfTaskObj;
 
 
 //	параметры GPS_task
-#define GPS_TASK_STACK_SIZE (60*configMINIMAL_STACK_SIZE)
+#define GPS_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 //	параметры IMU_task
-#define IMU_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
+#define IMU_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
 //	параметры MOTORS_task
-#define MOTORS_TASK_STACK_SIZE (40*configMINIMAL_STACK_SIZE)
+#define MOTORS_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
 static StackType_t	_MOTORSTaskStack[MOTORS_TASK_STACK_SIZE];
 static StaticTask_t	_MOTORSTaskObj;
 
@@ -102,24 +102,15 @@ int main(int argc, char* argv[])
 	state_system.SD_state = 255;
 
 
-	TaskHandle_t IMU_task_handle = xTaskCreateStatic(
-				IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj
-	);
+	xTaskCreateStatic(IMU_task, "IMU", IMU_TASK_STACK_SIZE, NULL, 1, _IMUTaskStack, &_IMUTaskObj);
+
+	xTaskCreateStatic(IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj);
+
+	xTaskCreateStatic(MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj);
+
+//	xTaskCreateStatic(GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj);
 
 
-	TaskHandle_t IO_RF_task_handle = xTaskCreateStatic(
-				IO_RF_task, "IO_RF", IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, &_iorfTaskObj
-	);
-
-	TaskHandle_t MOTORS_task_handle = xTaskCreateStatic(
-			MOTORS_task, "MOTORS", MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, &_MOTORSTaskObj
-	);
-
-//	TaskHandle_t GPS_task_handle = xTaskCreateStatic(
-//				GPS_task, "GPS", GPS_TASK_STACK_SIZE, NULL, 1, _gpsTaskStack, &_gpsTaskObj
-//	);
-//
-//
 //	//	usart_dbg init
 //	usart_dbg.Instance = USART3;
 //	usart_dbg.Init.BaudRate = 256000;
@@ -132,8 +123,9 @@ int main(int argc, char* argv[])
 //
 	IO_RF_Init();
 	IMU_Init();
-//	GPS_Init(0);
 	MOTORS_Init();
+//	bool _use_RTOS = 0;
+//	GPS_Init(_use_RTOS);
 
 //	HAL_InitTick(15);
 

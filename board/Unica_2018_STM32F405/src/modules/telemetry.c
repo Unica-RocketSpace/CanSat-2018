@@ -226,16 +226,6 @@ static mavlink_status_t uplink_status;
 
 void IO_RF_Init() {
 
-	//	SD
-	GPIO_InitTypeDef gpioc;
-	gpioc.Mode = GPIO_MODE_OUTPUT_PP;
-	gpioc.Pin = GPIO_PIN_3;
-	gpioc.Pull = GPIO_NOPULL;
-	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOC, &gpioc);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, SET);
-
-
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
 	state_system.NRF_state = nRF24L01_initError;
 	HAL_Delay(100);
@@ -254,7 +244,7 @@ void IO_RF_task() {
 
 	for (;;) {
 
-		vTaskDelay(10/portTICK_RATE_MS);
+		vTaskDelay(20/portTICK_RATE_MS);
 
 		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();

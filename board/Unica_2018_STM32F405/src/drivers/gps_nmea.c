@@ -59,9 +59,9 @@ void GPS_Init(bool RTOS) {
 
 	PROCESS_ERROR(HAL_UART_Init(&uart_GPS));
 	if (RTOS)
-		for (int i = 0; i < 1000000; i++) {volatile int x = 0;}
+		vTaskDelay(300/portTICK_RATE_MS);
 	else
-		HAL_Delay(100);
+		HAL_Delay(300);
 
 	/* Peripheral interrupt init*/
 	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
@@ -85,16 +85,16 @@ void GPS_Init(bool RTOS) {
 	dma_GPS.Init.PeriphBurst = DMA_PBURST_SINGLE;
 	PROCESS_ERROR(HAL_DMA_Init(&dma_GPS));
 
+	if (RTOS)
+		vTaskDelay(100/portTICK_RATE_MS);
+	else
+		HAL_Delay(100);
+
+
 	__HAL_LINKDMA(&uart_GPS, hdmarx, dma_GPS);
 	/* DMA interrupt init */
 	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-
-	// FIXME:
-	if (RTOS)
-		for (int i = 0; i < 1000000; i++) {volatile int x = 0;}
-	else
-		HAL_Delay(100);
 
 end:
 	state_system.GPS_state = error;

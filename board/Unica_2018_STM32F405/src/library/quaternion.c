@@ -53,9 +53,11 @@ void quat_invert(float* quat, float* res_quat) {
 	for (int i = 1; i < 4; i++) {
 		res_quat[i] = - quat[i];
 	}
+
 	float res_[4] = {0, 0, 0, 0};
-	quat_normalize(res_quat, res_); //FIXME: А точно надо? В статье было так
-	memcpy(res_quat, res_, sizeof(res_));
+	quat_normalize(res_quat, res_);
+	for (int i = 0; i < 4; i++)
+		res_quat[i] = res_[i];
 }
 
 
@@ -68,19 +70,20 @@ void quat_mult_by_quat(float * a, float * b, float* res_quat) {
 	res[2] = a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1];
 	res[3] = a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0];
 
-//	float res_[4] = {0, 0, 0, 0};
-//	quat_normalize(res, res_);
-	memcpy(res_quat, res, sizeof(res));
+	for (int i = 0; i < 4; i++)
+		res_quat[i] = res[i];
 }
 
 
 void quat_mult_by_vect(float* a, float* b, float* res_quat) {
 
 	float vectQuat[4] = {0, b[0], b[1], b[2]};			//	quat from vect
-	float res_quat_local[4] = {0, 0, 0, 0};						//	normalised vector
+	float res_quat_local[4] = {0, 0, 0, 0};				//	normalised vector
 
 	quat_mult_by_quat(a, vectQuat, res_quat_local);
-	memcpy(res_quat, res_quat_local, sizeof(res_quat_local));
+
+	for (int i = 0; i < 4; i++)
+		res_quat[i] = res_quat_local[i];
 }
 
 
@@ -96,9 +99,8 @@ void vect_rotate(float* vect, float* quat, float* res_vect) {
 	quat_invert(quat_n, inverted);
 
 	quat_mult_by_quat(tmp, inverted, res_vect_local);
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
 		res_vect[i] = res_vect_local[i+1];
-	}
 }
 
 

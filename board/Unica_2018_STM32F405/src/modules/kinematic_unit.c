@@ -110,7 +110,6 @@ uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift)
 		}
 
 		time_prev = time;
-//		vTaskDelay(5/portTICK_RATE_MS);
 	}
 	for (int m = 0; m < 3; m++) {
 		accel_staticShift[m] /= zero_orientCnt;
@@ -160,8 +159,6 @@ taskEXIT_CRITICAL();
 		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 5);
 	if (state_system.globalStage >= 3)
 		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 4);
-//	if (state_system.globalStage > 3)
-//		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 0.3);
 
 	//	копируем кватернион в глобальную структуру
 taskENTER_CRITICAL();
@@ -183,9 +180,9 @@ taskEXIT_CRITICAL();
 
 	//	копируем векторы в глобальную структуру
 taskENTER_CRITICAL();
-	for (int i = 0; i < 3; i++) {
-			accel_ISC[i] -= state_zero.accel_staticShift[i];
-	}
+	for (int i = 0; i < 3; i++)
+		accel_ISC[i] -= state_zero.accel_staticShift[i];
+
 	stateIMU_isc.accel[0] = accel_ISC[0];
 	stateIMU_isc.accel[1] = accel_ISC[1];
 	stateIMU_isc.accel[2] = accel_ISC[2];
@@ -329,7 +326,6 @@ void IMU_task() {
 			bmp280_update();
 			IMU_updateDataAll();
 			_IMUtask_updateData();
-
 
 		}
 		// Этап 2. Полет в ракете

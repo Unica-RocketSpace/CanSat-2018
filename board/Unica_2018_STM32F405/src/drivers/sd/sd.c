@@ -33,7 +33,7 @@
 #define SD_DMA_TX_STREAM	DMA2_Stream3
 
 #define SD_BAUD_RATE_PRESCALER_SLOW SPI_BAUDRATEPRESCALER_256	//!< для первичной прокачки и инициализации SD карты
-#define SD_BAUD_RATE_PRESCALER_FAST SPI_BAUDRATEPRESCALER_8		//!< для основной работы. Быстрее не может :c
+#define SD_BAUD_RATE_PRESCALER_FAST SPI_BAUDRATEPRESCALER_16	//!< для основной работы. Быстрее не может :c
 
 // =========================================================
 // Вспомогательные сущности

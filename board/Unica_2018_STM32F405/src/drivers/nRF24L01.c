@@ -60,7 +60,7 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi->Init.NSS = SPI_NSS_SOFT;
-	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
 	hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi->Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -87,10 +87,6 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_CONFIG_ADDR, value));
 	HAL_Delay(100);
 	PROCESS_ERROR(nRF24L01_read_register(hspi, nRF24L01_CONFIG_ADDR, &_read_value))
-//	if (_read_value != value) {
-//		error = 10;
-//		goto end;
-//	}
 
 
 	value = (1 << ENAA_P5)|
@@ -191,23 +187,15 @@ uint8_t nRF24L01_init (SPI_HandleTypeDef* hspi){
 	PROCESS_ERROR(nRF24L01_write_register_address(hspi, nRF24L01_RX_ADDR_P0_ADDR, device_address_P0, 5));
 	HAL_Delay(10);
 	PROCESS_ERROR(nRF24L01_read_register_address(hspi, nRF24L01_RX_ADDR_P0_ADDR, _read_device_address, 5));
-/*
-	if (_read_value != value) {
-		error = 10;
-		goto end;
-	}
-*/
+
 
 	uint8_t device_address_TX[5] = nRF24L01_TX_ADDR;
 	memset(_read_device_address, 0x00, 5);
 	PROCESS_ERROR(nRF24L01_write_register_address(hspi, nRF24L01_TX_ADDR_ADDR, device_address_TX, 5));
 	HAL_Delay(10);
 	PROCESS_ERROR(nRF24L01_read_register_address(hspi, nRF24L01_TX_ADDR_ADDR, _read_device_address, 5));
-	/*if (_read_value != value) {
-		error = 10;
-		goto end;
-	}
-*/
+
+
 	value = nRF24L01_RX_PW_P0;
 	PROCESS_ERROR(nRF24L01_write_register(hspi, nRF24L01_RX_PW_P0_ADDR, value));
 	HAL_Delay(10);
@@ -284,14 +272,17 @@ uint8_t nRF24L01_write (SPI_HandleTypeDef* hspi, void * write_buffer, size_t buf
 	_ce_up();
 	uint32_t tickstart = HAL_GetTick();
 	uint32_t tick = tickstart;
-	do {
+	for (;;) {
 		uint8_t status = 0;
 		nRF24L01_read_status(&spi_nRF24L01, &status);
 		bool finished = ((status) & (1 << TX_DS)) || ((status) & (1 << MAX_RT));
 		if (finished)
 			break;
+
 		tick = HAL_GetTick();
-	} while (tick - tickstart <= 2);
+		if (tick - tickstart >= 2)
+			break;
+	}
 	_ce_down();
 
 	uint8_t status = 0;

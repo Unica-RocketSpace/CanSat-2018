@@ -235,17 +235,16 @@ void MOTORS_Init() {
 void MOTORS_task() {
 
 	for (;;) {
-		vTaskDelay(10/portTICK_RATE_MS);
-		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
-		if (state_system.globalStage == 0) {
-		}
-		// Этап 1. Определение начального состояния
-		if (state_system.globalStage == 1) {
-		}
-
-		// Этап 2. Полет в ракете
-		if (state_system.globalStage == 2) {
-		}
+//		// Этап 0. Подтверждение инициализации отправкой пакета состояния и ожидание ответа от НС
+//		if (state_system.globalStage == 0) {
+//		}
+//		// Этап 1. Определение начального состояния
+//		if (state_system.globalStage == 1) {
+//		}
+//
+//		// Этап 2. Полет в ракете
+//		if (state_system.globalStage == 2) {
+//		}
 
 		// Этап 3. Свободное падение
 		if (state_system.globalStage == 3) {

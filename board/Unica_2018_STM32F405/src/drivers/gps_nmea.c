@@ -47,6 +47,10 @@ inline static char _read_dma_buffer(void)
 void GPS_Init() {
 	uint8_t error = 0;
 
+	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
+	_dma_carret = 0;
+	_msg_carret = 0;
+
 	//	Инициализация USART2 для работы с GPS
 	uart_GPS.Instance = USART2;
 	uart_GPS.Init.BaudRate = 9600;
@@ -69,72 +73,35 @@ void GPS_Init() {
 	dma_GPS.Init.MemInc = DMA_MINC_ENABLE;						// инкрементация памяти включена
 	dma_GPS.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;		// длина слова в периферии - байт
 	dma_GPS.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;		// длина слова в памяти - байт
-	dma_GPS.Init.Mode = DMA_NORMAL;								// режим - обычный
-	dma_GPS.Init.Priority = DMA_PRIORITY_MEDIUM;				// приоритет - средний
+	dma_GPS.Init.Mode = DMA_CIRCULAR;							// режим - обычный
+	dma_GPS.Init.Priority = DMA_PRIORITY_HIGH;					// приоритет - средний
 	dma_GPS.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 	dma_GPS.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
 	dma_GPS.Init.MemBurst = DMA_MBURST_SINGLE;
 	dma_GPS.Init.PeriphBurst = DMA_PBURST_SINGLE;
 	PROCESS_ERROR(HAL_DMA_Init(&dma_GPS));
 
-	__HAL_LINKDMA(&uart_GPS, hdmarx, dma_GPS);
+	// запускаем ДМА на трансфер данных
+	PROCESS_ERROR(HAL_DMA_Start(
+			&dma_GPS, (uint32_t)&uart_GPS.Instance->DR,
+			(uint32_t)&_dma_buffer, sizeof(_dma_buffer)
+	));
+
+	// теперь судя по всему довольно грязный хак
+	// в обход хала, в обход всего - ставим битик в уарте, который разрешает ему пинать дма
+	// код скопирован из тела HAL_UART_Receive_DMA
+    /* Enable the DMA transfer for the receiver request by setting the DMAR bit
+    in the UART CR3 register */
+    SET_BIT(uart_GPS.Instance->CR3, USART_CR3_DMAR);
+
+    // поидее теперь все - дма крутится само по себе
 
 end:
 	state_system.GPS_state = error;
 }
 
-/* This function handles DMA1 stream5 global interrupt. */
-void DMA1_Stream5_IRQHandler(void)
-{
-	HAL_DMA_IRQHandler(&dma_GPS);
-}
-
-void USART2_IRQHandler(void)
-{
-	HAL_UART_IRQHandler(&uart_GPS);
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance == USART2) {
-		HAL_UART_Receive_DMA(huart, (uint8_t*)_dma_buffer, sizeof(_dma_buffer));
-		dma_GPS.Instance->CR |= (1 << 0);
-	}
-}
-
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-	if(huart->Instance == USART2) {
-		trace_printf("TEIF5: %lu", DMA1->HISR & (1 << 9));
-		GPS_Init();
-		volatile int x = 0;
-		for (int i = 0; i < 100000; i++)
-			x++;
-		trace_printf("gps_error");
-		_dma_carret = 0;
-		_msg_carret = 0;
-		dma_GPS.Instance->CR |= (1 << 0);
-		HAL_UART_RxCpltCallback(&uart_GPS);
-	}
-}
-
-
 
 void GPS_task()	{
-
-	/* Peripheral interrupt init*/
-	HAL_NVIC_SetPriority(USART2_IRQn, 7, 0);
-	HAL_NVIC_EnableIRQ(USART2_IRQn);
-
-	//	/* DMA interrupt init */
-	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 7, 1);
-	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-
-	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
-
-	_dma_carret = 0;
-	_msg_carret = 0;
-
-	HAL_UART_RxCpltCallback(&uart_GPS);
 
 	for ( ; ; )
 	{
@@ -171,7 +138,10 @@ void GPS_task()	{
 			continue; // опс, что-то пошло не так
 
 		if (frame.fix_quality == 0)
+		{
+			trace_printf("gps no fix\n");
 			continue;
+		}
 
 		float _lon = minmea_tocoord(&frame.longitude);
 		float _lat = minmea_tocoord(&frame.latitude);
@@ -182,7 +152,7 @@ void GPS_task()	{
 		stateGPS.coordinates[1] = _lat;
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
-		trace_printf("%f", _lon);
+		trace_printf("%f\nпотом (не выключая перекачку) занулил буфер, занулил каретки", _lon);
 
 	}
 }

@@ -220,16 +220,12 @@ taskEXIT_CRITICAL();
 
 
 
-static mavlink_message_t uplink_msg;
-static mavlink_status_t uplink_status;
-
-
 void IO_RF_Init() {
 
 	uint8_t nRF24L01_initError = nRF24L01_init(&spi_nRF24L01);
 	state_system.NRF_state = nRF24L01_initError;
 	HAL_Delay(100);
-	// TODO: УБРАТЬ!!!
+
 	stream_file.res = 1;
 	sd_cs(false);
 	//	запуск SD

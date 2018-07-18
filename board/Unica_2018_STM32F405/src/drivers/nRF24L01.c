@@ -454,7 +454,7 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 			if (finished)
 				break;
 
-			if (counter > 4)
+			if (counter > 5)
 				trace_printf("nRF TE  %d\n", counter);
 			counter++;
 
@@ -464,7 +464,6 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 				break;
 			}
 		}
-		counter = 0;
 	}
 
 end:

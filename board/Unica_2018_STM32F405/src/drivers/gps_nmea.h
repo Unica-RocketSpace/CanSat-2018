@@ -13,14 +13,14 @@
 #include "state.h"
 
 #define GPS_USART 				(USART2)
-#define GPS_DMA_BUFFER_SIZE 	(500)
-#define GPS_MSG_BUFFER_SIZE 	(200)
+#define GPS_DMA_BUFFER_SIZE 	(300)
+#define GPS_MSG_BUFFER_SIZE 	(100)
 #define GPS_DMA_USART_STREAM 	(DMA1_Stream5)
 
 
 extern uint8_t dma_usartBuffer[100];
 
-void GPS_Init(bool RTOS);
+void GPS_Init();
 void GPS_task();
 
 

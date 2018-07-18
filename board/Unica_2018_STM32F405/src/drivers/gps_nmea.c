@@ -44,7 +44,7 @@ inline static char _read_dma_buffer(void)
 	return retval;
 }
 
-void GPS_Init(bool RTOS) {
+void GPS_Init() {
 	uint8_t error = 0;
 
 	//	Инициализация USART2 для работы с GPS
@@ -58,14 +58,6 @@ void GPS_Init(bool RTOS) {
 	uart_GPS.Init.OverSampling = UART_OVERSAMPLING_16;
 
 	PROCESS_ERROR(HAL_UART_Init(&uart_GPS));
-	if (RTOS)
-		vTaskDelay(300/portTICK_RATE_MS);
-	else
-		HAL_Delay(300);
-
-	/* Peripheral interrupt init*/
-	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
@@ -85,22 +77,13 @@ void GPS_Init(bool RTOS) {
 	dma_GPS.Init.PeriphBurst = DMA_PBURST_SINGLE;
 	PROCESS_ERROR(HAL_DMA_Init(&dma_GPS));
 
-	if (RTOS)
-		vTaskDelay(100/portTICK_RATE_MS);
-	else
-		HAL_Delay(100);
-
-
 	__HAL_LINKDMA(&uart_GPS, hdmarx, dma_GPS);
-	/* DMA interrupt init */
-	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
 end:
 	state_system.GPS_state = error;
 }
 
-/* This function handles DMA1 stream6 global interrupt. */
+/* This function handles DMA1 stream5 global interrupt. */
 void DMA1_Stream5_IRQHandler(void)
 {
 	HAL_DMA_IRQHandler(&dma_GPS);
@@ -115,15 +98,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == USART2) {
 		HAL_UART_Receive_DMA(huart, (uint8_t*)_dma_buffer, sizeof(_dma_buffer));
+		dma_GPS.Instance->CR |= (1 << 0);
 	}
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART2) {
-		GPS_Init(1);
+		trace_printf("TEIF5: %lu", DMA1->HISR & (1 << 9));
+		GPS_Init();
+		volatile int x = 0;
+		for (int i = 0; i < 100000; i++)
+			x++;
 		trace_printf("gps_error");
 		_dma_carret = 0;
 		_msg_carret = 0;
+		dma_GPS.Instance->CR |= (1 << 0);
 		HAL_UART_RxCpltCallback(&uart_GPS);
 	}
 }
@@ -131,6 +120,14 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 
 void GPS_task()	{
+
+	/* Peripheral interrupt init*/
+	HAL_NVIC_SetPriority(USART2_IRQn, 7, 0);
+	HAL_NVIC_EnableIRQ(USART2_IRQn);
+
+	//	/* DMA interrupt init */
+	HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 7, 1);
+	HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
 	memset(_dma_buffer, 0x00, GPS_DMA_BUFFER_SIZE);
 
@@ -185,6 +182,7 @@ void GPS_task()	{
 		stateGPS.coordinates[1] = _lat;
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
+		trace_printf("%f", _lon);
 
 	}
 }

@@ -19,10 +19,10 @@
 #include "gps_nmea.h"
 #include "state.h"
 
-static size_t _dma_carret;
+static volatile size_t _dma_carret;
 static char _dma_buffer[GPS_DMA_BUFFER_SIZE] = {0};
 
-static size_t _msg_carret;
+static volatile size_t _msg_carret;
 static char _msg_buffer[GPS_MSG_BUFFER_SIZE];
 
 
@@ -119,7 +119,7 @@ void GPS_task()	{
 			if (_msg_carret >= GPS_MSG_BUFFER_SIZE)
 			{
 				// что-то не так
-				continue;
+				goto end;
 			}
 
 		} while('\r' != _msg_buffer[_msg_carret-2]
@@ -128,7 +128,6 @@ void GPS_task()	{
 
 		// в конце терминируем строку от греха подальше
 		_msg_buffer[_msg_carret] = '\x00';
-//		trace_printf("%c%c", _msg_buffer[_msg_carret-2], _msg_buffer[_msg_carret-1]);
 
 		// накопили, теперь разбираем
 		if (!minmea_check(_msg_buffer, false))
@@ -153,8 +152,8 @@ void GPS_task()	{
 		stateGPS.coordinates[1] = _lat;
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
-//		trace_printf("%f\nпотом (не выключая перекачку) занулил буфер, занулил каретки", _lon);
 
+	end:
 		_msg_carret = 0;
 	}
 }

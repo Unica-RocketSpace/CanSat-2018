@@ -38,18 +38,18 @@ rscs_bmp280_descriptor_t * bmp280;
 const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 
-void apply_KalmanFilter(float * sensor_data, const float * sensor_data_prev, float Kalman_gain, int data_array_size) {
-	for (int i = 0; i < data_array_size; i++)
-		sensor_data[i] = Kalman_gain * sensor_data[i] + (1 - Kalman_gain) * sensor_data_prev[i];
-}
-
-void apply_NoiseFilter(float * sensor_data, float noise, int data_array_size) {
-	for (int i = 0; i < data_array_size; i++)
-	{
-		if (fabsf(sensor_data[i]) < noise)
-				sensor_data[i] = 0;
-	}
-}
+//void apply_KalmanFilter(float * sensor_data, const float * sensor_data_prev, float Kalman_gain, int data_array_size) {
+//	for (int i = 0; i < data_array_size; i++)
+//		sensor_data[i] = Kalman_gain * sensor_data[i] + (1 - Kalman_gain) * sensor_data_prev[i];
+//}
+//
+//void apply_NoiseFilter(float * sensor_data, float noise, int data_array_size) {
+//	for (int i = 0; i < data_array_size; i++)
+//	{
+//		if (fabsf(sensor_data[i]) < noise)
+//				sensor_data[i] = 0;
+//	}
+//}
 
 uint8_t get_gyro_staticShift(float* gyro_staticShift) {
 	uint8_t error = 0;
@@ -102,7 +102,7 @@ uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift)
 		float quaternion[4] = {0, 0, 0, 0};
 		MadgwickAHRSupdateIMU(quaternion,
 				gyro[0], gyro[1], gyro[2],
-				accel[0], accel[1], accel[2], time - time_prev, 0.5);
+				accel[0], accel[1], accel[2], time - time_prev, 0.1);
 		vect_rotate(accel, quaternion, accel_ISC);
 
 		for (int m = 0; m < 3; m++) {
@@ -156,7 +156,7 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 
 	if (state_system.globalStage <=2)
-		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 5);
+		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 2);
 	if (state_system.globalStage >= 3)
 		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 4);
 

@@ -228,6 +228,7 @@ end:
 }
 
 
+// FIXME: не реализовано
 uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t buffer_size, bool* isData){
 	uint8_t error = 0;
 	PROCESS_ERROR(nRF24L01_RX_mode_on(hspi, true));
@@ -235,7 +236,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	PROCESS_ERROR(nRF24L01_read_status(hspi, &status));
 
 	_ce_up();
-	for (int i = 0; i < 1000; i++) {volatile int x = 0;}
+//	for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 	_ce_down();
 
 	uint8_t read_command = nRF24L01_READ_RX_FIFO;
@@ -243,7 +244,7 @@ uint8_t nRF24L01_read (SPI_HandleTypeDef* hspi, uint8_t * read_buffer, size_t bu
 	{
 		_cs_enable();
 		PROCESS_ERROR(HAL_SPI_Transmit(hspi, &read_command, 1, _TIMEOUT_));
-		for (int i = 0; i < 1000; i++) {volatile int x = 0;}
+//		for (int i = 0; i < 1000; i++) {volatile int x = 0;}
 		PROCESS_ERROR(HAL_SPI_Receive(hspi, read_buffer, buffer_size, _TIMEOUT_));
 		_cs_disable();
 //		PROCESS_ERROR(nRF24L01_clear_status(hspi, true, false, false));

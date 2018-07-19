@@ -155,6 +155,7 @@ bool dump_init(dump_channel_state_t* state)
 		} while (res != FR_OK);
 	_fs_mounted = true;
 
+	for (int i = 0; i < 50000; i++) {volatile int x = 0;}
 
 	// выбираем имена файлам
 	char fname[15];
@@ -251,8 +252,4 @@ bool dump(dump_channel_state_t* state, const void * data, size_t datasize)
 	state->sync_counter++;
 	return true;
 }
-
-
-
-
 

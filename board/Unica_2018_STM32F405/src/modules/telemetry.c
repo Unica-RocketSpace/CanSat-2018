@@ -227,10 +227,9 @@ void IO_RF_Init() {
 	HAL_Delay(100);
 
 	stream_file.res = 1;
-	sd_cs(false);
 	//	запуск SD
 	stream_file.file_opened = false;
-//	dump_init(&stream_file);
+	dump_init(&stream_file);
 	state_system.SD_state = (uint8_t)stream_file.res;
 	HAL_Delay(200);
 }

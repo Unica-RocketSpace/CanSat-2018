@@ -128,6 +128,7 @@ void GPS_task()	{
 
 		// в конце терминируем строку от греха подальше
 		_msg_buffer[_msg_carret] = '\x00';
+//		trace_printf("%c%c", _msg_buffer[_msg_carret-2], _msg_buffer[_msg_carret-1]);
 
 		// накопили, теперь разбираем
 		if (!minmea_check(_msg_buffer, false))
@@ -152,8 +153,8 @@ void GPS_task()	{
 		stateGPS.coordinates[1] = _lat;
 		stateGPS.coordinates[2] = _height;
 		taskEXIT_CRITICAL();
-		trace_printf("%f\nпотом (не выключая перекачку) занулил буфер, занулил каретки", _lon);
+//		trace_printf("%f\nпотом (не выключая перекачку) занулил буфер, занулил каретки", _lon);
 
+		_msg_carret = 0;
 	}
 }
-

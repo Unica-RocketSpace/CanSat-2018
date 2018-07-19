@@ -56,23 +56,23 @@ stateCamera_orient_t stateCamera_orient_prev;
 
 
 //	параметры IO_RF_task
-#define IO_RF_TASK_STACK_SIZE (40*configMINIMAL_STACK_SIZE)
+#define IO_RF_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
 static StackType_t	_iorfTaskStack[IO_RF_TASK_STACK_SIZE];
 static StaticTask_t	_iorfTaskObj;
 
 
 //	параметры GPS_task
-#define GPS_TASK_STACK_SIZE (40*configMINIMAL_STACK_SIZE)
+#define GPS_TASK_STACK_SIZE (80*configMINIMAL_STACK_SIZE)
 static StackType_t _gpsTaskStack[GPS_TASK_STACK_SIZE];
 static StaticTask_t _gpsTaskObj;
 
 //	параметры IMU_task
-#define IMU_TASK_STACK_SIZE (50*configMINIMAL_STACK_SIZE)
+#define IMU_TASK_STACK_SIZE (60*configMINIMAL_STACK_SIZE)
 static StackType_t	_IMUTaskStack[IMU_TASK_STACK_SIZE];
 static StaticTask_t	_IMUTaskObj;
 
 //	параметры MOTORS_task
-#define MOTORS_TASK_STACK_SIZE (30*configMINIMAL_STACK_SIZE)
+#define MOTORS_TASK_STACK_SIZE (40*configMINIMAL_STACK_SIZE)
 static StackType_t	_MOTORSTaskStack[MOTORS_TASK_STACK_SIZE];
 static StaticTask_t	_MOTORSTaskObj;
 

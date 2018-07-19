@@ -197,7 +197,7 @@ void send_servo_pos(float* servo_pos) {
 
 	float data = *servo_pos;
 	char msg[sizeof(data) + 2];
-	sprintf(msg, "%0.7f\n", data);
+	sprintf(msg, "%f\n", data);
 
 	HAL_USART_Transmit(&usart_HC05, (uint8_t*)msg, strlen(msg), 0xFF);
 }

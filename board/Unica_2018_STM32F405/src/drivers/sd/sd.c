@@ -99,7 +99,6 @@ inline static void _sd_dma_transfer(void * target, sd_request_t direction)
    // который мешает перезапустить
 //   DMA_DeInit(DMA1_Channel4);
 //	HAL_DMA_DeInit(SD_DMA_CHANNEL);
-
 	if (SD_REQUEST_WRITE ==  direction)
 	{
 	  // настраиваем DMA канал на RX. Принятые данные скидываем в фиксированную переменную
@@ -109,7 +108,6 @@ inline static void _sd_dma_transfer(void * target, sd_request_t direction)
 	  _sd_dma_params.DMA_DIR = DMA_DIR_PeripheralSRC;
 	  _sd_dma_params.DMA_MemoryInc = DMA_MemoryInc_Disable;
 	  DMA_Init(DMA1_Channel4, &_sd_dma_params);
-
 	  // Теперь на TX. Пишем из данного буфера с перемещением каретки
 	  _sd_dma_params.DMA_MemoryBaseAddr = (uint32_t)target;
 	  _sd_dma_params.DMA_DIR = DMA_DIR_PeripheralDST;
@@ -123,7 +121,6 @@ inline static void _sd_dma_transfer(void * target, sd_request_t direction)
 	  _sd_dma_params.DMA_DIR = DMA_DIR_PeripheralSRC;
 	  _sd_dma_params.DMA_MemoryInc = DMA_MemoryInc_Enable;
 	  DMA_Init(DMA1_Channel4, &_sd_dma_params);
-
 	  // Теперь на TX. Кормим муодуль 0xFFками
 	  static const uint16_t dummy_tx_buff = 0xFFFF;
 	  _sd_dma_params.DMA_MemoryBaseAddr = (uint32_t)&dummy_tx_buff;
@@ -131,20 +128,16 @@ inline static void _sd_dma_transfer(void * target, sd_request_t direction)
 	  _sd_dma_params.DMA_MemoryInc = DMA_MemoryInc_Disable;
 	  DMA_Init(DMA1_Channel5, &_sd_dma_params);
 	}
-
 	// настройка завершена, но DMA еще не запущено
 	// активируем само DMA
 	DMA_Cmd(DMA1_Channel4, ENABLE);
 	DMA_Cmd(DMA1_Channel5, ENABLE);
-
 	// разрешаем SPI к нему обращаться
 	SPI_I2S_DMACmd(SD_SPI, SPI_I2S_DMAReq_Rx | SPI_I2S_DMAReq_Tx, ENABLE);
-
 	// ждем завершения
 	while (DMA_GetFlagStatus(DMA1_IT_TC4) == RESET) {}
 	if (DMA_GetITStatus(DMA1_IT_TC5) != SET)
 	  abort();
-
 	// отключаем DMA. FIXME: Впринципе можно этого и не делать, но на всякий - пускай будет
 	SPI_I2S_DMACmd(SD_SPI, SPI_I2S_DMAReq_Rx | SPI_I2S_DMAReq_Tx, DISABLE);
 }
@@ -190,7 +183,6 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 
 	/*HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(SPI1_IRQn);
-
 	__HAL_RCC_DMA2_CLK_ENABLE();
 	//	 настраиваем DMA для работы с SPI_TX
 	_sd_dma_spi_tx.Instance = SD_DMA_TX_STREAM;
@@ -207,12 +199,10 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 	_sd_dma_spi_tx.Init.MemBurst = DMA_MBURST_SINGLE;
 	_sd_dma_spi_tx.Init.PeriphBurst = DMA_PBURST_SINGLE;
 	PROCESS_ERROR(HAL_DMA_Init(&_sd_dma_spi_tx));
-
 	__HAL_LINKDMA(&spi_nRF24L01, hdmatx, _sd_dma_spi_tx);
 	 DMA interrupt init
 	HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
-
 	//	 настраиваем DMA для работы с SPI_RX
 	_sd_dma_spi_rx.Instance = SD_DMA_RX_STREAM;
 	_sd_dma_spi_rx.Init.Channel = SD_DMA_CHANNEL;
@@ -228,7 +218,6 @@ uint8_t sd_init(SPI_HandleTypeDef* hspi)
 	_sd_dma_spi_rx.Init.MemBurst = DMA_MBURST_SINGLE;
 	_sd_dma_spi_rx.Init.PeriphBurst = DMA_PBURST_SINGLE;
 	PROCESS_ERROR(HAL_DMA_Init(&_sd_dma_spi_rx));
-
 	__HAL_LINKDMA(&spi_nRF24L01, hdmarx, _sd_dma_spi_rx);
 	 DMA interrupt init
 	HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
@@ -457,37 +446,6 @@ end:
 }
 
 
-/*
-void DMA2_Stream0_IRQHandler(void) {
-	HAL_DMA_IRQHandler(&_sd_dma_spi_rx);
-}
-
-void DMA2_Stream3_IRQHandler(void) {
-	HAL_DMA_IRQHandler(&_sd_dma_spi_tx);
-}
-
-void SPI1_IRQHandler(void) {
-	HAL_SPI_IRQHandler(&spi_nRF24L01);
-}
-
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi) {
-	if (hspi->Instance == SPI1) {
-		_SD_DMA_READY_ = 1;
-	}
-}
-
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef* hspi) {
-	if (hspi->Instance == SPI1) {
-		_SD_DMA_READY_ = 1;
-	}
-}
-
-void HAL_SPI_ErrorCallback(SPI_HandleTypeDef* hspi) {
-	if (hspi->Instance == SPI1) {
-		trace_printf("SD DMA ERROR");
-	}
-}
-*/
 
 
 sd_error_t sd_block_write_multi(size_t offset, void * block_start, size_t block_count)
@@ -634,4 +592,3 @@ end:
    sd_cs(false);
    return error;
 }
-

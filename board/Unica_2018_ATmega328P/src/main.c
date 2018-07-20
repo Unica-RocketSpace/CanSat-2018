@@ -24,6 +24,12 @@
 
 #include "mavlink-messages/mavlink/UNISAT/mavlink.h"
 
+#define SCL_PIN 2
+#define SCL_PORT PORTC
+#define SDA_PIN 3
+#define SDA_PORT PORTC
+#include <SoftI2CMaster-master/SoftI2CMaster.h>
+
 //***ИНИЦИАЛИЗАЦИЯ STATE***//
 TM_package_t TM_package = { 0 };
 initial_params_t initial_params;
@@ -73,11 +79,13 @@ int main() {
 	//***ИНИЦИАЛИЗАЦИЯ I2C***//
 	rscs_i2c_init();
 	rscs_i2c_set_scl_rate(400);
+//	i2c_init();
 
 	//***ИНИЦИАЛИЗАЦИЯ TIMESERVICE***//
 	rscs_time_init();
 
 	//***ИНИЦИАЛИЗАЦИЯ BMP280***//
+
 	bmp280 = rscs_bmp280_initi2c(RSCS_BMP280_I2C_ADDR_LOW);	//создание дескриптора
 	rscs_bmp280_parameters_t bmp280_parameters;
 	bmp280_parameters.pressure_oversampling = RSCS_BMP280_OVERSAMPLING_X4;//4		16		измерения на один результат

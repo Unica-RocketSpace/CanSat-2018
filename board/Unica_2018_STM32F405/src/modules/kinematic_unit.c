@@ -102,7 +102,7 @@ uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift)
 		float quaternion[4] = {0, 0, 0, 0};
 		MadgwickAHRSupdateIMU(quaternion,
 				gyro[0], gyro[1], gyro[2],
-				accel[0], accel[1], accel[2], time - time_prev, 0.1);
+				accel[0], accel[1], accel[2], time - time_prev, 0.033);
 		vect_rotate(accel, quaternion, accel_ISC);
 
 		for (int m = 0; m < 3; m++) {
@@ -155,10 +155,10 @@ taskENTER_CRITICAL();
 	float dt = _time - state_system_prev.time;
 taskEXIT_CRITICAL();
 
-	if (state_system.globalStage <=2)
-		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 2);
-	if (state_system.globalStage >= 3)
-		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 4);
+//	if (state_system.globalStage <=2)
+		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 1);
+//	if (state_system.globalStage >= 3)
+//		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 0.041);
 
 	//	копируем кватернион в глобальную структуру
 taskENTER_CRITICAL();
@@ -307,12 +307,13 @@ void IMU_task() {
 
 		// Этап 1. Определение начального состояния
 		if (state_system.globalStage == 1) {
-			static uint8_t counter = 0;
+			static volatile uint8_t counter = 0;
 
 			if (counter == 0) {
 				get_staticShifts();
 				bmp280_update();
 				IMU_updateDataAll();
+				_IMUtask_updateData();
 			taskENTER_CRITICAL();
 				state_zero.zero_pressure = stateSensors.pressure;
 				for (int i = 0; i < 3; i++)

@@ -79,6 +79,19 @@ static rscs_e _read_reg_i2c(rscs_bmp280_descriptor_t * descr, uint8_t reg_addr, 
 
 end:
 	rscs_i2c_stop();
+
+//	uint8_t * p = (uint8_t*)buffer;
+//
+//	OPERATION(i2c_start_wait(RSCS_BMP280_I2C_ADDR_LOW));
+//	OPERATION(i2c_write(reg_addr));
+//	OPERATION(i2c_rep_start(RSCS_BMP280_I2C_ADDR_HIGH));
+//	for(int i = 0; i < buffer_size - 1; i++){
+//		*(p + i) = i2c_read(false);
+//	}
+//	*(p + buffer_size - 1) = i2c_read(true);
+//
+//end:
+//	i2c_stop();
 	return error;
 }
 
@@ -93,6 +106,16 @@ static rscs_e _write_reg_i2c(rscs_bmp280_descriptor_t * descr, uint8_t reg_addr,
 
 end:
 	rscs_i2c_stop();
+
+//	uint8_t * p = (uint8_t*)buffer;
+//	OPERATION(i2c_start_wait(RSCS_BMP280_I2C_ADDR_LOW));
+//		OPERATION(i2c_write(reg_addr));
+//		for(int i = 0; i < buffer_size; i++){
+//			i2c_write(*(p + i));
+//		}
+//
+//	end:
+//		i2c_stop();
 	return error;
 }
 

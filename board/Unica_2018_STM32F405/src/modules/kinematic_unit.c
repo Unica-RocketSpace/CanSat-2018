@@ -307,7 +307,7 @@ void IMU_task() {
 
 		// Этап 1. Определение начального состояния
 		if (state_system.globalStage == 1) {
-			static volatile uint8_t counter = 0;
+			static uint8_t counter = 0;
 
 			if (counter == 0) {
 				get_staticShifts();

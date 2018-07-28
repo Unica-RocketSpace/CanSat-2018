@@ -57,7 +57,7 @@ int mpu9255_init(I2C_HandleTypeDef* hi2c)
 	hi2c->Init.OwnAddress1 = 0x00;
 //	hi2c->Init.OwnAddress2 = GYRO_AND_ACCEL;
 
-	hi2c->Instance = I2C2;
+	hi2c->Instance = I2C1;
 	hi2c->Mode = HAL_I2C_MODE_MASTER;
 
 	PROCESS_ERROR(HAL_I2C_Init(hi2c));

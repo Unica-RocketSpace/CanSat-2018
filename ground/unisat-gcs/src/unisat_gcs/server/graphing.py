@@ -692,8 +692,9 @@ class MyWin(QtWidgets.QMainWindow):
             self.mov_z.append(msgs[i].coordinates[2])
 
 
-            teta = 2 * acos(msgs[i].quaternion[0])
-            sin_teta = sqrt((1 - msgs[i].quaternion[0] * msgs[i].quaternion[0]))
+            q_0 = msgs[i].quaternion[0]
+            teta = 2 * acos(q_0)
+            sin_teta = sqrt(1 - q_0*q_0)
             self.rsc_coord.rotate(180*teta/math.pi, - msgs[i].quaternion[1] / sin_teta, - msgs[i].quaternion[2] / sin_teta, - msgs[i].quaternion[3] / sin_teta)
 
             self.ui.textBrowser_2.append(

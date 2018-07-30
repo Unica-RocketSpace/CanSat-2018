@@ -53,7 +53,7 @@ const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 uint8_t get_gyro_staticShift(float* gyro_staticShift) {
 	uint8_t error = 0;
-	uint16_t zero_orientCnt = 1000;
+	uint16_t zero_orientCnt = 2000;
 
 	//	находим статическое смещение гироскопа
 	for (int i = 0; i < zero_orientCnt; i++) {
@@ -156,9 +156,9 @@ taskENTER_CRITICAL();
 taskEXIT_CRITICAL();
 
 //	if (state_system.globalStage <=2)
-		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 1);
+//		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, 0.033);
 //	if (state_system.globalStage >= 3)
-//		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 0.041);
+		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], compass[0], compass[1], compass[2], dt, 1);
 
 	//	копируем кватернион в глобальную структуру
 taskENTER_CRITICAL();
@@ -279,6 +279,7 @@ taskEXIT_CRITICAL();
 void IMU_Init() {
 	//---ИНИЦИАЛИЗАЦИЯ MPU9255---//
 	uint8_t mpu9255_initError = mpu9255_init(&i2c_mpu9255);
+	trace_printf("mpu: %d\n", mpu9255_initError);
 
 	//---ИНИЦИАЛИЗАЦИЯ BMP280---//
 	bmp280 = rscs_bmp280_initi2c(&i2c_mpu9255, RSCS_BMP280_I2C_ADDR_HIGH);					//создание дескриптора

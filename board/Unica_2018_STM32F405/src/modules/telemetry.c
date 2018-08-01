@@ -239,7 +239,7 @@ void IO_RF_task() {
 
 	for (;;) {
 
-		vTaskDelay(10/portTICK_RATE_MS);
+		vTaskDelay(100/portTICK_RATE_MS);
 
 		mavlink_msg_state_send();
 		mavlink_msg_imu_isc_send();

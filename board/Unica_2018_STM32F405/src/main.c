@@ -9,10 +9,12 @@
 #include <stm32f4xx_hal_dma.h>
 #include <stm32f4xx_hal_gpio.h>
 
-#include <FreeRTOS.h>
-#include "task.h"
 
 #include "diag/Trace.h"
+#include <FreeRTOS.h>
+#include "task.h"
+#include "mavlink/UNISAT/mavlink.h"
+
 
 #include "state.h"
 #include "kinematic_unit.h"
@@ -77,6 +79,74 @@ static StackType_t	_MOTORSTaskStack[MOTORS_TASK_STACK_SIZE];
 static StaticTask_t	_MOTORSTaskObj;
 
 
+#define CALIBRATION_TASK_STACK_SIZE (20*configMINIMAL_STACK_SIZE)
+static StackType_t	_CALIBRATIONTaskStack[MOTORS_TASK_STACK_SIZE];
+static StaticTask_t	_CALIBRATIONTaskObj;
+
+
+void CALIBRATION_task() {
+	GPIO_InitTypeDef gpioc;
+	gpioc.Mode = GPIO_MODE_OUTPUT_PP;
+	gpioc.Pin = GPIO_PIN_12;
+	gpioc.Pull = GPIO_NOPULL;
+	gpioc.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(GPIOC, &gpioc);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+
+	uint8_t error = 0;
+
+	for (;;) {
+
+		int16_t accelData[3] = {0, 0, 0};
+		int16_t gyroData[3] = {0, 0, 0};
+		int16_t compassData[3] = {0, 0, 0};
+		float accel[3] = {0, 0, 0};
+		float gyro[3] = {0, 0, 0};
+		float compass[3] = {0, 0, 0};
+
+		//	geting data
+		PROCESS_ERROR(mpu9255_readIMU(accelData, gyroData));
+		PROCESS_ERROR(mpu9255_readCompass(compassData))
+		mpu9255_recalcAccel(accelData, accel);
+		mpu9255_recalcGyro(gyroData, gyro);
+		mpu9255_recalcCompass(compassData, compass);
+
+
+		//	transmitting raw values
+		mavlink_imu_rsc_t msg_imu_rsc;
+		msg_imu_rsc.time = (float)HAL_GetTick() / 1000;
+	taskENTER_CRITICAL();
+		for (int i = 0; i < 3; i++) {
+			msg_imu_rsc.accel[i] = accel[i];
+			msg_imu_rsc.gyro[i] = gyro[i];
+			msg_imu_rsc.compass[i] = compass[i];
+		}
+	taskEXIT_CRITICAL();
+		mavlink_message_t msg;
+		uint16_t len = mavlink_msg_imu_rsc_encode(0, 0, &msg, &msg_imu_rsc);
+		uint8_t buffer[100];
+		len = mavlink_msg_to_send_buffer(buffer, &msg);
+		nRF24L01_send(&spi_nRF24L01, buffer, len, 1);
+
+
+		//	flashing the led
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
+		vTaskDelay(100);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+
+
+		//	rotating the motor
+		float STEP_DEGREES = 2;
+		rotate_step_engine_by_angles(&STEP_DEGREES);
+
+	end:
+		error = 0;
+		continue;
+	}
+
+}
+
+
 int main(int argc, char* argv[])
 {
 	// Инициализация структур глобального состояния (в нашем случае просто заполняем их нулями)
@@ -101,14 +171,16 @@ int main(int argc, char* argv[])
 	state_system.NRF_state = 255;
 	state_system.SD_state = 255;
 
-	xTaskCreateStatic(IMU_task, 	"IMU", 		IMU_TASK_STACK_SIZE, 	NULL, 1, _IMUTaskStack, 	&_IMUTaskObj);
+//	xTaskCreateStatic(IMU_task, 	"IMU", 		IMU_TASK_STACK_SIZE, 	NULL, 1, _IMUTaskStack, 	&_IMUTaskObj);
+//
+//	xTaskCreateStatic(IO_RF_task, 	"IO_RF", 	IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, 	&_iorfTaskObj);
+//
+//	xTaskCreateStatic(MOTORS_task,	"MOTORS", 	MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, 	&_MOTORSTaskObj);
+//
+//	xTaskCreateStatic(GPS_task, 	"GPS", 		GPS_TASK_STACK_SIZE, 	NULL, 1, _gpsTaskStack, 	&_gpsTaskObj);
 
-	xTaskCreateStatic(IO_RF_task, 	"IO_RF", 	IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, 	&_iorfTaskObj);
 
-	xTaskCreateStatic(MOTORS_task,	"MOTORS", 	MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, 	&_MOTORSTaskObj);
-
-	xTaskCreateStatic(GPS_task, 	"GPS", 		GPS_TASK_STACK_SIZE, 	NULL, 1, _gpsTaskStack, 	&_gpsTaskObj);
-
+	xTaskCreateStatic(CALIBRATION_task, "CALIBRATION", CALIBRATION_TASK_STACK_SIZE, NULL, 1, _CALIBRATIONTaskStack, &_CALIBRATIONTaskObj);
 
 	IO_RF_Init();
 	IMU_Init();

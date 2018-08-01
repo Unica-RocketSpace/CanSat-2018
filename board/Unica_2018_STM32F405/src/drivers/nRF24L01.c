@@ -22,7 +22,7 @@
 #include "state.h"
 #include "sd/sd.h"
 
-#define _TIMEOUT_	1000
+#define _TIMEOUT_	100
 
 SPI_HandleTypeDef	spi_nRF24L01;
 

@@ -129,18 +129,17 @@ int mpu9255_readCompass(int16_t * raw_compassData)
 	if ((magn_state && 0x01) != 1)
 	{
 //		state_system.state &= ~(1 << 1);		//магнитометр не готов
-		PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
 		goto end;
 	}
 
 //	state_system.state |= (1 << 1);	//магнитометр готов
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x03, (uint8_t*)raw_compassData, 6));
 	PROCESS_ERROR(mpu9255_readRegister(COMPASS, 0x09, &magn_state, 1));
-	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
 
 	//FIXME: не надо ли свапать здесь байты???
 
 end:
+	PROCESS_ERROR(mpu9255_writeRegister(GYRO_AND_ACCEL, 55, 0b00000000));	//режим bypass off
 	return error;
 }
 
@@ -152,17 +151,17 @@ void mpu9255_recalcAccel(const int16_t * raw_accelData, float * accelData)
 	_accelData[1] =   (float)(raw_accelData[2]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); //* Y_ACCEL_KOEFF;
 	_accelData[2] =   (float)(raw_accelData[1]) * MPU9255_ACCEL_SCALE_FACTOR * pow(2, ACCEL_RANGE); // * Z_ACCEL_KOEFF;
 
-	float offset_vector[3] = {X_ACCEL_OFFSET, Y_ACCEL_OFFSET, Z_ACCEL_OFFSET};
-	float transform_matrix[3][3] =	{{XX_ACCEL_TRANSFORM_MATIX, XY_ACCEL_TRANSFORM_MATIX, XZ_ACCEL_TRANSFORM_MATIX},
-									 {XY_ACCEL_TRANSFORM_MATIX, YY_ACCEL_TRANSFORM_MATIX, YZ_ACCEL_TRANSFORM_MATIX},
-									 {XZ_ACCEL_TRANSFORM_MATIX, YZ_ACCEL_TRANSFORM_MATIX, ZZ_ACCEL_TRANSFORM_MATIX}};
+//	float offset_vector[3] = {X_ACCEL_OFFSET, Y_ACCEL_OFFSET, Z_ACCEL_OFFSET};
+//	float transform_matrix[3][3] =	{{XX_ACCEL_TRANSFORM_MATIX, XY_ACCEL_TRANSFORM_MATIX, XZ_ACCEL_TRANSFORM_MATIX},
+//									 {XY_ACCEL_TRANSFORM_MATIX, YY_ACCEL_TRANSFORM_MATIX, YZ_ACCEL_TRANSFORM_MATIX},
+//									 {XZ_ACCEL_TRANSFORM_MATIX, YZ_ACCEL_TRANSFORM_MATIX, ZZ_ACCEL_TRANSFORM_MATIX}};
+//
+//	iauPmp(_accelData, offset_vector, accelData);
+//	iauRxp(transform_matrix, accelData, accelData);
 
-	iauPmp(_accelData, offset_vector, accelData);
-	iauRxp(transform_matrix, accelData, accelData);
-
-//	for (int i = 0; i < 3; i++) {
-//		accelData[i] = _accelData[i];
-//	}
+	for (int i = 0; i < 3; i++) {
+		accelData[i] = _accelData[i];
+	}
 }
 
 void mpu9255_recalcGyro(const int16_t * raw_gyroData, float * gyroData)

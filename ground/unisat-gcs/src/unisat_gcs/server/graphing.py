@@ -48,6 +48,9 @@ class MyWin(QtWidgets.QMainWindow):
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
 
+        self.accel_f = open("C:\Cansat Unica 2018\calibration\accel_calibration", "wt")
+        self.compass_f = open("C:\Cansat Unica 2018\calibration\magn_calibration", "wt")
+
         self.lenght = 150
         self.cut = 11
 
@@ -631,6 +634,9 @@ class MyWin(QtWidgets.QMainWindow):
             self.a_RSC_x.append(msgs[i].accel[0])
             self.a_RSC_y.append(msgs[i].accel[1])
             self.a_RSC_z.append(msgs[i].accel[2])
+
+            self.accel_f.write(self, "%f\t%f\t%f\n", msgs[i].accel[0], msgs[i].accel[1], msgs[i].accel[2])
+            self.compass_f.write(self, "%f\t%f\t%f\n", msgs[i].compass[0], msgs[i].compass[1], msgs[i].compass[2])
 
             self.time_RSC.append(msgs[i].time)
 

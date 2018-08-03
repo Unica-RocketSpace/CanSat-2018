@@ -9,6 +9,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <diag/Trace.h>
+
 #include <stm32f4xx_hal.h>
 #include "FreeRTOS.h"
 #include "task.h"
@@ -180,14 +182,14 @@ void rotate_step_engine_by_angles (float* angles) {
 	else HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_RESET);
 
 	float STEP_TERNS = STEP_DEGREES/ (M_PI *2) * 200 * 2/* * pow(2, STEP_DIVIDER)*/;
-	printf("STEP_TERNS = %f\r\n", STEP_TERNS );
+//	trace_printf("turnes: %f\n", STEP_TERNS);
 	for(int i = 0; i < (int)round(STEP_TERNS); i++) {
 		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_SET);
 		//HAL_Delay(1);
-		for(int j = 0; j < 2000; j++){}			//Таймер
+		for(int j = 0; j < 4000; j++){volatile int x = 0;}			//Таймер
 		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_RESET);
 		//HAL_Delay(1);
-		for(int j = 0; j < 2000; j++){}			//Таймер
+		for(int j = 0; j < 4000; j++){volatile int x = 0;}			//Таймер
 	}
 
 }

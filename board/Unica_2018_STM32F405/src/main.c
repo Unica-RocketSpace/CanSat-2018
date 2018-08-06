@@ -136,11 +136,11 @@ void CALIBRATION_task() {
 
 
 		//	rotating the motor
-		float tickstart = HAL_GetTick();
-		float STEP_DEGREES = M_PI / 4;
+//		float tickstart = HAL_GetTick();
+		float STEP_DEGREES = M_PI / 18;
 		rotate_step_engine_by_angles(&STEP_DEGREES);
-		float tickend = HAL_GetTick();
-		trace_printf("start: %f\nend %f\n", tickstart, tickend);
+//		float tickend = HAL_GetTick();
+//		trace_printf("start: %f\nend %f\n", tickstart, tickend);
 
 	end:
 		error = 0;

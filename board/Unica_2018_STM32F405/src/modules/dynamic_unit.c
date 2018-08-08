@@ -54,19 +54,23 @@ void HC05_Init() {
 	HAL_Delay(200);
 }
 
+void TIM1_UP_TIM10_IRQHandler(void) {
+	HAL_TIM_IRQHandler(&htimSE);
+}
 
-void timerSEPWMStart(uint8_t step_counter) {
+
+void timerSEPWMStart(int step_counter) {
 	htimSE.Instance = TIM1;
 	htimSE.Init.Prescaler = 79;
 	htimSE.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htimSE.Init.Period = 512;
-	htimSE.Init.ClockDivision = 0;
-	htimSE.Init.RepetitionCounter = 0;
+	htimSE.Init.Period = 200;
+	htimSE.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htimSE.Init.RepetitionCounter = (uint32_t)(step_counter - 1);
 	HAL_TIM_PWM_Init(&htimSE);
 
 	TIM_OC_InitTypeDef timOC;
 	timOC.OCMode = TIM_OCMODE_PWM1;
-	timOC.Pulse = 256;
+	timOC.Pulse = 100;
 	timOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	timOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
 	timOC.OCFastMode = TIM_OCFAST_ENABLE;
@@ -74,32 +78,14 @@ void timerSEPWMStart(uint8_t step_counter) {
 	timOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
 	HAL_TIM_PWM_ConfigChannel(&htimSE, &timOC, TIM_CHANNEL_1);
 
-//	NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);
-	HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 1, 1);
-	HAL_NVIC_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn);
-	HAL_NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 1, 1);
-	HAL_NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
-	HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 1, 1);
+
+	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);
+	HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
-	HAL_NVIC_SetPriority(TIM1_CC_IRQn, 1, 1);
-	HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
 
-	HAL_TIMEx_PWMN_Start(&htimSE, TIM_CHANNEL_1);
+	HAL_TIMEx_PWMN_Start_IT(&htimSE, TIM_CHANNEL_1);
 
 }
-
-void TIM1_IRQHandler(void) {
-	HAL_TIM_IRQHandler(&htimSE);
-}
-
-
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
-	if (htim->Instance == TIM1) {
-		HAL_TIMEx_PWMN_Stop(&htimSE, TIM_CHANNEL_1);
-	}
-}
-
-
 
 
 void step_engine_init () {
@@ -174,7 +160,7 @@ void step_engine_init () {
 }
 
 
-HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
 	if (htim->Instance == TIM1) {
 		__TIM1_CLK_ENABLE();
 		__GPIOB_CLK_ENABLE();
@@ -257,8 +243,8 @@ void rotate_step_engine_by_angles (float* angles) {
 	if (direction) HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_SET);
 	else HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_RESET);
 
-	float STEP_TERNS = STEP_DEGREES/ (M_PI *2) * 200 * 2/* * pow(2, STEP_DIVIDER)*/;
-//	trace_printf("turnes: %f\n", STEP_TERNS);
+	int STEP_TERNS = (int)roundf(STEP_DEGREES / (M_PI *2) * 200)/* * pow(2, STEP_DIVIDER)*/;
+	trace_printf("turnes: %d\n", STEP_TERNS);
 //	for(int i = 0; i < (int)round(STEP_TERNS); i++) {
 //		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_SET);
 //		//HAL_Delay(1);
@@ -268,6 +254,7 @@ void rotate_step_engine_by_angles (float* angles) {
 //		for(int j = 0; j < 4000; j++){volatile int x = 0;}			//Таймер
 //	}
 	timerSEPWMStart(STEP_TERNS);
+//	timerSEPWMStart(200);
 
 }
 

@@ -63,14 +63,14 @@ void timerSEPWMStart(int step_counter) {
 	htimSE.Instance = TIM1;
 	htimSE.Init.Prescaler = 79;
 	htimSE.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htimSE.Init.Period = 200;
+	htimSE.Init.Period = 800;
 	htimSE.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htimSE.Init.RepetitionCounter = (uint32_t)(step_counter - 1);
 	HAL_TIM_PWM_Init(&htimSE);
 
 	TIM_OC_InitTypeDef timOC;
 	timOC.OCMode = TIM_OCMODE_PWM1;
-	timOC.Pulse = 100;
+	timOC.Pulse = 400;
 	timOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	timOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
 	timOC.OCFastMode = TIM_OCFAST_ENABLE;
@@ -254,7 +254,7 @@ void rotate_step_engine_by_angles (float* angles) {
 //		for(int j = 0; j < 4000; j++){volatile int x = 0;}			//Таймер
 //	}
 	timerSEPWMStart(STEP_TERNS);
-//	timerSEPWMStart(200);
+//	timerSEPWMStart(2000);
 
 }
 

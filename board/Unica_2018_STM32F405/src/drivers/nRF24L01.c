@@ -455,8 +455,8 @@ uint8_t nRF24L01_send(SPI_HandleTypeDef* hspi, uint8_t* write_buffer, uint16_t b
 			if (finished)
 				break;
 
-			if (counter > 5)
-				trace_printf("nRF TE  %d\n", counter);
+			/*if (counter > 5)
+				trace_printf("nRF TE  %d\n", counter);*/
 			counter++;
 
 			tick = HAL_GetTick();

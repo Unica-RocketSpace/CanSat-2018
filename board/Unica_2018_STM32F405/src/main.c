@@ -134,10 +134,10 @@ void CALIBRATION_task() {
 
 		//	rotating the motor
 //		float tickstart = HAL_GetTick();
-		float STEP_DEGREES = M_PI / 4;
+		float STEP_DEGREES = M_PI / 2;
 		rotate_step_engine_by_angles(&STEP_DEGREES);
 
-//		vTaskDelay(1000);
+		vTaskDelay(2000);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
 //		float tickend = HAL_GetTick();
 //		trace_printf("start: %f\nend %f\n", tickstart, tickend);

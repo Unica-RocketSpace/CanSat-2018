@@ -131,13 +131,16 @@ void CALIBRATION_task() {
 
 		//	flashing the led
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, SET);
-		vTaskDelay(100);
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
-
 
 		//	rotating the motor
-		float STEP_DEGREES = 2;
+//		float tickstart = HAL_GetTick();
+		float STEP_DEGREES = M_PI / 2;
 		rotate_step_engine_by_angles(&STEP_DEGREES);
+
+		vTaskDelay(2000);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, RESET);
+//		float tickend = HAL_GetTick();
+//		trace_printf("start: %f\nend %f\n", tickstart, tickend);
 
 	end:
 		error = 0;
@@ -171,16 +174,16 @@ int main(int argc, char* argv[])
 	state_system.NRF_state = 255;
 	state_system.SD_state = 255;
 
-//	xTaskCreateStatic(IMU_task, 	"IMU", 		IMU_TASK_STACK_SIZE, 	NULL, 1, _IMUTaskStack, 	&_IMUTaskObj);
-//
-//	xTaskCreateStatic(IO_RF_task, 	"IO_RF", 	IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, 	&_iorfTaskObj);
-//
-//	xTaskCreateStatic(MOTORS_task,	"MOTORS", 	MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, 	&_MOTORSTaskObj);
-//
-//	xTaskCreateStatic(GPS_task, 	"GPS", 		GPS_TASK_STACK_SIZE, 	NULL, 1, _gpsTaskStack, 	&_gpsTaskObj);
+	xTaskCreateStatic(IMU_task, 	"IMU", 		IMU_TASK_STACK_SIZE, 	NULL, 1, _IMUTaskStack, 	&_IMUTaskObj);
+
+	xTaskCreateStatic(IO_RF_task, 	"IO_RF", 	IO_RF_TASK_STACK_SIZE,	NULL, 1, _iorfTaskStack, 	&_iorfTaskObj);
+
+	xTaskCreateStatic(MOTORS_task,	"MOTORS", 	MOTORS_TASK_STACK_SIZE, NULL, 1, _MOTORSTaskStack, 	&_MOTORSTaskObj);
+
+	xTaskCreateStatic(GPS_task, 	"GPS", 		GPS_TASK_STACK_SIZE, 	NULL, 1, _gpsTaskStack, 	&_gpsTaskObj);
 
 
-	xTaskCreateStatic(CALIBRATION_task, "CALIBRATION", CALIBRATION_TASK_STACK_SIZE, NULL, 1, _CALIBRATIONTaskStack, &_CALIBRATIONTaskObj);
+//	xTaskCreateStatic(CALIBRATION_task, "CALIBRATION", CALIBRATION_TASK_STACK_SIZE, NULL, 1, _CALIBRATIONTaskStack, &_CALIBRATIONTaskObj);
 
 	IO_RF_Init();
 	IMU_Init();

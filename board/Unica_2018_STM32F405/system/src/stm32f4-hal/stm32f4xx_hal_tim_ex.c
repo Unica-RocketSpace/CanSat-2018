@@ -1006,6 +1006,9 @@ HAL_StatusTypeDef HAL_TIMEx_PWMN_Start_IT(TIM_HandleTypeDef *htim, uint32_t Chan
     break;
   } 
   
+  // FIXME: RETURN
+  __HAL_TIM_ENABLE_IT(htim, TIM_IT_UPDATE);
+
   /* Enable the TIM Break interrupt */
   __HAL_TIM_ENABLE_IT(htim, TIM_IT_BREAK);
   
@@ -1083,6 +1086,9 @@ HAL_StatusTypeDef HAL_TIMEx_PWMN_Stop_IT (TIM_HandleTypeDef *htim, uint32_t Chan
     __HAL_TIM_DISABLE_IT(htim, TIM_IT_BREAK);
   }
   
+  //	FIXME: RETURN
+  __HAL_TIM_DISABLE_IT(htim, TIM_IT_UPDATE);
+
   /* Disable the Main Output */
   __HAL_TIM_MOE_DISABLE(htim);
   

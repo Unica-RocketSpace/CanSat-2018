@@ -9,6 +9,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <diag/Trace.h>
+
 #include <stm32f4xx_hal.h>
 #include "FreeRTOS.h"
 #include "task.h"
@@ -37,6 +39,7 @@
 
 
 USART_HandleTypeDef usart_HC05;
+TIM_HandleTypeDef htimSE;
 
 void HC05_Init() {
 
@@ -51,6 +54,39 @@ void HC05_Init() {
 	HAL_Delay(200);
 }
 
+void TIM1_UP_TIM10_IRQHandler(void) {
+	HAL_TIM_IRQHandler(&htimSE);
+}
+
+
+void timerSEPWMStart(int step_counter) {
+	htimSE.Instance = TIM1;
+	htimSE.Init.Prescaler = 79;
+	htimSE.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htimSE.Init.Period = 800;
+	htimSE.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htimSE.Init.RepetitionCounter = (uint32_t)(step_counter - 1);
+	HAL_TIM_PWM_Init(&htimSE);
+
+	TIM_OC_InitTypeDef timOC;
+	timOC.OCMode = TIM_OCMODE_PWM1;
+	timOC.Pulse = 400;
+	timOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	timOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+	timOC.OCFastMode = TIM_OCFAST_ENABLE;
+	timOC.OCIdleState = TIM_OCIDLESTATE_SET;	//	??
+	timOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
+	HAL_TIM_PWM_ConfigChannel(&htimSE, &timOC, TIM_CHANNEL_1);
+
+
+	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);
+	HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+
+	HAL_TIMEx_PWMN_Start_IT(&htimSE, TIM_CHANNEL_1);
+
+}
+
 
 void step_engine_init () {
 
@@ -61,12 +97,23 @@ void step_engine_init () {
 
 	GPIO_InitTypeDef DRV8825_pins;
 
-	/*Pin STEP*/
-	DRV8825_pins.Pin = DRV8855_STEP_PIN;
-	DRV8825_pins.Mode = GPIO_MODE_OUTPUT_PP;
-	DRV8825_pins.Pull = GPIO_NOPULL;
-	DRV8825_pins.Speed = GPIO_SPEED_FREQ_MEDIUM;
-	HAL_GPIO_Init(DRV8855_STEP_PORT, &DRV8825_pins);
+//	/*Pin STEP*/
+//	DRV8825_pins.Pin = DRV8855_STEP_PIN;
+//	DRV8825_pins.Mode = GPIO_MODE_OUTPUT_PP;
+//	DRV8825_pins.Pull = GPIO_NOPULL;
+//	DRV8825_pins.Speed = GPIO_SPEED_FREQ_MEDIUM;
+//	HAL_GPIO_Init(DRV8855_STEP_PORT, &DRV8825_pins);
+
+	__TIM1_CLK_ENABLE();
+	__GPIOB_CLK_ENABLE();
+
+	GPIO_InitTypeDef gpiob;
+	gpiob.Alternate = GPIO_AF1_TIM1;
+	gpiob.Mode = GPIO_MODE_AF_PP;
+	gpiob.Pin = GPIO_PIN_13;
+	gpiob.Pull = GPIO_NOPULL;
+	gpiob.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(GPIOB, &gpiob);
 
 	/*Pin DIR*/
 	DRV8825_pins.Pin = DRV8855_DIR_PIN;
@@ -111,6 +158,23 @@ void step_engine_init () {
 	HAL_GPIO_WritePin(DRV8855_nFAULT_PORT, DRV8855_nFAULT_PIN, SET);
 
 }
+
+
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
+	if (htim->Instance == TIM1) {
+		__TIM1_CLK_ENABLE();
+		__GPIOB_CLK_ENABLE();
+
+		GPIO_InitTypeDef gpiob;
+		gpiob.Alternate = GPIO_AF1_TIM1;
+		gpiob.Mode = GPIO_MODE_AF_PP;
+		gpiob.Pin = GPIO_PIN_12;
+		gpiob.Pull = GPIO_NOPULL;
+		gpiob.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(GPIOB, &gpiob);
+	}
+}
+
 
 static void get_servo_angle(float* vect, float* angle) {
 	float proj_xy = sqrt(pow(vect[0], 2) + pow(vect[1], 2));
@@ -179,16 +243,18 @@ void rotate_step_engine_by_angles (float* angles) {
 	if (direction) HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_SET);
 	else HAL_GPIO_WritePin(DRV8855_DIR_PORT, DRV8855_DIR_PIN, GPIO_PIN_RESET);
 
-	float STEP_TERNS = STEP_DEGREES/ (M_PI *2) * 200 * 2/* * pow(2, STEP_DIVIDER)*/;
-	printf("STEP_TERNS = %f\r\n", STEP_TERNS );
-	for(int i = 0; i < (int)round(STEP_TERNS); i++) {
-		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_SET);
-		//HAL_Delay(1);
-		for(int j = 0; j < 2000; j++){}			//Таймер
-		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_RESET);
-		//HAL_Delay(1);
-		for(int j = 0; j < 2000; j++){}			//Таймер
-	}
+	int STEP_TERNS = (int)roundf(STEP_DEGREES / (M_PI *2) * 200)/* * pow(2, STEP_DIVIDER)*/;
+	trace_printf("turnes: %d\n", STEP_TERNS);
+//	for(int i = 0; i < (int)round(STEP_TERNS); i++) {
+//		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_SET);
+//		//HAL_Delay(1);
+//		for(int j = 0; j < 4000; j++){volatile int x = 0;}			//Таймер
+//		HAL_GPIO_WritePin(DRV8855_STEP_PORT, DRV8855_STEP_PIN, GPIO_PIN_RESET);
+//		//HAL_Delay(1);
+//		for(int j = 0; j < 4000; j++){volatile int x = 0;}			//Таймер
+//	}
+	timerSEPWMStart(STEP_TERNS);
+//	timerSEPWMStart(2000);
 
 }
 

@@ -164,8 +164,13 @@ void HAL_ResumeTick(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  (void)htim;
-  HAL_IncTick();
+  if (htim->Instance == TIM6) {
+	  (void)htim;
+	  HAL_IncTick();
+  }
+  if (htim->Instance == TIM1) {
+	  HAL_TIMEx_PWMN_Stop_IT(htim, TIM_CHANNEL_1);
+  }
 }
 
 /**

@@ -53,7 +53,7 @@ const rscs_bmp280_calibration_values_t * bmp280_calibration_values;
 
 uint8_t get_gyro_staticShift(float* gyro_staticShift) {
 	uint8_t error = 0;
-	uint16_t zero_orientCnt = 2000;
+	uint16_t zero_orientCnt = 200;
 
 	//	находим статическое смещение гироскопа
 	for (int i = 0; i < zero_orientCnt; i++) {
@@ -79,7 +79,7 @@ end:
 
 uint8_t get_accel_staticShift(float* gyro_staticShift, float* accel_staticShift) {
 	uint8_t error = 0;
-	uint16_t zero_orientCnt = 1000;
+	uint16_t zero_orientCnt = 100;
 	float time = 0, time_prev = (float)HAL_GetTick() / 1000;
 
 	for (int i = 0; i < zero_orientCnt; i++) {
@@ -311,6 +311,7 @@ void IMU_task() {
 			static uint8_t counter = 0;
 
 			if (counter == 0) {
+				vTaskDelay(10000);
 				get_staticShifts();
 				bmp280_update();
 				IMU_updateDataAll();

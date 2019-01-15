@@ -19,7 +19,6 @@ class MsgAccumulator:
         if len(self.accumulator) >= self.batch_size:
             self.signal.emit(self.accumulator)
             self.accumulator = []
-            print('PUSH COMPLETED')
 
 
 class MavlinkThread(QThread):
@@ -74,91 +73,27 @@ class MavlinkThread(QThread):
         else:
             # _log.warning("неизвестный тип сообщения! %s", msg.data())
             pass
-    # self.f.close()
 
 
     def run(self):
         _log.info("Запускаюсь. Использую url:")
-        f = open('U86.txt', 'r')
+       
+        mav1 = mavutil.mavlink_connection("udpin:0.0.0.0:22466")
+        mav2 = mavutil.mavlink_connection("udpin:0.0.0.0:22467")
 
-        n_lines = 16886
-        foo = 0
+        while True:
+            msg1 = mav1.recv_match(blocking=False)
+            msg2 = mav2.recv_match(blocking=False)
+            if msg1:
+                self.process_message(msg1)
+                if self.uplink_msgs:
+                    print(self.uplink_msgs)
+                    mav1.write(self.uplink_msgs)
+                    self.uplink_msgs = []
 
-        line= f.readline()
-        all_sim = len(line) * 5
-        # mav1 = mavutil.mavlink_connection("udpin:0.0.0.0:22466")
-        # mav2 = mavutil.mavlink_connection("udpin:0.0.0.0:22467")
-
-        # while True:
-        for foo in range(all_sim):
-            f.seek(foo, 0)
-
-            print(f.tell())
-            ms = f.read(20)
-
-            if ms[18] == 'f' and ms[19] == 'd':
-                ms = ms[0:17]
-                print( "MS:   ", ms)
-                self.process_message(ms)
-                ms = ''
-                foo += 18
-                print('msg 18')
-                continue
-
-
-
-            f.seek(foo, 0)
-            ms = f.read(82)
-
-            if ms[80] == 'f' and ms[81] == 'd':
-                ms = ms[0:79]
-                print("MS:   ", ms)
-                self.process_message(ms)
-                ms = ''
-                foo += 80
-                print('msg 80')
-                continue
-
-
-            f.seek(foo, 0)
-            ms = f.read(54)
-
-            if ms[52] == 'f' and ms[53] == 'd':
-                ms = ms[0:51]
-                print("MS:   ", ms)
-                self.process_message(ms)
-                ms = ''
-                foo += 52
-                print('msg 52')
-                continue
-
-
-            f.seek(foo, 0)
-            ms = f.read(30)
-
-            if ms[28] == 'f' and ms[29] == 'd':
-                ms = ms[0:27]
-                print("MS:   ", ms)
-                self.process_message(ms)
-                ms = ''
-                foo += 28
-                print('msg 28')
-                continue
-
-
-        f.close()
-            # msg1 = mav1.recv_match(blocking=False)
-            # msg2 = mav2.recv_match(blocking=False)
-            # if msg1:
-            #     self.process_message(msg1)
-            #     if self.uplink_msgs:
-            #         print(self.uplink_msgs)
-            #         mav1.write(self.uplink_msgs)
-            #         self.uplink_msgs = []
-            # 18 80 52 28
-            # if msg2
-            #     self.process_message(msg2)
-            #     if self.uplink_msgs:
-            #         mav2.write(self.uplink_msgs)
-            #         self.uplink_msgs = []
+            if msg2
+                self.process_message(msg2)
+                if self.uplink_msgs:
+                    mav2.write(self.uplink_msgs)
+                    self.uplink_msgs = []
 
